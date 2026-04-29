@@ -1,6 +1,6 @@
 # Atlas
 
-Atlas is a portable utility for backing up and moving browser profiles. It is designed for reliability, especially on legacy systems where cloud-based tools are unavailable.
+Atlas is an application for backing up and moving browser profiles. It is designed for reliability, especially on legacy systems where cloud-based tools are unavailable.
 
 Software moves fast and often leaves older hardware behind. Atlas was built to ensure your data stays yours, regardless of the machine you are using.
 

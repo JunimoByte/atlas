@@ -22,7 +22,3 @@ Please do **NOT** report security vulnerabilities through public issues. Instead
 - Description of the vulnerability.
 - Steps to reproduce the issue.
 - Potential impact.
-
-### Response Timeline
-
-We are committed to addressing security issues promptly. You can expect an initial acknowledgment within 48 hours of your report.
