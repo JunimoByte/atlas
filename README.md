@@ -22,6 +22,14 @@ Atlas follows a simple process for data reliability:
 3. **Estimate**: Calculates sizes and checks if your destination has enough space.
 4. **Backup**: Creates archives using safe, atomic operations.
 
+## Engineering Challenges
+
+- **Browser Fragmentation**: Managing differences across Chromium, Gecko, and legacy engines, including variations in profile structure, paths, versions, and distribution channels (beta, nightly, portable).
+- **Legacy OS Constraints**: Accommodating limitations on Windows 7 and earlier, such as filesystem quirks and limited APIs.
+- **Data Integrity and Safety**: Implementing atomic archive writes and path sanitization to enforce the read-only model.
+- **Performance vs. Reliability Tradeoffs**: Balancing the processing of large profile sizes with memory considerations through a staged pipeline.
+- **Offline-First Design**: Operating with no network access, relying on local-only constraints that dictate the architecture.
+
 ## Development
 
 ### Requirements

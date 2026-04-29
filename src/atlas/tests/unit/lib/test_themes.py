@@ -131,11 +131,12 @@ def test_resource_path_dev(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_resource_path_frozen(monkeypatch: pytest.MonkeyPatch) -> None:
     """Verify the resource path in frozen mode."""
     monkeypatch.setattr(sys, "frozen", True, raising=False)
-    monkeypatch.setattr(sys, "_MEIPASS", "/fake/meipass", raising=False)
+    fake_meipass = os.path.join("fake", "meipass")
+    monkeypatch.setattr(sys, "_MEIPASS", fake_meipass, raising=False)
 
     path = themes.resource_path("file.txt")
 
-    assert path.startswith("/fake/meipass")
+    assert path.startswith(fake_meipass)
     assert path.endswith("file.txt")
 
 

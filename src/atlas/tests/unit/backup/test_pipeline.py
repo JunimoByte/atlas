@@ -8,6 +8,7 @@ Covers scan, estimate, backup phases, cancellation, and retry logic.
 # IMPORTS
 # =============================================================================
 
+import os
 import sys
 from unittest.mock import MagicMock, patch
 
@@ -71,7 +72,7 @@ def test_check_cancelled_state(
     "method_name, call_args",
     [
         ("scan_profiles", []),
-        ("estimate_size", [{"Chrome": ["/some/path"]}]),
+        ("estimate_size", [{"Chrome": [os.path.join("some", "path")]}]),
     ]
 )
 def test_cancelled_pipeline_returns_early(
@@ -172,13 +173,13 @@ def test_scan_profiles_populates_matches(pipeline: Pipeline) -> None:
     """Verify that profile matches are populated."""
     with patch(
         "atlas.backup.pipeline.Profile.find_profile",
-        return_value=["/fake/profile/path"]
+        return_value=[os.path.join("fake", "profile", "path")]
     ):
         result = pipeline.scan_profiles()
 
     assert len(result) > 0
     for paths in result.values():
-        assert "/fake/profile/path" in paths
+        assert os.path.join("fake", "profile", "path") in paths
 
 
 # =============================================================================
@@ -199,7 +200,7 @@ def test_estimate_size_sums_sizes(pipeline: Pipeline) -> None:
             "atlas.backup.pipeline.Size.format_size",
             return_value="1 KB"
         ):
-            result = pipeline.estimate_size({"Chrome": ["/path/a"]})
+            result = pipeline.estimate_size({"Chrome": [os.path.join("path", "a")]})
 
     assert result == 1024
     assert "1 KB" in emitted
@@ -220,10 +221,10 @@ def test_estimate_size_returns_zero_for_empty_matches(
 
 def test_perform_backup_calls_compress_per_browser(pipeline: Pipeline) -> None:
     """Verify that compression is called per browser."""
-    matches = {"Chrome": ["/path/a"], "Firefox": ["/path/b"]}
+    matches = {"Chrome": [os.path.join("path", "a")], "Firefox": [os.path.join("path", "b")]}
     with patch(
         "atlas.backup.pipeline.archive.compress",
-        return_value="/output/Chrome.zip"
+        return_value=os.path.join("output", "Chrome.zip")
     ) as mock_c:
         pipeline.perform_backup(matches)
 
@@ -237,9 +238,9 @@ def test_perform_backup_emits_progress(pipeline: Pipeline) -> None:
 
     with patch(
         "atlas.backup.pipeline.archive.compress",
-        return_value="/out/x.zip"
+        return_value=os.path.join("out", "x.zip")
     ):
-        pipeline.perform_backup({"Chrome": ["/p"]})
+        pipeline.perform_backup({"Chrome": ["p"]})
 
     assert calls == [(1, 1)]
 
@@ -248,7 +249,7 @@ def test_perform_backup_stops_on_cancel(pipeline: Pipeline) -> None:
     """Verify that backup stops when cancelled."""
     pipeline.cancel()
     with patch("atlas.backup.pipeline.archive.compress") as mock_c:
-        result = pipeline.perform_backup({"Chrome": ["/p"]})
+        result = pipeline.perform_backup({"Chrome": ["p"]})
     mock_c.assert_not_called()
     assert result is False
 
@@ -261,7 +262,7 @@ def test_perform_backup_returns_false_on_archive_failure(
         "atlas.backup.pipeline.archive.compress",
         return_value=None,
     ):
-        result = pipeline.perform_backup({"Chrome": ["/p"]})
+        result = pipeline.perform_backup({"Chrome": ["p"]})
 
     assert result is False
 

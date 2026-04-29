@@ -7,6 +7,7 @@ Unit tests for the browser loader and validator.
 # IMPORTS
 # =============================================================================
 
+import os
 import sys
 from typing import Any, Dict, Generator
 
@@ -26,9 +27,9 @@ def sample_valid_browser() -> Dict[str, Any]:
         "Chrome": {
             "Windows": [
                 {
-                    "Path": (
-                        "C:\\Users\\Test\\AppData\\Local\\"
-                        "Google\\Chrome\\User Data"
+                    "Path": os.path.join(
+                        "mock_drive", "Users", "Test", "AppData", "Local",
+                        "Google", "Chrome", "User Data"
                     ),
                     "Type": "profile",
                     "Signature": ["Preferences", "Bookmarks"]
@@ -121,13 +122,14 @@ def test_grab_returns_cached_data(
 
 def test_path_cache_population(sample_valid_browser: Dict[str, Any]) -> None:
     """Verify that the path cache is populated correctly."""
-    types_json = {"PROFILE": ["C:/my/fake/profile"]}
+    fake_path = os.path.join("mock_dir", "my", "fake", "profile")
+    types_json = {"PROFILE": [fake_path]}
     result = browsers.verify_entries(
         browsers_json=sample_valid_browser, types_json=types_json
     )
     assert result is True
     assert "PROFILE" in browsers._PATH_CACHE
-    assert browsers._PATH_CACHE["PROFILE"] == ["C:/my/fake/profile"]
+    assert browsers._PATH_CACHE["PROFILE"] == [fake_path]
 
 
 # =============================================================================
