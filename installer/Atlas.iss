@@ -1,7 +1,7 @@
 ; Atlas Installer Script
 
 #define MyAppName "Atlas"
-#define MyAppVersion "1.0"
+#define MyAppVersion "1.0.0"
 #define MyAppPublisher "Michael Dorman"
 #define MyAppURL "https://junimobyte.github.io/atlas-website/"
 #define MyAppExeName "Atlas.exe"
@@ -29,7 +29,7 @@ ArchitecturesInstallIn64BitMode=x64compatible
 DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
 
-OutputBaseFilename=Atlas-Setup-{#MyAppVersion}-x64
+OutputBaseFilename=Atlas_Setup_x64
 OutputDir=Output
 SolidCompression=yes
 WizardStyle=modern

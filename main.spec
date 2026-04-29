@@ -168,7 +168,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='Atlas',
+    name='Atlas_Portable_x64',
     debug=False,
     onefile=True,
     bootloader_ignore_signals=False,
