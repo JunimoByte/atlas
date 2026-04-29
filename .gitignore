@@ -1,0 +1,54 @@
+# Virtual environment
+venv/
+.venv/
+env/
+ENV/
+
+# Logs
+*.log
+*.tmp
+
+# PyInstaller build output
+build/
+dist/
+output/
+*.spec.bak
+
+# Build outputs
+*.exe
+*.msi
+
+# IDE / Editor
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Pytest cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Distribution / packaging artifacts
+*.egg-info/
+
+# flake8 configuration
+.flake8_errors.txt
+.flake8_errors2.txt
+flake8_out.txt
+
+# ruff configuration
+.ruff_errors.txt
+.ruff_errors2.txt
+ruff_out.txt
+
+# vermin configuration
+.vermin_errors.txt
+.vermin_errors2.txt
+vermin_out.txt
