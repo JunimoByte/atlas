@@ -1,0 +1,2680 @@
+{
+    "Google Chrome": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Google/Chrome/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Google/Chrome Beta/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Google/Chrome Dev/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Google/Chrome SxS/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Firefox": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Mozilla/Firefox/Profiles",
+                "Signature": false
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "Mozilla/Profiles",
+                "Signature": false
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "Phoenix/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Microsoft Edge": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Microsoft/Edge/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Microsoft/Edge Beta/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Microsoft/Edge Dev/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Microsoft/Edge SxS/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "UWP",
+                "Path": "Microsoft.MicrosoftEdge_*",
+                "Signature": [
+                    "AC"
+                ]
+            }
+        ]
+    },
+    "115 Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "115Chrome/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "1x Net Browser": {
+        "Windows": [
+            {
+                "Type": "LEGACY",
+                "Path": "1X",
+                "Signature": false
+            }
+        ]
+    },
+    "2345Explorer": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "2345Explorer/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "32bit Web Browser": {
+        "Windows": [
+            {
+                "Type": "LEGACY",
+                "Path": "32bw/Bookmark",
+                "Signature": false
+            },
+            {
+                "Type": "LEGACY",
+                "Path": "32bw/Data",
+                "Signature": false
+            }
+        ]
+    },
+    "360 Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "360Browser/Browser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "360 Secure Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "360se6/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "360 Extreme Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "360Chrome/Chrome/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "7Star Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "7Star/7Star/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Ace Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Ace/Ace/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Adblock Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "AdblockBrowser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Agregore Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "agregore-browser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Airy": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "airy",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Alienforce": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "KBclub/Alienforce*/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Aloha Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Aloha Mobile/Aloha/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "AOL Desktop": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "AOL/*AOL Desktop*",
+                "Signature": false
+            }
+        ]
+    },
+    "AOL Shield Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "AOL/AOL Shield/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Arc": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Arc/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Artis Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "ArtistScope/ArtisBrowser/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Avast Secure Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "AVAST Software/Browser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Aviator": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Aviator/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Avira Secure Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Avira/Browser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Avant Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Avant Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "AVG Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "AVG/Browser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Anand Browser": {
+        "Windows": [
+            {
+                "Type": "UWP",
+                "Path": "AnandSingapore*",
+                "Signature": [
+                    "AC"
+                ]
+            }
+        ]
+    },
+    "Aw2 Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Aw2 Explorer 7",
+                "Signature": false
+            }
+        ]
+    },
+    "AXplorer": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "AXIASystemsInc/AXplorer-Browser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Baidu Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Baidu/Spark",
+                "Signature": "config.ini"
+            }
+        ]
+    },
+    "Browser Pro": {
+        "Windows": [
+            {
+                "Type": "UWP",
+                "Path": "*MontyInc.ChromaticBrowser_*",
+                "Signature": [
+                    "AC"
+                ]
+            }
+        ]
+    },
+    "Basilisk": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Basilisk-Dev/Basilisk/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Beacon Web Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Impervious/Beacon/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Beaker Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Beaker Browser",
+                "Signature": [
+                    "Preferences"
+                ]
+            }
+        ]
+    },
+    "Beonex": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Beonex/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Biscuit": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "biscuit",
+                "Signature": [
+                    "Preferences"
+                ]
+            }
+        ]
+    },
+    "BlackHawk Web Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "BlackHawk/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Blisk": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Blisk/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Board Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "BoardBrowser",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "BonBon Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "BonBon",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Bonsai Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "bonsai-browser",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Brave Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "BraveSoftware/Brave-Browser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "BriskBard": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "BriskBard",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Carbon": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Carbon/Browser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Cargo": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "cargo",
+                "Signature": [
+                    "Preferences"
+                ]
+            }
+        ]
+    },
+    "Catalyst": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "catalyst",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Catsxp Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "CatsxpSoftware/Catsxp-Browser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "CCleaner Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "CCleaner Browser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Cliqz": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "CLIQZ/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Cent Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "CentBrowser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Chromium": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Chromium/User Data",
+                "Signature": [
+                    "Local State",
+                    "BrowserMetrics"
+                ]
+            }
+        ]
+    },
+    "CocCoc Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "CocCoc/Browser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "CoolNovo": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "MapleStudio/ChromePlus/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Citrio": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "CatalinaGroup/Citrio/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Colibri": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Colibri",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Comet": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Perplexity/Comet/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Comodo Dragon": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Comodo/Dragon/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Comodo IceDragon": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Comodo/IceDragon/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Coowon": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Coowon/Coowon/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Cromite": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Cromite/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "CS Commander": {
+        "Windows": [
+            {
+                "Type": "LEGACY",
+                "Path": "intrcmd",
+                "Signature": false
+            }
+        ]
+    },
+    "CryptoTab Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "CryptoTab Browser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "CometBird": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "CometNetwork/CometBird/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Cocoon": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "VirtualWorld/Cocoon/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Cyberfox": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "8pecxstudios/Cyberfox/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Dashob": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Dashob",
+                "Signature": [
+                    "Cookies"
+                ]
+            }
+        ]
+    },
+    "dBrowser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "dBrowser",
+                "Signature": [
+                    "Preferences"
+                ]
+            }
+        ]
+    },
+    "Decentr": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Decentr/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Dezor": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Dezor",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Dot Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "dot/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "DuckDuckGo": {
+        "Windows": [
+            {
+                "Type": "UWP",
+                "Path": "DuckDuckGo.DesktopBrowser_*",
+                "Signature": [
+                    "AC"
+                ]
+            }
+        ]
+    },
+    "Duoyu Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "duoyu_business",
+                "Signature": [
+                    "Preferences"
+                ]
+            }
+        ]
+    },
+    "Dillo": {
+        "Windows": [
+            {
+                "Type": "USERPROFILE",
+                "Path": ".dillo",
+                "Signature": false
+            }
+        ]
+    },
+    "Ecosia Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "EcosiaBrowser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Epic Privacy Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Epic Privacy Browser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "Epic/Epic/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Elza Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Elza Browser",
+                "Signature": [
+                    "Preferences"
+                ]
+            }
+        ]
+    },
+    "FAB": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "FAB/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Falkon": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "falkon/profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Fast Internet Browser": {
+        "Windows": [
+            {
+                "Type": "UWP",
+                "Path": "Stollenwerk.FastInternetBrowser_*",
+                "Signature": [
+                    "AC"
+                ]
+            }
+        ]
+    },
+    "Felida Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "felida",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Fellou": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Fellou",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Ferny Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Ferny",
+                "Signature": [
+                    "Cookies"
+                ]
+            }
+        ]
+    },
+    "Fifo Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Fifo",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Flash Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Flash Browser",
+                "Signature": [
+                    "Preferences"
+                ]
+            }
+        ]
+    },
+    "Floorp": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Floorp/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Flow": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Flow",
+                "Signature": [
+                    "Preferences"
+                ]
+            }
+        ]
+    },
+    "Flock": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Flock/Browser/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Gener8": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Gener8/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "GemiNut": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "GemiNaut",
+                "Signature": false
+            }
+        ]
+    },
+    "Genspark": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "GensparkSoftware/Genspark-Browser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Ghostery Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Ghostery Browser/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "GNU IceCat": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Mozilla/icecat/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Ghost Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "GhostBrowser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Gogo Explorer": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Gogo Explorer",
+                "Signature": false
+            }
+        ]
+    },
+    "GT Web Browser": {
+        "Windows": [
+            {
+                "Type": "LEGACY",
+                "Path": "GT Web Software/GT Web Browser*/Data",
+                "Signature": false
+            }
+        ]
+    },
+    "Helium": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "imput/Helium/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Hola Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Hola/chromium_profile",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Herond": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "HerondLabs/Herond-Browser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Hero": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Hero/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Huawei Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Huawei/HuaweiBrowser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "HissenIT Kiosk": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "HissenIT Kiosk",
+                "Signature": false
+            }
+        ]
+    },
+    "Internet Explorer": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Microsoft/Internet Explorer",
+                "Signature": false
+            },
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Microsoft/Internet Explorer",
+                "Signature": false
+            },
+            {
+                "Type": "USERPROFILE",
+                "Path": "Favorites",
+                "Signature": false
+            },
+            {
+                "Type": "LOCALAPPDATALOW",
+                "Path": "Microsoft/Internet Explorer",
+                "Signature": false
+            },
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Microsoft/Windows/History",
+                "Signature": false
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "Microsoft/Windows/Cookies",
+                "Signature": false
+            },
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Microsoft/Windows/INetCookies",
+                "Signature": false
+            },
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Microsoft/Vault",
+                "Signature": false
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "Microsoft/Protect",
+                "Signature": false
+            }
+        ]
+    },
+    "Impervious Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Impervious Browser/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Iridium Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Iridium/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Insomniac Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "InsomniacBrowser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "iTop Private Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "iTop Private Browser/User Data",
+                "Signature": false
+            }
+        ]
+    },
+    "JioSphere": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Jio/JioSphere/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Kahf": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Kahf/KahfBrowser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Kinza": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Kinza/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Kryptonite": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Kryptonite_Corporation/Kryptonite.*/*",
+                "Signature": [
+                    "user.config"
+                ]
+            }
+        ]
+    },
+    "Kosmik": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Kosmik",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "K-Meleon": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "K-Meleon",
+                "Signature": false
+            }
+        ]
+    },
+    "K-Ninja": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "K-Ninja",
+                "Signature": false
+            }
+        ]
+    },
+    "Kylo": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Hillcrest Labs/Kylo/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Lagrange": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "fi.skyjake.Lagrange",
+                "Signature": false
+            }
+        ]
+    },
+    "LeechCraft": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Deviant",
+                "Signature": false
+            }
+        ]
+    },
+    "LibreWolf": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "librewolf/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "LobbyBrowser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "LobbyBrowser/browser/EBWebView",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Local Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Local Browser",
+                "Signature": [
+                    "Cookies"
+                ]
+            }
+        ]
+    },
+    "Lulumi Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Lulumi-browser",
+                "Signature": [
+                    "Preferences"
+                ]
+            }
+        ]
+    },
+    "Lunascape Phoebe": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Phoebe",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Lumia Browser": {
+        "Windows": [
+            {
+                "Type": "LEGACY",
+                "Path": "Lumia Browser/Cache",
+                "Signature": false
+            },
+            {
+                "Type": "LEGACY",
+                "Path": "Lumia Browser/Cache/Cache",
+                "Signature": false
+            }
+        ]
+    },
+    "Lumina Browser": {
+        "Windows": [
+            {
+                "Type": "LEGACY",
+                "Path": "Lumina Browser",
+                "Signature": false
+            }
+        ]
+    },
+    "Madfox": {
+        "Windows": [
+            {
+                "Type": "LEGACY",
+                "Path": "Madfox",
+                "Signature": false
+            }
+        ]
+    },
+    "Marble": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Network Neighborhood/Marble/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Maxthon": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Maxthon/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "MxBoost",
+                "Signature": [
+                    "data353.dat"
+                ]
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "Maxthon/MxBoost",
+                "Signature": false
+            }
+        ]
+    },
+    "Maxthon Nitro": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "mxnitro/UserData",
+                "Signature": [
+                    "Cookies"
+                ]
+            }
+        ]
+    },
+    "Maelstrom": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Maelstrom/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Mercury": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "mercury/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Midori": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Midori/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Min": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Min",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "MiniBrowser": {
+        "Windows": [
+            {
+                "Type": "LEGACY",
+                "Path": "MiniBrowser",
+                "Signature": false
+            }
+        ]
+    },
+    "Mullvad": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Mullvad/MullvadBrowser/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "MultiZen Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "MultiZen Browser",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "MSN Explorer": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "MSN*",
+                "Signature": [
+                    "msndata.dat"
+                ]
+            }
+        ]
+    },
+    "MyIE": {
+        "Windows": [
+            {
+                "Type": "LEGACY",
+                "Path": "MyIE*/MyIE*",
+                "Signature": false
+            }
+        ]
+    },
+    "Mypal": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Mypal68/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Naver Whale": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Naver/Naver Whale/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Netscape Navigator": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Netscape/Navigator/Profiles",
+                "Signature": false
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "Netscape/Navigator/Profiles",
+                "Signature": false
+            },
+            {
+                "Type": "LEGACY",
+                "Path": "Netscape/Users",
+                "Signature": false
+            }
+        ]
+    },
+    "NeoPlanet": {
+        "Windows": [
+            {
+                "Type": "LEGACY",
+                "Path": "NeoPlanet/data",
+                "Signature": false
+            }
+        ]
+    },
+    "NetSurf": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "NetSurf",
+                "Signature": [
+                    "Cookies"
+                ]
+            }
+        ]
+    },
+    "Neo": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Neo/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Nocturne": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Nocturne/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Serpent": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Moonchild Productions/Basilisk/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "SSuite NetSurfer Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "SSuite Office",
+                "Signature": [
+                    "Settings"
+                ]
+            }
+        ]
+    },
+    "Strawberry": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "strawberry",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Ninetails": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Ninetails",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Norton Private Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Norton/Browser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "nOS": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "nOS",
+                "Signature": [
+                    "Preferences"
+                ]
+            }
+        ]
+    },
+    "NCSA Mosaic": {
+        "Windows": [
+            {
+                "Type": "LEGACY",
+                "Path": "Mosaic",
+                "Signature": false
+            },
+            {
+                "Type": "LEGACY",
+                "Path": "NCSA/Mosaic",
+                "Signature": false
+            }
+        ]
+    },
+    "NetCaptor": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Stilesoft/NetCaptor",
+                "Signature": false
+            },
+            {
+                "Type": "LEGACY",
+                "Path": "NetCaptor",
+                "Signature": false
+            }
+        ]
+    },
+    "OffByOne": {
+        "Windows": [
+            {
+                "Type": "LEGACY",
+                "Path": "HPSW/OffByOne",
+                "Signature": false
+            }
+        ]
+    },
+    "OhHai Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "OhHai Browser",
+                "Signature": [
+                    "Preferences"
+                ]
+            }
+        ]
+    },
+    "Opera": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Opera Software/Opera Stable",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "Opera Software/Opera Next",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "Opera Software/Opera Developer",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "Opera/Opera*/profile",
+                "Signature": [
+                    "cookies4.dat"
+                ]
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "Opera/Opera*",
+                "Signature": [
+                    "operaprefs.ini"
+                ]
+            },
+            {
+                "Type": "LEGACY",
+                "Path": "Opera",
+                "Signature": false
+            }
+        ]
+    },
+    "Opera GX": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Opera Software/Opera GX Stable",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Opera Air": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Opera Software/Opera Air Stable",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Opera Neon": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Opera Software/Opera Neon/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "Opera Software/Opera Neon",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Otter": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Otter/otter",
+                "Signature": [
+                    "otter.conf"
+                ]
+            }
+        ]
+    },
+    "Orca Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Orca Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Orbitum": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Orbitum/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Pampa Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Deosoftware/Pampa Browser/*/Data",
+                "Signature": false
+            }
+        ]
+    },
+    "Pale Moon": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Moonchild Productions/Pale Moon/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Peersky Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "peersky-browser",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Pennywise": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Pennywise",
+                "Signature": [
+                    "Cookies"
+                ]
+            }
+        ]
+    },
+    "Pink Browser": {
+        "Windows": [
+            {
+                "Type": "LEGACY",
+                "Path": "Pink Browser",
+                "Signature": false
+            }
+        ]
+    },
+    "Ping": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "PingBrowser/Ping-Browser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Pocket Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "pocket-browser",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Puffin Secure Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "PuffinSecureBrowser",
+                "Signature": [
+                    "pref.json"
+                ]
+            }
+        ]
+    },
+    "Photon": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "ShinyWeb/Photon.*/*",
+                "Signature": [
+                    "user.config"
+                ]
+            }
+        ]
+    },
+    "QQ Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Tencent/QQBrowser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Quark": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "quark-cloud-drive",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "QupZilla": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "QupZilla/profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Qutebrowser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "qutebrowser",
+                "Signature": false
+            }
+        ]
+    },
+    "QtWeb": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "QtWeb.NET/QtWeb Internet Browser",
+                "Signature": false
+            }
+        ]
+    },
+    "R3dfox": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Eclipse Community/r3dfox/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Ray": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Ray/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "RetroZilla": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "RetroZilla/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "RockMelt": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "RockMelt/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Roxy Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "RoxyBrowser",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Safari": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Apple Computer/Safari",
+                "Signature": [
+                    "Cookies"
+                ]
+            }
+        ]
+    },
+    "Sanbrowser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Sanbrowser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Scadarlia": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Scadarlia",
+                "Signature": false
+            }
+        ]
+    },
+    "Sidekick Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Sidekick/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "SeaMonkey": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Mozilla/SeaMonkey/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Seznam cz": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Seznam.cz",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Servo": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Servo",
+                "Signature": false
+            }
+        ]
+    },
+    "Shift Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Shift/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Sielo Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Sielo/profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Skye Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Skye",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Sleipnir": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Fenrir Inc",
+                "Signature": false
+            }
+        ]
+    },
+    "Spyglass Mosaic": {
+        "Windows": [
+            {
+                "Type": "LEGACY",
+                "Path": "WIN32APP/SPYGLASS/EMOSAIC",
+                "Signature": false
+            }
+        ]
+    },
+    "FlashPeak SlimBrowser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "FlashPeak/SlimBrowser/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "FlashPeak SlimJet": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Slimjet/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Samsung Internet": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Samsung/Internet/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Sogou Explorer": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Sogou/SogouExplorer/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "Sogou/SogouExplorer",
+                "Signature": [
+                    "Extensions"
+                ]
+            }
+        ]
+    },
+    "Sundial": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Unifiedroot/Sundial/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Surf": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Surf",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Supermium": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Supermium/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "Supermium/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Stack Next SE": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Stack Next SE",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Sushi Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "sushiBrowserChrome",
+                "Signature": [
+                    "Preferences"
+                ]
+            }
+        ]
+    },
+    "SuperBird": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Chromium/User Data",
+                "Signature": [
+                    "Local State",
+                    "EVWhitelist",
+                    "Caps",
+                    "pnacl"
+                ]
+            }
+        ]
+    },
+    "Sundance": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Sundance",
+                "Signature": false
+            }
+        ]
+    },
+    "Sigma": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Sigma/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "SmartFox": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "SmartFox.*/Local Store",
+                "Signature": false
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "Adobe/AIR/ELS/SmartFox*",
+                "Signature": false
+            }
+        ]
+    },
+    "TakTak": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Taktak/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Tempest Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "TempestBrowser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Tesla Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "TeslaBrowser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Tencent Traveler": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Tencent/TencentTraveler/*00",
+                "Signature": false
+            }
+        ]
+    },
+    "Terometrik": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Terometrik/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Torch": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Torch/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "T-online Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "t-online.de/Browser*/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Tungsten": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Tungsten/profile",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Thorium": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Thorium/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "TheWorld6": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "TheWorld6/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "TheWorld Chrome": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "TheWorld/Chrome/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Tusk Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "TUSK Browser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Twinkstar": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Twinkstar/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Ulaa": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Zoho/Ulaa/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Ungoogled Chromium": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "ungoogled-chromium/user_data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Undetectable": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Undetectable/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "UC Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "UCBrowser/User Data_i18n",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "UR Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "URBrowser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Vieb": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Vieb",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Vivaldi": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Vivaldi/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "VibeMate": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "VibeMate",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Vitamin": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "vitamin-browser",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Waterfox": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Waterfox/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "WaveBrowser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "WaveBrowser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Wavebox": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "WaveboxApp/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Webnet": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "WebNet_Official",
+                "Signature": [
+                    "Preferences"
+                ]
+            }
+        ]
+    },
+    "Wexond": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "wexond",
+                "Signature": [
+                    "Preferences"
+                ]
+            }
+        ]
+    },
+    "Winwap": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Winwap/cache",
+                "Signature": false
+            }
+        ]
+    },
+    "X Browser": {
+        "Windows": [
+            {
+                "Type": "UWP",
+                "Path": "*CoalaApps.ChromosomeXSearch_*",
+                "Signature": [
+                    "AC"
+                ]
+            }
+        ]
+    },
+    "X-Browser": {
+        "Windows": [
+            {
+                "Type": "COMMONAPPDATA",
+                "Path": "LeighTech Computer Services/X-Browser/*",
+                "Signature": false
+            }
+        ]
+    },
+    "Xvast": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Xvast/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Y8 Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "y8-browser/Partitions/y8new",
+                "Signature": [
+                    "Cookies"
+                ]
+            }
+        ]
+    },
+    "Yandex Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Yandex/YandexBrowser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Zen": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "zen/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "ZenBrowser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "ZenBrowser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    }
+}

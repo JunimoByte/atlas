@@ -1,0 +1,30 @@
+{
+    "APPDATA": [
+        "%APPDATA%",
+        "%USERPROFILE%/Application Data"
+    ],
+    "LOCALAPPDATA": [
+        "%LOCALAPPDATA%",
+        "%USERPROFILE%/Local Settings/Application Data"
+    ],
+    "LOCALAPPDATALOW": [
+        "%USERPROFILE%/AppData/LocalLow",
+        "%USERPROFILE%/Local Settings/Application Data"
+    ],
+    "UWP": [
+        "%LOCALAPPDATA%/Packages",
+        "%USERPROFILE%/Local Settings/Application Data/Packages"
+    ],
+    "USERPROFILE": [
+        "%USERPROFILE%"
+    ],
+    "COMMONAPPDATA": [
+        "%PROGRAMDATA%",
+        "C:/ProgramData"
+    ],
+    "LEGACY": [
+        "C:/",
+        "C:/PROGRAMS",
+        "C:/Program Files"
+    ]
+}
