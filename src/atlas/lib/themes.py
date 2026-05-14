@@ -12,7 +12,6 @@ Supports buttons, progress bars, and labels.
 
 import logging
 import os
-import platform
 import sys
 
 from PyQt6.QtCore import QTimer
@@ -24,12 +23,6 @@ from PyQt6.QtWidgets import QLabel
 # =============================================================================
 
 LOGGER = logging.getLogger(__name__)
-
-# =============================================================================
-# VARIABLES
-# =============================================================================
-
-OS = platform.system().lower()
 
 # =============================================================================
 # MAIN FUNCTIONS
@@ -58,15 +51,14 @@ def initialize(window) -> None:
 
     apply(window)
 
-    if OS == "windows":
-        try:
-            hints = QGuiApplication.styleHints()
-            if hints:
-                hints.colorSchemeChanged.connect(
-                    lambda: QTimer.singleShot(0, lambda: apply(window))
-                )
-        except Exception:
-            LOGGER.error("Failed to enable live theme updates", exc_info=True)
+    try:
+        hints = QGuiApplication.styleHints()
+        if hints:
+            hints.colorSchemeChanged.connect(
+                lambda: QTimer.singleShot(0, lambda: apply(window))
+            )
+    except Exception:
+        LOGGER.error("Failed to enable live theme updates", exc_info=True)
 
 
 def apply(window) -> None:
@@ -98,7 +90,7 @@ def apply(window) -> None:
 
 def _get_theme() -> str:
     """Detect current Windows theme (light/dark)."""
-    if OS != "windows" or sys.getwindowsversion().major < 10:
+    if sys.getwindowsversion().major < 10:
         return "Light"
 
     try:
@@ -122,8 +114,6 @@ def _get_theme() -> str:
 
 def _apply_light(window) -> None:
     """Apply light theme to the window."""
-    if OS != "windows":
-        return
     try:
         window.setStyleSheet(
             """
@@ -139,8 +129,6 @@ def _apply_light(window) -> None:
 
 def _apply_dark(window) -> None:
     """Apply dark theme to the window."""
-    if OS != "windows":
-        return
 
     try:
         hwnd = int(window.winId())
@@ -257,8 +245,6 @@ def _is_windows_11_or_newer() -> bool:
 
     Use the build number from sys.getwindowsversion().
     """
-    if OS != "windows":
-        return False
     try:
         ver = sys.getwindowsversion()
         return ver.major >= 10 and ver.build >= 22000
