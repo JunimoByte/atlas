@@ -8,12 +8,13 @@ Handles safe compression of browser profile directories with error handling.
 # IMPORTS
 # =============================================================================
 
+import itertools
 import logging
 import os
 import zipfile
 from datetime import datetime
 from pathlib import Path
-from typing import Callable, List, Optional, Union
+from typing import Callable, Iterable, List, Optional, Union
 
 
 from atlas.lib.directories import get_downloads_dir
@@ -156,9 +157,9 @@ def _write_file_to_zip(
                         return False
                     dest_file.write(chunk)
         return True
-    except PermissionError:
+    except OSError as error:
         LOGGER.warning(
-            "Skipped (access denied / file in use): {}".format(file_path)
+            "Skipped (I/O error / file in use): {} - {}".format(file_path, error)
         )
         return False
     except Exception:
@@ -166,7 +167,7 @@ def _write_file_to_zip(
 
 
 def write_zip(
-    files: List[Path],
+    files: Iterable[Path],
     sources: List[Path],
     zip_path: Path,
     cancel_callback: Optional[Callable[[], bool]] = None
@@ -227,9 +228,6 @@ def write_zip(
                     if not did_write:
                         if cancel_callback and cancel_callback():
                             return
-                        LOGGER.warning(
-                            "Skipping unreadable file: {}".format(file_path)
-                        )
                         continue
 
                 except Exception as error:
@@ -304,14 +302,17 @@ def compress(
         return None
 
     try:
-        valid_files = scan_files(sources, cancel_callback)
-        if not valid_files:
+        valid_files_gen = scan_files(sources, cancel_callback)
+        try:
+            first_file = next(valid_files_gen)
+        except StopIteration:
             if cancel_callback and cancel_callback():
                 LOGGER.info("Compression cancelled during scanning.")
                 return None
             LOGGER.error("No files to compress after scanning.")
             return None
 
+        valid_files = itertools.chain([first_file], valid_files_gen)
         write_zip(valid_files, sources, zip_path, cancel_callback)
 
         if cancel_callback and cancel_callback():

@@ -301,13 +301,13 @@ class Controller(QObject):
             self.signals.backup_cancelled.emit()
 
         elif last_state == ControllerState.FAILED:
-            # Sticky — stays FAILED until reset() is called explicitly.
+            # Sticky, stays FAILED until reset() is called explicitly.
             LOGGER.error(
                 "Pipeline ended in FAILED state. Call reset() to recover."
             )
 
         elif last_state == ControllerState.RUNNING:
-            # Thread exited without a completion marker — unexpected crash.
+            # Thread exited without a completion marker, unexpected crash.
             self._set_state(ControllerState.FAILED)
             LOGGER.error("Worker thread terminated unexpectedly")
             self._stop_elapsed_timer()
@@ -316,7 +316,7 @@ class Controller(QObject):
             )
 
     def _handle_disk_space_error(self, required: str, available: str) -> None:
-        """Handle insufficient disk space — valid constraint, not a crash."""
+        """Handle insufficient disk space, valid constraint, not a crash."""
         if not self._set_state(ControllerState.BLOCKED):
             return
 
@@ -325,7 +325,7 @@ class Controller(QObject):
         self._quit_worker_thread()
 
     def _handle_no_browsers(self) -> None:
-        """Handle no browsers found — valid no-op, not a crash."""
+        """Handle no browsers found, valid no-op, not a crash."""
         if not self._set_state(ControllerState.EMPTY):
             return
 
