@@ -200,7 +200,9 @@ def test_estimate_size_sums_sizes(pipeline: Pipeline) -> None:
             "atlas.backup.pipeline.Size.format_size",
             return_value="1 KB"
         ):
-            result = pipeline.estimate_size({"Chrome": [os.path.join("path", "a")]})
+            result = pipeline.estimate_size(
+                {"Chrome": [os.path.join("path", "a")]}
+            )
 
     assert result == 1024
     assert "1 KB" in emitted
@@ -221,7 +223,10 @@ def test_estimate_size_returns_zero_for_empty_matches(
 
 def test_perform_backup_calls_compress_per_browser(pipeline: Pipeline) -> None:
     """Verify that compression is called per browser."""
-    matches = {"Chrome": [os.path.join("path", "a")], "Firefox": [os.path.join("path", "b")]}
+    matches = {
+        "Chrome": [os.path.join("path", "a")],
+        "Firefox": [os.path.join("path", "b")],
+    }
     with patch(
         "atlas.backup.pipeline.archive.compress",
         return_value=os.path.join("output", "Chrome.zip")

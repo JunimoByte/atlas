@@ -48,13 +48,13 @@ SECONDS_PER_MINUTE = 60
 class ControllerState(Enum):
     """Machine state for the controller to track workflow lifecycle."""
 
-    IDLE       = auto()  # waiting for user action
-    RUNNING    = auto()  # pipeline active
-    SUCCESS    = auto()  # backup completed fully
-    EMPTY      = auto()  # no browsers found, valid no-op
-    BLOCKED    = auto()  # cannot proceed (disk full, permissions)
+    IDLE = auto()  # waiting for user action
+    RUNNING = auto()  # pipeline active
+    SUCCESS = auto()  # backup completed fully
+    EMPTY = auto()  # no browsers found, valid no-op
+    BLOCKED = auto()  # cannot proceed (disk full, permissions)
     CANCELLING = auto()  # user-requested stop
-    FAILED     = auto()  # crash, hang, or unhandled exception only
+    FAILED = auto()  # crash, hang, or unhandled exception only
 
 
 VALID_TRANSITIONS = {
@@ -116,15 +116,18 @@ class Controller(QObject):
             return False
 
         LOGGER.debug(
-            "State transition: %s -> %s", 
+            "State transition: %s -> %s",
             self.state.name,
             new_state.name
         )
         self.state = new_state
         return True
 
-    def _force_state(self, new_state: ControllerState, reason: str = "") -> None:
-        """Bypass FSM for shutdown/recovery paths where safety > correctness."""
+    def _force_state(
+        self, new_state: ControllerState, reason: str = ""
+    ) -> None:
+        """Bypass FSM for shutdown/recovery paths where safety > correctness.
+        """
         LOGGER.warning(
             "FORCED state transition: %s -> %s (%s)",
             self.state.name,
@@ -301,13 +304,13 @@ class Controller(QObject):
             self.signals.backup_cancelled.emit()
 
         elif last_state == ControllerState.FAILED:
-            # Sticky — stays FAILED until reset() is called explicitly.
+            # Sticky, stays FAILED until reset() is called explicitly.
             LOGGER.error(
                 "Pipeline ended in FAILED state. Call reset() to recover."
             )
 
         elif last_state == ControllerState.RUNNING:
-            # Thread exited without a completion marker — unexpected crash.
+            # Thread exited without a completion marker, unexpected crash.
             self._set_state(ControllerState.FAILED)
             LOGGER.error("Worker thread terminated unexpectedly")
             self._stop_elapsed_timer()
@@ -316,7 +319,7 @@ class Controller(QObject):
             )
 
     def _handle_disk_space_error(self, required: str, available: str) -> None:
-        """Handle insufficient disk space — valid constraint, not a crash."""
+        """Handle insufficient disk space, valid constraint, not a crash."""
         if not self._set_state(ControllerState.BLOCKED):
             return
 
@@ -325,7 +328,7 @@ class Controller(QObject):
         self._quit_worker_thread()
 
     def _handle_no_browsers(self) -> None:
-        """Handle no browsers found — valid no-op, not a crash."""
+        """Handle no browsers found, valid no-op, not a crash."""
         if not self._set_state(ControllerState.EMPTY):
             return
 

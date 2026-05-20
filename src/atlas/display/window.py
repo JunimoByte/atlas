@@ -154,15 +154,18 @@ class Window(QDialog):
         """Assert all UI elements and method commands exist at startup."""
         for name in UI_ELEMENTS:
             if not hasattr(self.interface, name):
-                raise AttributeError(f"UI element '{name}' not found on interface")
-                
+                raise AttributeError(
+                    f"UI element '{name}' not found on interface"
+                )
+
         for mode, config in self.UI_MODE_CONFIG.items():
             _, *btn_confs = config
             for conf in btn_confs:
                 cmd = conf.get("command")
                 if isinstance(cmd, str) and not hasattr(self, cmd):
                     raise AttributeError(
-                        f"UI_MODE_CONFIG references missing method '{cmd}' in mode {mode.name}"
+                        f"UI_MODE_CONFIG references missing method '{cmd}' "
+                        f"in mode {mode.name}"
                     )
 
     def _setup_buttons(self) -> None:
@@ -344,7 +347,8 @@ class Window(QDialog):
             cancel_btn.setEnabled(False)
 
         # Allow the UI to update with "Stopping scan..." before shutting down.
-        # This is safe here because cancel_backup() does not re-enter the event loop.
+        # This is safe here because cancel_backup() does not
+        # re-enter the event loop.
         QCoreApplication.processEvents()
 
         self.controller.cancel_backup()
