@@ -145,7 +145,9 @@ class Pipeline:
 
             try:
                 return operation(*args, **kwargs)
-            except (PermissionError, FileNotFoundError, ScanTimeoutError) as error:
+            except (
+                PermissionError, FileNotFoundError, ScanTimeoutError
+            ) as error:
                 LOGGER.debug(
                     "Non-retryable error on attempt %d: %s", attempt + 1, error
                 )
@@ -264,8 +266,10 @@ class Pipeline:
                     last_emit_time = now
 
         self._emit(self.scanned_callback, f"{scanned} / {total} scanned")
-        
-        if not browser_matches or sum(len(p) for p in browser_matches.values()) == 0:
+
+        if not browser_matches or sum(
+            len(p) for p in browser_matches.values()
+        ) == 0:
             self._emit(self.no_browsers_found_callback)
             return {}
 
@@ -291,7 +295,7 @@ class Pipeline:
 
                 if size is not None:
                     total_size += size
-            except ScanTimeoutError as error:
+            except ScanTimeoutError:
                 LOGGER.error(
                     "Size scan timed out for %s — "
                     "estimate is unreliable, blocking disk check.",

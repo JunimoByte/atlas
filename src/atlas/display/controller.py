@@ -48,13 +48,13 @@ SECONDS_PER_MINUTE = 60
 class ControllerState(Enum):
     """Machine state for the controller to track workflow lifecycle."""
 
-    IDLE       = auto()  # waiting for user action
-    RUNNING    = auto()  # pipeline active
-    SUCCESS    = auto()  # backup completed fully
-    EMPTY      = auto()  # no browsers found, valid no-op
-    BLOCKED    = auto()  # cannot proceed (disk full, permissions)
+    IDLE = auto()  # waiting for user action
+    RUNNING = auto()  # pipeline active
+    SUCCESS = auto()  # backup completed fully
+    EMPTY = auto()  # no browsers found, valid no-op
+    BLOCKED = auto()  # cannot proceed (disk full, permissions)
     CANCELLING = auto()  # user-requested stop
-    FAILED     = auto()  # crash, hang, or unhandled exception only
+    FAILED = auto()  # crash, hang, or unhandled exception only
 
 
 VALID_TRANSITIONS = {
@@ -116,15 +116,18 @@ class Controller(QObject):
             return False
 
         LOGGER.debug(
-            "State transition: %s -> %s", 
+            "State transition: %s -> %s",
             self.state.name,
             new_state.name
         )
         self.state = new_state
         return True
 
-    def _force_state(self, new_state: ControllerState, reason: str = "") -> None:
-        """Bypass FSM for shutdown/recovery paths where safety > correctness."""
+    def _force_state(
+        self, new_state: ControllerState, reason: str = ""
+    ) -> None:
+        """Bypass FSM for shutdown/recovery paths where safety > correctness.
+        """
         LOGGER.warning(
             "FORCED state transition: %s -> %s (%s)",
             self.state.name,

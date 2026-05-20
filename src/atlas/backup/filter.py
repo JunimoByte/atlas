@@ -105,7 +105,8 @@ def scan_files(
 
                                 if (
                                     file_ext in SKIP_FILE_WITH_EXTENSION
-                                    and file_name in SKIP_FILE_WITH_EXTENSION[file_ext]
+                                    and file_name in
+                                    SKIP_FILE_WITH_EXTENSION[file_ext]
                                 ):
                                     continue
 

@@ -14,7 +14,7 @@ import os
 import zipfile
 from datetime import datetime
 from pathlib import Path
-from typing import Callable, Iterable, List, Optional, Tuple, Union
+from typing import Callable, Iterable, Optional, Tuple, Union
 
 
 from atlas.lib.directories import get_downloads_dir
@@ -163,7 +163,9 @@ def _write_file_to_zip(
         return True
     except OSError as error:
         LOGGER.warning(
-            "Skipped (I/O error / file in use): {} - {}".format(file_path, error)
+            "Skipped (I/O error / file in use): {} - {}".format(
+                file_path, error
+            )
         )
         return False
     except Exception:
@@ -180,8 +182,9 @@ def write_zip(
     Handle large files, preserve timestamps, and set permissions.
 
     Args:
-        files (Iterable[Tuple[Path, Path]]): Iterable of (source_root, file_path)
-            pairs. The source_root is used to compute relative archive paths.
+        files (Iterable[Tuple[Path, Path]]): Iterable of (source_root,
+            file_path) pairs. The source_root is used to compute
+            relative archive paths.
         zip_path (Path): Destination path for the ZIP archive.
         cancel_callback (Optional[Callable[[], bool]]): Function to
             check for cancellation.
@@ -303,7 +306,9 @@ def compress(
             LOGGER.error("No files to compress after scanning.")
             return None
 
-        valid_files = itertools.chain([(first_root, first_file)], valid_files_gen)
+        valid_files = itertools.chain(
+            [(first_root, first_file)], valid_files_gen
+        )
         write_zip(valid_files, zip_path, cancel_callback)
 
         if cancel_callback and cancel_callback():

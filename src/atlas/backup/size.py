@@ -96,7 +96,8 @@ def get_directory_size(path_str: Union[str, Path]) -> int:
 
     Uses ``os.scandir`` with a manual stack for performance. On Windows,
     ``DirEntry.stat()`` reuses the result from ``FindNextFile``, avoiding
-    extra syscalls. Symlink check is folded into ``is_file(follow_symlinks=False)``.
+    extra syscalls. Symlink check is folded into
+    ``is_file(follow_symlinks=False)``.
 
     Args:
         path_str (Union[str, Path]): Path to the directory.
@@ -136,7 +137,9 @@ def get_directory_size(path_str: Union[str, Path]) -> int:
                                 stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
                             total += entry.stat(follow_symlinks=False).st_size
-                    except (PermissionError, FileNotFoundError, OSError) as error:
+                    except (
+                        PermissionError, FileNotFoundError, OSError
+                    ) as error:
                         LOGGER.debug(
                             "Error accessing %s: %s", entry.path, error
                         )

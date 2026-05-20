@@ -96,8 +96,8 @@ def test_scan_files_respects_blacklist(
         "__pycache__/ignored.pyc",
     ])
 
-    results = archive.scan_files([source])
-    names = [f.name for f in results]
+    results = list(archive.scan_files([source]))
+    names = [f.name for _, f in results]
 
     assert "valid.txt" in names
     assert "skip.log" not in names
@@ -156,7 +156,10 @@ def test_write_zip_cleans_temp_file_when_cancelled(
     source.mkdir()
     create_files(source, ["file1.txt", "file2.txt"])
 
-    files = [source / "file1.txt", source / "file2.txt"]
+    files = [
+        (source, source / "file1.txt"),
+        (source, source / "file2.txt"),
+    ]
     zip_path = tmp_path / "archive.zip"
     temp_zip_path = zip_path.with_suffix(".zip.tmp")
     callback_count = {"value": 0}
@@ -180,7 +183,7 @@ def test_write_zip_cleans_temp_file_when_cancelled(
 
     monkeypatch.setattr(archive, "_write_file_to_zip", write_stub)
 
-    archive.write_zip(files, [source], zip_path, cancel_callback)
+    archive.write_zip(files, zip_path, cancel_callback)
 
     assert not temp_zip_path.exists()
     assert not zip_path.exists()
@@ -194,7 +197,7 @@ def test_write_zip_raises_on_file_write_failure(
     source.mkdir()
     create_files(source, ["file1.txt"])
 
-    files = [source / "file1.txt"]
+    files = [(source, source / "file1.txt")]
     zip_path = tmp_path / "archive.zip"
     temp_zip_path = zip_path.with_suffix(".zip.tmp")
 
@@ -204,7 +207,7 @@ def test_write_zip_raises_on_file_write_failure(
     monkeypatch.setattr(archive, "_write_file_to_zip", fatal_write)
 
     with pytest.raises(RuntimeError):
-        archive.write_zip(files, [source], zip_path)
+        archive.write_zip(files, zip_path)
 
     assert not temp_zip_path.exists()
     assert not zip_path.exists()
