@@ -11,6 +11,7 @@ Locates valid browser profile directories and identifies browser types.
 import fnmatch
 import logging
 import os
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Union
 
@@ -44,6 +45,7 @@ _PATH_CACHE: Dict = {}
 # =============================================================================
 
 
+@lru_cache(maxsize=256)
 def _expand_path_by_type(path_type: str, path: str) -> List[Path]:
     """Expand paths using type bases and handle wildcards."""
     bases = PATH_TYPES.get(path_type.upper(), [])

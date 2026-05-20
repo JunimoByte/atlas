@@ -10,7 +10,7 @@ Handles file filtering, blacklist logic, and file validation for backups.
 import logging
 import os
 from pathlib import Path
-from typing import Callable, Generator, List, Optional
+from typing import Callable, Generator, List, Optional, Tuple
 
 from atlas.lib.read import load_json
 
@@ -54,11 +54,14 @@ MAX_FILE_SIZE = 25 * 1024**3
 def scan_files(
     source_paths: List[Path],
     cancel_callback: Optional[Callable[[], bool]] = None
-) -> Generator[Path, None, None]:
-    """Walk directories and yield valid files to compress.
+) -> Generator[Tuple[Path, Path], None, None]:
+    """Walk directories and yield (source_root, file_path) pairs to compress.
 
     Skip blacklisted folders, blacklisted file extensions, symlinks,
     unreadable files, huge files, and Windows alternate data streams.
+
+    Yielding the source root alongside the file path avoids downstream
+    callers needing to re-resolve which source directory a file belongs to.
 
     Args:
         source_paths (List[Path]): List of directory paths to scan.
@@ -66,7 +69,7 @@ def scan_files(
             check for cancellation.
 
     Yields:
-        Path: Valid file paths to include in the archive.
+        Tuple[Path, Path]: (source_root, file_path) pairs.
 
     """
     for source_path in source_paths:
@@ -114,7 +117,7 @@ def scan_files(
                                 if stat_info.st_size > MAX_FILE_SIZE:
                                     continue
 
-                                yield Path(current_dir) / file_name
+                                yield root_path, Path(current_dir) / file_name
                         except OSError as error:
                             LOGGER.debug(
                                 "Scandir entry error for %s: %s",
