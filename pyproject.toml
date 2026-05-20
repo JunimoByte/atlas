@@ -11,12 +11,14 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent"
 ]
-dependencies = [
-    "PyQt6>=6.5"
-]
+dependencies = []
 
 [project.optional-dependencies]
+gui = [
+    "PyQt6>=6.5"
+]
 dev = [
+    "PyQt6>=6.5",
     "pyinstaller>=6.0",
     "pytest>=8.0"
 ]
@@ -27,3 +29,6 @@ atlas = "atlas.main:main"
 [tool.pytest.ini_options]
 testpaths = ["src/atlas/tests/unit"]
 pythonpath = ["src"]
+
+[tool.setuptools.package-data]
+atlas = ["configs/*.json", "configs/*.yaml", "configs/*.yml"]

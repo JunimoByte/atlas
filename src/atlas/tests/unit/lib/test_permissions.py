@@ -40,10 +40,11 @@ def mock_unix_nonroot(monkeypatch: pytest.MonkeyPatch) -> None:
 def mock_windows_admin(monkeypatch: pytest.MonkeyPatch) -> MagicMock:
     """Simulate Windows admin user."""
     monkeypatch.setattr(platform, "system", lambda: "Windows")
+    monkeypatch.delattr(permissions.os, "geteuid", raising=False)
     mock_admin = MagicMock(return_value=1)
-    monkeypatch.setattr(
-        permissions.ctypes.windll.shell32, "IsUserAnAdmin", mock_admin
-    )
+    mock_windll = MagicMock()
+    mock_windll.shell32.IsUserAnAdmin = mock_admin
+    monkeypatch.setattr(permissions.ctypes, "windll", mock_windll, raising=False)
     return mock_admin
 
 
@@ -51,10 +52,11 @@ def mock_windows_admin(monkeypatch: pytest.MonkeyPatch) -> MagicMock:
 def mock_windows_nonadmin(monkeypatch: pytest.MonkeyPatch) -> MagicMock:
     """Simulate Windows non-admin user."""
     monkeypatch.setattr(platform, "system", lambda: "Windows")
+    monkeypatch.delattr(permissions.os, "geteuid", raising=False)
     mock_admin = MagicMock(return_value=0)
-    monkeypatch.setattr(
-        permissions.ctypes.windll.shell32, "IsUserAnAdmin", mock_admin
-    )
+    mock_windll = MagicMock()
+    mock_windll.shell32.IsUserAnAdmin = mock_admin
+    monkeypatch.setattr(permissions.ctypes, "windll", mock_windll, raising=False)
     return mock_admin
 
 

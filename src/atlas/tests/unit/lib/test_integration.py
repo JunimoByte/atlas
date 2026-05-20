@@ -110,7 +110,7 @@ def test_open_folder_platform_calls(
     folder = temp_folder
     with patch("platform.system", return_value=system_name):
         if expected_call == "os.startfile":
-            with patch("os.startfile") as mock_start:
+            with patch("os.startfile", create=True) as mock_start:
                 integration._open_folder_platform(folder)
                 mock_start.assert_called_once_with(folder)
         elif expected_call == "subprocess.call":
