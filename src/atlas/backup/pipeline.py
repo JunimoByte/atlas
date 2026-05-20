@@ -371,6 +371,8 @@ class Pipeline:
                         "Failed to create archive: %s", zip_name
                     )
 
+            except FileNotFoundError as error:
+                LOGGER.warning("Skipped archive %s: %s", zip_name, error)
             except Exception:
                 backup_succeeded = False
                 LOGGER.exception("Error zipping %s", browser_name)

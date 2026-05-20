@@ -279,8 +279,8 @@ def compress(
 
     sources = [s.resolve() for s in sources if s.exists() and s.is_dir()]
     if not sources:
-        LOGGER.error("No valid source paths found. Halting.")
-        return None
+        LOGGER.warning("No valid source paths found. Halting.")
+        raise FileNotFoundError("No valid source paths found.")
 
     # Handle zip filename
     if not zip_name or not isinstance(zip_name, str):
@@ -303,8 +303,8 @@ def compress(
             if cancel_callback and cancel_callback():
                 LOGGER.info("Compression cancelled during scanning.")
                 return None
-            LOGGER.error("No files to compress after scanning.")
-            return None
+            LOGGER.warning("No files to compress after scanning.")
+            raise FileNotFoundError("No files to compress after scanning.")
 
         valid_files = itertools.chain(
             [(first_root, first_file)], valid_files_gen
@@ -318,6 +318,9 @@ def compress(
 
         return zip_path
 
+    except FileNotFoundError:
+        # Re-raise so the pipeline can gracefully skip this archive
+        raise
     except Exception as error:
         LOGGER.error("Failed to create zip archive: {}".format(error))
         temp_zip_path = zip_path.with_suffix(".zip.tmp")
