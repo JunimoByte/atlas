@@ -31,8 +31,6 @@ python -m pip install --upgrade pip
 echo "Installing Atlas in editable dev mode..."
 python -m pip install -e "$PROJECT_ROOT"[dev]
 
-echo "Installing dev tools (Black, Ruff, Flake8, PyInstaller, pytest, PyQt6)..."
-pip install black ruff flake8 pyinstaller pytest PyQt6
 
 echo "Dev environment ready!"
 echo "Your venv is now active in this shell."

@@ -51,6 +51,8 @@ For development with testing and build tools:
 pip install -e ".[dev]"
 ```
 
+> **Note:** The `pyproject.toml` file acts as the Single Source of Truth (SSOT) for all environment dependencies. Setup scripts like `setup_dev.bat` and `setup_dev.sh` hook directly into this configuration.
+
 ### Running
 
 The application can be launched directly:
@@ -71,6 +73,12 @@ Tests are located in `src/atlas/tests`. Run them using pytest:
 
 ```bash
 pytest
+```
+
+For **headless execution** (such as in Docker or Linux CI environments without a display), you must bypass Qt aborts using the offscreen platform:
+
+```bash
+QT_QPA_PLATFORM=offscreen pytest
 ```
 
 ### Building
