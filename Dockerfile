@@ -18,13 +18,12 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-COPY pyproject.toml setup.py /app/
+COPY pyproject.toml /app/
+COPY . /app
 
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --upgrade pip && \
     pip install -e ".[dev]"
-
-COPY . /app
 
 # Headless Qt mode
 ENV QT_QPA_PLATFORM=offscreen

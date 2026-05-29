@@ -1,0 +1,21 @@
+name: CI Docker
+
+on:
+  push:
+    branches: [alpha, beta]
+  pull_request:
+    branches: [alpha, beta]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t atlas-tests .
+
+      - name: Run tests in Docker
+        run: docker run --rm atlas-tests
