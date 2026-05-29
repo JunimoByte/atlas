@@ -115,6 +115,7 @@
         "WebViewCrashpad",
         "WebViewGPUCache",
         "EdgeAssetCache",
+        "downloads",
         "Download Service",
         "Download Metadata",
         "Download Database",

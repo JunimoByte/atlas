@@ -62,7 +62,10 @@ def test_apply_calls_correct_theme_function(
 def test_get_theme_windows_error(monkeypatch: pytest.MonkeyPatch) -> None:
     """Verify the fallback to Light theme if registry access fails."""
     monkeypatch.setattr(
-        sys, "getwindowsversion", lambda: type("WinVer", (), {"major": 10})(), raising=False
+        sys,
+        "getwindowsversion",
+        lambda: type("WinVer", (), {"major": 10})(),
+        raising=False,
     )
 
     class FakeWinreg:
@@ -96,7 +99,10 @@ def test_apply_dark_calls_dwmapi(
 ) -> None:
     """Verify that Dark theme attributes are applied on Windows."""
     monkeypatch.setattr(
-        sys, "getwindowsversion", lambda: type("WinVer", (), {"major": 10})(), raising=False
+        sys,
+        "getwindowsversion",
+        lambda: type("WinVer", (), {"major": 10})(),
+        raising=False,
     )
 
     mock_dwm = MagicMock()

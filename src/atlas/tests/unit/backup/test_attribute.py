@@ -8,7 +8,6 @@ Covers ZIP metadata, timestamp clamping, and permission handling.
 # IMPORTS
 # =============================================================================
 
-import os
 import sys
 import zipfile
 from pathlib import Path
