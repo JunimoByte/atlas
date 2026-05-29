@@ -11,7 +11,7 @@ from atlas.backup.runner import run_pipeline
 
 @patch("atlas.backup.runner.Pipeline")
 def test_run_pipeline_success(mock_pipeline_cls: MagicMock) -> None:
-    """Verify that run_pipeline initializes Pipeline and returns a success result."""
+    """Verify that run_pipeline initializes Pipeline and succeeds."""
     mock_pipeline = mock_pipeline_cls.return_value
     mock_pipeline.run.return_value = PipelineResult.SUCCESS
 
@@ -35,7 +35,9 @@ def test_run_pipeline_failure(mock_pipeline_cls: MagicMock) -> None:
 
 
 @patch("atlas.backup.runner.Pipeline")
-def test_run_pipeline_initialization_failure(mock_pipeline_cls: MagicMock) -> None:
+def test_run_pipeline_initialization_failure(
+    mock_pipeline_cls: MagicMock
+) -> None:
     """Verify that a Pipeline instantiation failure safely returns FAILED."""
     mock_pipeline_cls.side_effect = ValueError("bad args")
 

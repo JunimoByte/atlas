@@ -44,7 +44,9 @@ def mock_windows_admin(monkeypatch: pytest.MonkeyPatch) -> MagicMock:
     mock_admin = MagicMock(return_value=1)
     mock_windll = MagicMock()
     mock_windll.shell32.IsUserAnAdmin = mock_admin
-    monkeypatch.setattr(permissions.ctypes, "windll", mock_windll, raising=False)
+    monkeypatch.setattr(
+        permissions.ctypes, "windll", mock_windll, raising=False
+    )
     return mock_admin
 
 
@@ -56,7 +58,9 @@ def mock_windows_nonadmin(monkeypatch: pytest.MonkeyPatch) -> MagicMock:
     mock_admin = MagicMock(return_value=0)
     mock_windll = MagicMock()
     mock_windll.shell32.IsUserAnAdmin = mock_admin
-    monkeypatch.setattr(permissions.ctypes, "windll", mock_windll, raising=False)
+    monkeypatch.setattr(
+        permissions.ctypes, "windll", mock_windll, raising=False
+    )
     return mock_admin
 
 
