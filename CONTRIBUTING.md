@@ -27,7 +27,7 @@ When suggesting features, please include:
 - A clear description of the problem
 - The desired outcome
 - Example workflow
-- Platform relevance (Windows XP, Windows 7, modern Linux, etc.)
+- Platform relevance (Windows 7, modern Linux, etc.)
 
 Atlas prioritizes:
 
@@ -63,7 +63,7 @@ Atlas development follows:
 - **PEP 257** for docstrings
 - Modular architecture principles
 - Clear separation of UI and pipeline logic
-- Backward compatibility constraints (Windows XP → Windows 11, glibc 2.23+)
+- Backward compatibility constraints (Windows 7 → Windows 11, glibc 2.23+)
 
 These standards guide long-term maintainability.
 

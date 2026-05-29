@@ -1,10 +1,10 @@
 ; Atlas Installer Script
 
 #define MyAppName "Atlas"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.0.1"
 #define MyAppPublisher "Michael Dorman"
 #define MyAppURL "https://junimobyte.github.io/atlas-website/"
-#define MyAppExeName "Atlas.exe"
+#define MyAppExeName "Atlas_Portable_x64.exe"
 
 [Setup]
 AppId={{27AD91DA-5BAA-4318-AD23-53E47A279351}}

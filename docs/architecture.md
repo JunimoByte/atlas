@@ -267,7 +267,7 @@ ZIP entry metadata management.
 
 - **`create_zip_info(file_path)`** — Creates a `zipfile.ZipInfo` with a safe timestamp and platform-appropriate permissions.
 - **`safe_zipinfo_date(file_path)`** — Clamps file mtime to the ZIP-legal range (1980–2107).
-- **`set_file_permissions(st_mode)`** — Returns `external_attr` for the ZipInfo. On Windows XP/Vista (major < 6 or minor ≤ 1), uses a fixed `0o600` permission to avoid legacy issues; otherwise uses the actual `st_mode`.
+- **`set_file_permissions(st_mode)`** — Returns `external_attr` for the ZipInfo. On Windows Vista (major < 6 or minor ≤ 1), uses a fixed `0o600` permission to avoid legacy issues; otherwise uses the actual `st_mode`.
 - **`get_windows_version()`** — Returns `(major, minor)` from `sys.getwindowsversion()` on Windows, else `None`.
 
 #### `backup/disk.py`
