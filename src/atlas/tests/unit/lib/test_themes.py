@@ -59,17 +59,13 @@ def test_apply_calls_correct_theme_function(
                 mock_skipped.assert_not_called()
 
 
-def test_get_theme_non_windows(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Verify that Light theme is returned for non-Windows systems."""
-    monkeypatch.setattr(themes, "OS", "linux")
-    assert themes._get_theme() == "Light"
-
-
 def test_get_theme_windows_error(monkeypatch: pytest.MonkeyPatch) -> None:
     """Verify the fallback to Light theme if registry access fails."""
-    monkeypatch.setattr(themes, "OS", "windows")
     monkeypatch.setattr(
-        sys, "getwindowsversion", lambda: type("WinVer", (), {"major": 10})()
+        sys,
+        "getwindowsversion",
+        lambda: type("WinVer", (), {"major": 10})(),
+        raising=False,
     )
 
     class FakeWinreg:
@@ -91,7 +87,6 @@ def test_apply_light_sets_stylesheet(
     monkeypatch: pytest.MonkeyPatch, mock_window: MagicMock
 ) -> None:
     """Verify that the Light theme stylesheet is applied."""
-    monkeypatch.setattr(themes, "OS", "windows")
     themes._apply_light(mock_window)
 
     mock_window.setStyleSheet.assert_called_once()
@@ -103,14 +98,16 @@ def test_apply_dark_calls_dwmapi(
     monkeypatch: pytest.MonkeyPatch, mock_window: MagicMock
 ) -> None:
     """Verify that Dark theme attributes are applied on Windows."""
-    monkeypatch.setattr(themes, "OS", "windows")
     monkeypatch.setattr(
-        sys, "getwindowsversion", lambda: type("WinVer", (), {"major": 10})()
+        sys,
+        "getwindowsversion",
+        lambda: type("WinVer", (), {"major": 10})(),
+        raising=False,
     )
 
     mock_dwm = MagicMock()
 
-    with patch("ctypes.windll") as mock_windll:
+    with patch("ctypes.windll", create=True) as mock_windll:
         mock_windll.dwmapi = mock_dwm
         themes._apply_dark(mock_window)
 

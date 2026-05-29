@@ -13,7 +13,6 @@ Atlas supports over **250** different browser variants. It detects and backs up 
 ### 🖥️ Cross-Platform Compatibility
 Engineered for maximum portability, Atlas runs on diverse operating systems:
 *   **Windows**: 7 (see upcoming `win7` branch), 8, 10, 11.
-*   **Windows XP**: See upcoming `legacy-atlas` branch for XP and older engine support.
 *   **Linux**: GLIBC 2.23 and newer.
 
 ### 📦 Self-Contained Architecture
@@ -49,6 +48,7 @@ Atlas/
 │       │   └── themes.py
 │       ├── backup/        # Backup logic
 │       │   ├── worker.py
+│       │   ├── runner.py
 │       │   ├── pipeline.py
 │       │   ├── archive.py
 │       │   ├── filter.py

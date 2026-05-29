@@ -8,17 +8,18 @@ Handles safe compression of browser profile directories with error handling.
 # IMPORTS
 # =============================================================================
 
+import itertools
 import logging
 import os
 import zipfile
 from datetime import datetime
 from pathlib import Path
-from typing import Callable, List, Optional, Union
+from typing import Callable, Iterable, Optional, Tuple, Union
 
 
 from atlas.lib.directories import get_downloads_dir
 from atlas.backup.attribute import create_zip_info
-from atlas.backup.disk import find_base_path, relative_zip_path, safe_unlink
+from atlas.backup.disk import relative_zip_path, safe_unlink
 from atlas.backup.filter import scan_files
 
 # =============================================================================
@@ -151,14 +152,20 @@ def _write_file_to_zip(
     try:
         with file_path.open("rb") as src_file:
             with zip_file.open(zip_info, "w") as dest_file:
-                for chunk in iter(lambda: src_file.read(CHUNK_SIZE), b""):
+                read = src_file.read
+                while True:
+                    chunk = read(CHUNK_SIZE)
+                    if not chunk:
+                        break
                     if cancel_callback and cancel_callback():
                         return False
                     dest_file.write(chunk)
         return True
-    except PermissionError:
+    except OSError as error:
         LOGGER.warning(
-            "Skipped (access denied / file in use): {}".format(file_path)
+            "Skipped (I/O error / file in use): {} - {}".format(
+                file_path, error
+            )
         )
         return False
     except Exception:
@@ -166,8 +173,7 @@ def _write_file_to_zip(
 
 
 def write_zip(
-    files: List[Path],
-    sources: List[Path],
+    files: Iterable[Tuple[Path, Path]],
     zip_path: Path,
     cancel_callback: Optional[Callable[[], bool]] = None
 ) -> None:
@@ -176,9 +182,9 @@ def write_zip(
     Handle large files, preserve timestamps, and set permissions.
 
     Args:
-        files (List[Path]): List of files to add.
-        sources (List[Path]): List of source directories
-            (to calculate relative paths).
+        files (Iterable[Tuple[Path, Path]]): Iterable of (source_root,
+            file_path) pairs. The source_root is used to compute
+            relative archive paths.
         zip_path (Path): Destination path for the ZIP archive.
         cancel_callback (Optional[Callable[[], bool]]): Function to
             check for cancellation.
@@ -198,22 +204,11 @@ def write_zip(
             allowZip64=True,
             strict_timestamps=False,
         ) as zip_file:
-            for file_path in files:
+            for base_path, file_path in files:
                 if cancel_callback and cancel_callback():
                     return
 
                 try:
-                    # Find which source directory contains this file
-                    base_path = find_base_path(file_path, sources)
-                    if not base_path:
-                        LOGGER.warning(
-                            "Skipping file outside of sources: {}".format(
-                                file_path
-                            )
-                        )
-                        continue
-
-                    # Create ZIP entry with relative path and metadata
                     rel_path = relative_zip_path(file_path, base_path)
                     zip_info = create_zip_info(file_path)
                     zip_info.filename = rel_path
@@ -227,9 +222,6 @@ def write_zip(
                     if not did_write:
                         if cancel_callback and cancel_callback():
                             return
-                        LOGGER.warning(
-                            "Skipping unreadable file: {}".format(file_path)
-                        )
                         continue
 
                 except Exception as error:
@@ -287,8 +279,8 @@ def compress(
 
     sources = [s.resolve() for s in sources if s.exists() and s.is_dir()]
     if not sources:
-        LOGGER.error("No valid source paths found. Halting.")
-        return None
+        LOGGER.warning("No valid source paths found. Halting.")
+        raise FileNotFoundError("No valid source paths found.")
 
     # Handle zip filename
     if not zip_name or not isinstance(zip_name, str):
@@ -304,15 +296,20 @@ def compress(
         return None
 
     try:
-        valid_files = scan_files(sources, cancel_callback)
-        if not valid_files:
+        valid_files_gen = scan_files(sources, cancel_callback)
+        try:
+            first_root, first_file = next(valid_files_gen)
+        except StopIteration:
             if cancel_callback and cancel_callback():
                 LOGGER.info("Compression cancelled during scanning.")
                 return None
-            LOGGER.error("No files to compress after scanning.")
-            return None
+            LOGGER.warning("No files to compress after scanning.")
+            raise FileNotFoundError("No files to compress after scanning.")
 
-        write_zip(valid_files, sources, zip_path, cancel_callback)
+        valid_files = itertools.chain(
+            [(first_root, first_file)], valid_files_gen
+        )
+        write_zip(valid_files, zip_path, cancel_callback)
 
         if cancel_callback and cancel_callback():
             LOGGER.info("Compression cancelled during writing.")
@@ -321,6 +318,9 @@ def compress(
 
         return zip_path
 
+    except FileNotFoundError:
+        # Re-raise so the pipeline can gracefully skip this archive
+        raise
     except Exception as error:
         LOGGER.error("Failed to create zip archive: {}".format(error))
         temp_zip_path = zip_path.with_suffix(".zip.tmp")

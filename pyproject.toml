@@ -7,18 +7,26 @@ authors = [{ name = "Michael Dorman" }]
 license = { text = "AGPL-3.0-or-later" }
 readme = "README.md"
 keywords = ["backup", "browser", "profiles"]
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "Operating System :: OS Independent"
-]
+
 dependencies = [
     "PyQt6>=6.5"
 ]
 
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent"
+]
+
 [project.optional-dependencies]
+gui = [
+    "pyinstaller>=6.0"
+]
+
 dev = [
-    "pyinstaller>=6.0",
-    "pytest>=8.0"
+    "pytest>=8.0",
+    "ruff>=0.6.0",
+    "black>=24.0.0",
+    "flake8>=7.0.0"
 ]
 
 [project.scripts]
@@ -26,3 +34,7 @@ atlas = "atlas.main:main"
 
 [tool.pytest.ini_options]
 testpaths = ["src/atlas/tests/unit"]
+pythonpath = ["src"]
+
+[tool.setuptools.package-data]
+atlas = ["configs/*.json", "configs/*.yaml", "configs/*.yml"]

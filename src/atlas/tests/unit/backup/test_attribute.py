@@ -8,7 +8,6 @@ Covers ZIP metadata, timestamp clamping, and permission handling.
 # IMPORTS
 # =============================================================================
 
-import os
 import sys
 import zipfile
 from pathlib import Path
@@ -74,15 +73,22 @@ def test_get_windows_version_returns_none_on_non_windows(
     monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Verify that None is returned when not on Windows."""
+    fake_os = type("OS", (), {"name": "posix"})
+    monkeypatch.setattr(attribute, "os", fake_os)
+    assert attribute.get_windows_version() is None
 
 
 def test_get_windows_version_returns_tuple_on_windows(
     monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Verify that a (major, minor) tuple is returned on Windows."""
-    monkeypatch.setattr(os, "name", "nt")
+    fake_os = type("OS", (), {"name": "nt"})
+    monkeypatch.setattr(attribute, "os", fake_os)
+
     fake_ver = type("V", (), {"major": 10, "minor": 0})()
-    monkeypatch.setattr(os.sys, "getwindowsversion", lambda: fake_ver)
+    fake_sys = type("Sys", (), {"getwindowsversion": lambda: fake_ver})
+    monkeypatch.setattr(attribute, "sys", fake_sys)
+
     assert attribute.get_windows_version() == (10, 0)
 
 

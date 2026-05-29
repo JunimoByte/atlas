@@ -10,7 +10,7 @@ Handles file filtering, blacklist logic, and file validation for backups.
 import logging
 import os
 from pathlib import Path
-from typing import Callable, List, Optional
+from typing import Callable, Generator, List, Optional, Tuple
 
 from atlas.lib.read import load_json
 
@@ -54,63 +54,78 @@ MAX_FILE_SIZE = 25 * 1024**3
 def scan_files(
     source_paths: List[Path],
     cancel_callback: Optional[Callable[[], bool]] = None
-) -> List[Path]:
-    """Walk directories and return a list of valid files to compress.
+) -> Generator[Tuple[Path, Path], None, None]:
+    """Walk directories and yield (source_root, file_path) pairs to compress.
 
     Skip blacklisted folders, blacklisted file extensions, symlinks,
     unreadable files, huge files, and Windows alternate data streams.
+
+    Yielding the source root alongside the file path avoids downstream
+    callers needing to re-resolve which source directory a file belongs to.
 
     Args:
         source_paths (List[Path]): List of directory paths to scan.
         cancel_callback (Optional[Callable[[], bool]]): Function to
             check for cancellation.
 
-    Returns:
-        List[Path]: List of valid file paths to include in the archive.
+    Yields:
+        Tuple[Path, Path]: (source_root, file_path) pairs.
 
     """
-    valid_files: List[Path] = []
-
     for source_path in source_paths:
-        for root, dirs, files in os.walk(source_path):
+        root_path = Path(source_path)
 
+        if not root_path.exists() or not root_path.is_dir():
+            continue
+
+        stack = [str(root_path)]
+
+        while stack:
             if cancel_callback and cancel_callback():
-                return []
+                return
 
-            dirs[:] = [d for d in dirs if d not in SKIP_FOLDERS]
+            current_dir = stack.pop()
 
-            with os.scandir(root) as entries:
-                for entry in entries:
+            try:
+                with os.scandir(current_dir) as entries:
+                    for entry in entries:
+                        if cancel_callback and cancel_callback():
+                            return
 
-                    if cancel_callback and cancel_callback():
-                        return []
+                        try:
+                            if entry.is_dir(follow_symlinks=False):
+                                if entry.name not in SKIP_FOLDERS:
+                                    stack.append(entry.path)
+                            elif entry.is_file(follow_symlinks=False):
+                                file_name = entry.name
+                                file_ext = Path(file_name).suffix
 
-                    if not entry.is_file(follow_symlinks=False):
-                        continue
+                                if file_ext in SKIP_FILE_EXTENSION:
+                                    continue
 
-                    file_name = entry.name
-                    file_ext = Path(file_name).suffix
+                                if (
+                                    file_ext in SKIP_FILE_WITH_EXTENSION
+                                    and file_name in
+                                    SKIP_FILE_WITH_EXTENSION[file_ext]
+                                ):
+                                    continue
 
-                    if file_ext in SKIP_FILE_EXTENSION:
-                        continue
+                                if os.name == "nt" and ":" in file_name:
+                                    continue
 
-                    if (
-                        file_ext in SKIP_FILE_WITH_EXTENSION
-                        and file_name in SKIP_FILE_WITH_EXTENSION[file_ext]
-                    ):
-                        continue
+                                stat_info = entry.stat(follow_symlinks=False)
 
-                    if os.name == "nt" and ":" in file_name:
-                        continue
+                                if stat_info.st_size > MAX_FILE_SIZE:
+                                    continue
 
-                    try:
-                        stat_info = entry.stat(follow_symlinks=False)
-                    except OSError:
-                        continue
-
-                    if stat_info.st_size > MAX_FILE_SIZE:
-                        continue
-
-                    valid_files.append(Path(root) / file_name)
-
-    return valid_files
+                                yield root_path, Path(current_dir) / file_name
+                        except OSError as error:
+                            LOGGER.debug(
+                                "Scandir entry error for %s: %s",
+                                getattr(entry, "path", "<unknown>"),
+                                error
+                            )
+                            continue
+            except OSError as error:
+                LOGGER.debug("Scandir error for %s: %s", current_dir, error)
+                continue

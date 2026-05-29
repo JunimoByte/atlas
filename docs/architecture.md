@@ -227,9 +227,14 @@ Defines `Worker(QObject)` — the PyQt bridge between the pipeline and the UI.
 | `no_browsers_found` | — | No profiles found |
 | `cancelled` | — | Worker was cancelled |
 
-**`run()`** — Delegates the entire execution to `pipeline.run()`.
+**`run()`** — Delegates the execution to `runner.run_pipeline()`, effectively isolating the Qt layer from the business logic.
 
-**`cancel()`** — Calls `pipeline.cancel()` and emits `cancelled`.
+**`cancel()`** — Calls `pipeline.cancel()` on the running instance and emits `cancelled`.
+
+#### `backup/runner.py`
+Defines the Qt-free pipeline entry point for headless execution.
+
+- **`run_pipeline(...)`** — Constructs and runs a `Pipeline` directly with plain-Python callbacks. Used by tests, CI, and any non-GUI execution pathways to completely bypass `QApplication` requirements. Returns the result and a reference to the active `Pipeline` for cooperative cancellation.
 
 #### `backup/pipeline.py`
 Defines `Pipeline` — the UI-agnostic backup orchestrator. Resolves policy directly internally.
@@ -262,7 +267,7 @@ ZIP entry metadata management.
 
 - **`create_zip_info(file_path)`** — Creates a `zipfile.ZipInfo` with a safe timestamp and platform-appropriate permissions.
 - **`safe_zipinfo_date(file_path)`** — Clamps file mtime to the ZIP-legal range (1980–2107).
-- **`set_file_permissions(st_mode)`** — Returns `external_attr` for the ZipInfo. On Windows XP/Vista (major < 6 or minor ≤ 1), uses a fixed `0o600` permission to avoid legacy issues; otherwise uses the actual `st_mode`.
+- **`set_file_permissions(st_mode)`** — Returns `external_attr` for the ZipInfo. On Windows Vista (major < 6 or minor ≤ 1), uses a fixed `0o600` permission to avoid legacy issues; otherwise uses the actual `st_mode`.
 - **`get_windows_version()`** — Returns `(major, minor)` from `sys.getwindowsversion()` on Windows, else `None`.
 
 #### `backup/disk.py`

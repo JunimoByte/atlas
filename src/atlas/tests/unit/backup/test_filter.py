@@ -8,7 +8,6 @@ Covers blacklist, symlink exclusion, cancellation, and file scanning.
 # IMPORTS
 # =============================================================================
 
-import os
 import sys
 from pathlib import Path
 
@@ -59,8 +58,8 @@ def test_scan_files_returns_valid_files(tmp_path: Path) -> None:
     """Verify that regular, non-blacklisted files are scanned."""
     make_file(tmp_path / "profile.json")
     make_file(tmp_path / "data.txt")
-    results = scan_files([tmp_path])
-    names = [f.name for f in results]
+    results = list(scan_files([tmp_path]))
+    names = [f.name for _, f in results]
     assert "profile.json" in names
     assert "data.txt" in names
 
@@ -69,8 +68,8 @@ def test_scan_files_excludes_blacklisted_extension(tmp_path: Path) -> None:
     """Verify that blacklisted extensions are skipped."""
     make_file(tmp_path / "debug.log")
     make_file(tmp_path / "temp.tmp")
-    results = scan_files([tmp_path])
-    names = [f.name for f in results]
+    results = list(scan_files([tmp_path]))
+    names = [f.name for _, f in results]
     assert "debug.log" not in names
     assert "temp.tmp" not in names
 
@@ -80,8 +79,8 @@ def test_scan_files_excludes_blacklisted_folder(tmp_path: Path) -> None:
     make_file(tmp_path / "__pycache__" / "module.pyc")
     make_file(tmp_path / "skip_me" / "data.txt")
     make_file(tmp_path / "keep" / "profile.json")
-    results = scan_files([tmp_path])
-    names = [f.name for f in results]
+    results = list(scan_files([tmp_path]))
+    names = [f.name for _, f in results]
     assert "module.pyc" not in names
     assert "profile.json" in names
 
@@ -97,8 +96,8 @@ def test_scan_files_excludes_named_file_with_extension(
     make_file(tmp_path / "Cookies.txt")  # different extension → keep
     make_file(tmp_path / "Other.db")     # .db ext but name not in set → keep
 
-    results = scan_files([tmp_path])
-    names = [f.name for f in results]
+    results = list(scan_files([tmp_path]))
+    names = [f.name for _, f in results]
 
     assert "Cookies.db" not in names
     assert "Cookies.txt" in names
@@ -107,7 +106,7 @@ def test_scan_files_excludes_named_file_with_extension(
 
 def test_scan_files_returns_empty_for_empty_directory(tmp_path: Path) -> None:
     """Verify that empty directories return no files."""
-    assert scan_files([tmp_path]) == []
+    assert list(scan_files([tmp_path])) == []
 
 
 def test_scan_files_handles_multiple_sources(tmp_path: Path) -> None:
@@ -118,8 +117,8 @@ def test_scan_files_handles_multiple_sources(tmp_path: Path) -> None:
     src_b.mkdir()
     make_file(src_a / "file_a.txt")
     make_file(src_b / "file_b.txt")
-    results = scan_files([src_a, src_b])
-    names = [f.name for f in results]
+    results = list(scan_files([src_a, src_b]))
+    names = [f.name for _, f in results]
     assert "file_a.txt" in names
     assert "file_b.txt" in names
 
@@ -132,13 +131,13 @@ def test_scan_files_handles_multiple_sources(tmp_path: Path) -> None:
 def test_scan_files_respects_cancel_callback(tmp_path: Path) -> None:
     """Verify that scanning stops when cancelled."""
     make_file(tmp_path / "file.txt")
-    assert scan_files([tmp_path], cancel_callback=lambda: True) == []
+    assert list(scan_files([tmp_path], cancel_callback=lambda: True)) == []
 
 
 def test_scan_files_continues_when_cancel_is_false(tmp_path: Path) -> None:
     """Verify that scanning proceeds when not cancelled."""
     make_file(tmp_path / "file.txt")
-    results = scan_files([tmp_path], cancel_callback=lambda: False)
+    results = list(scan_files([tmp_path], cancel_callback=lambda: False))
     assert len(results) >= 1
 
 

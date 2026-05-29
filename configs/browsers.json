@@ -492,6 +492,29 @@
             }
         ]
     },
+    "Bushido": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "app.bushido-browser.desktop/EBWebView",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "app.bushido-browser.desktop",
+                "Signature": [
+                    "history.json"
+                ]
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "com.bushido.browser/logs",
+                "Signature": false
+            }
+        ]
+    },
     "Brave Browser": {
         "Windows": [
             {
