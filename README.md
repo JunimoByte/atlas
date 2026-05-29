@@ -112,7 +112,6 @@ The `main.spec` configuration explicitly excludes several modules to reduce the 
 ## Roadmap
 
 - **Windows 7 Support**: Native performance and feature parity to be maintained under the upcoming `win7` branch.
-- **Windows XP Support**: Support for legacy engines and XP-specific environments to be maintained under the upcoming `legacy-atlas` branch.
 - **Linux**: Porting backup tools to the Linux platform.
 - **Research**: Expanding the list of supported historical browser engines.
 
