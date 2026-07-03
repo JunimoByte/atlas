@@ -40,7 +40,6 @@ _WINDOW_FLAGS = (
     | Qt.WindowType.WindowTitleHint
     | Qt.WindowType.WindowSystemMenuHint
     | Qt.WindowType.WindowMinimizeButtonHint
-    | Qt.WindowType.WindowMaximizeButtonHint
     | Qt.WindowType.WindowCloseButtonHint
 )
 
@@ -81,6 +80,7 @@ class UiDialog:
         try:
             main_dialog.setObjectName("MainDialog")
             main_dialog.setMinimumSize(*_WINDOW_MIN_SIZE)
+            main_dialog.setMaximumSize(*_WINDOW_MIN_SIZE)
             main_dialog.setWindowFlags(_WINDOW_FLAGS)
 
             self._setup_backdrop(main_dialog)

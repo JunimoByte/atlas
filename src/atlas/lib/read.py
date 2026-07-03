@@ -27,12 +27,12 @@ LOGGER = logging.getLogger(__name__)
 
 
 def _get_base_path() -> str:
-    """Resolve base package path for dev and frozen environments."""
+    """Resolve project root path for dev and frozen environments."""
     if getattr(sys, "frozen", False):
         return getattr(sys, "_MEIPASS", os.getcwd())
 
     return os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "..")
+        os.path.join(os.path.dirname(__file__), "../../..")
     )
 
 
