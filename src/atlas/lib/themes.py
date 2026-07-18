@@ -14,9 +14,7 @@ import logging
 import os
 import sys
 
-from PyQt6.QtCore import QTimer
-from PyQt6.QtGui import QGuiApplication, QIcon, QPixmap
-from PyQt6.QtWidgets import QLabel
+from atlas.compatibility.qt import QtCore, QtGui, QtWidgets
 
 # =============================================================================
 # LOGGING
@@ -45,17 +43,17 @@ def initialize(window) -> None:
 
     icon(window)
 
-    backdrop_label = window.findChild(QLabel, "Backdrop")
+    backdrop_label = window.findChild(QtWidgets.QLabel, "Backdrop")
     if backdrop_label:
         backdrop(backdrop_label)
 
     apply(window)
 
     try:
-        hints = QGuiApplication.styleHints()
+        hints = QtGui.QGuiApplication.styleHints()
         if hints:
             hints.colorSchemeChanged.connect(
-                lambda: QTimer.singleShot(0, lambda: apply(window))
+                lambda: QtCore.QTimer.singleShot(0, lambda: apply(window))
             )
     except Exception:
         LOGGER.error("Failed to enable live theme updates", exc_info=True)
@@ -264,7 +262,7 @@ def backdrop(element) -> None:
     the element.
 
     Args:
-        element (QLabel): The widget to apply the backdrop to.
+        element (QtWidgets.QLabel): The widget to apply the backdrop to.
 
     """
     try:
@@ -274,7 +272,7 @@ def backdrop(element) -> None:
             LOGGER.warning("Backdrop image not found: %s", image_path)
             return
 
-        element.setPixmap(QPixmap(image_path))
+        element.setPixmap(QtGui.QPixmap(image_path))
         element.setScaledContents(True)
 
         LOGGER.debug("Backdrop set successfully: %s", image_path)
@@ -299,7 +297,7 @@ def icon(window) -> None:
             LOGGER.warning("Icon file not found: %s", icon_path)
             return
 
-        window.setWindowIcon(QIcon(icon_path))
+        window.setWindowIcon(QtGui.QIcon(icon_path))
         LOGGER.debug("Window icon set successfully: %s", icon_path)
 
     except Exception as error:

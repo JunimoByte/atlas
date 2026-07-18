@@ -13,7 +13,7 @@ import time
 from enum import Enum, auto
 from typing import Optional
 
-from PyQt6.QtCore import QObject, QThread, QTimer
+from atlas.compatibility.qt import QtCore
 
 from atlas.backup import worker as Backup
 from atlas.display.signals import Signals
@@ -74,7 +74,7 @@ VALID_TRANSITIONS = {
 }
 
 
-class Controller(QObject):
+class Controller(QtCore.QObject):
     """Control the backup workflow and manage the worker thread.
 
     Responsibilities:
@@ -84,15 +84,15 @@ class Controller(QObject):
     - Maintain an airtight finite state machine
     """
 
-    def __init__(self, signals: Signals) -> None:
+    def __init__(self, signals: Signals, parent: Optional[QtCore.QObject] = None) -> None:
         """Initialize the Controller."""
-        super().__init__()
+        super().__init__(parent)
         self.signals = signals
 
         self.worker: Optional[Backup.Worker] = None
-        self._worker_thread: Optional[QThread] = None
+        self._worker_thread: Optional[QtCore.QThread] = None
 
-        self.elapsed_timer = QTimer(self)
+        self.elapsed_timer = QtCore.QTimer(self)
         self.elapsed_timer.timeout.connect(self._tick)
         self.elapsed_start_time: float = 0.0
 
@@ -194,7 +194,7 @@ class Controller(QObject):
             self._request_worker_shutdown(wait=True)
 
         self.worker = Backup.Worker()
-        self._worker_thread = QThread()
+        self._worker_thread = QtCore.QThread(self)
         self.worker.moveToThread(self._worker_thread)
 
         # Let QObject parent/child system handle signal disconnection natively

@@ -12,7 +12,7 @@ import sys
 from typing import Generator
 
 import pytest
-from PyQt6.QtWidgets import QApplication, QWidget
+from atlas.compatibility.qt import QtWidgets
 
 from atlas.ui.interface import UiDialog
 
@@ -22,24 +22,24 @@ from atlas.ui.interface import UiDialog
 
 
 @pytest.fixture(scope="session")
-def app() -> Generator[QApplication, None, None]:
-    """Provide session-scoped QApplication instance for Qt widgets."""
-    app_instance = QApplication.instance()
+def app() -> Generator[QtWidgets.QApplication, None, None]:
+    """Provide session-scoped QtWidgets.QApplication instance for Qt widgets."""
+    app_instance = QtWidgets.QApplication.instance()
     if app_instance is None:
-        app_instance = QApplication([])
+        app_instance = QtWidgets.QApplication([])
     return app_instance
 
 
 @pytest.fixture
-def ui_dialog(app: QApplication) -> UiDialog:
+def ui_dialog(app: QtWidgets.QApplication) -> UiDialog:
     """Provide a fresh UiDialog instance for each test."""
     return UiDialog()
 
 
 @pytest.fixture
-def mock_window(app: QApplication) -> QWidget:
-    """Provide a real QWidget to act as parent for UI creation."""
-    return QWidget()
+def mock_window(app: QtWidgets.QApplication) -> QtWidgets.QWidget:
+    """Provide a real QtWidgets.QWidget to act as parent for UI creation."""
+    return QtWidgets.QWidget()
 
 
 # =============================================================================
@@ -48,7 +48,7 @@ def mock_window(app: QApplication) -> QWidget:
 
 
 def test_setup_ui_creates_all_elements(
-    ui_dialog: UiDialog, mock_window: QWidget
+    ui_dialog: UiDialog, mock_window: QtWidgets.QWidget
 ) -> None:
     """setup_ui should create all expected widget attributes on dialog.
 

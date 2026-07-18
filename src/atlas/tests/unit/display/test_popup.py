@@ -12,7 +12,7 @@ import sys
 from typing import Any
 
 import pytest
-from PyQt6.QtWidgets import QMessageBox
+from atlas.compatibility.qt import QtWidgets
 
 from atlas.display import popup
 
@@ -28,9 +28,9 @@ def test_icon_map_contains_all_keys() -> None:
 
 
 def test_icon_map_values_are_qmessagebox_icons() -> None:
-    """Verify that ICON_MAP values are QMessageBox icons."""
+    """Verify that ICON_MAP values are QtWidgets.QMessageBox icons."""
     for value in popup.ICON_MAP.values():
-        assert isinstance(value, QMessageBox.Icon)
+        assert isinstance(value, QtWidgets.QMessageBox.Icon)
 
 
 # =============================================================================
@@ -51,14 +51,14 @@ def test_button_map_contains_all_keys() -> None:
 
 def test_button_map_acknowledge_is_ok() -> None:
     """Verify the ACKNOWLEDGE button mapping."""
-    assert popup.BUTTON_MAP["ACKNOWLEDGE"] == QMessageBox.StandardButton.Ok
+    assert popup.BUTTON_MAP["ACKNOWLEDGE"] == QtWidgets.QMessageBox.StandardButton.Ok
 
 
 def test_button_map_confirm_decline_includes_yes_and_no() -> None:
     """Verify the CONFIRM_DECLINE button mapping."""
     flags = popup.BUTTON_MAP["CONFIRM_DECLINE"]
-    assert flags & QMessageBox.StandardButton.Yes
-    assert flags & QMessageBox.StandardButton.No
+    assert flags & QtWidgets.QMessageBox.StandardButton.Yes
+    assert flags & QtWidgets.QMessageBox.StandardButton.No
 
 
 # =============================================================================
@@ -73,12 +73,12 @@ def test_default_button_keys_match_button_map() -> None:
 
 def test_default_button_acknowledge_is_ok() -> None:
     """Verify the default button for ACKNOWLEDGE."""
-    assert popup.DEFAULT_BUTTON["ACKNOWLEDGE"] == QMessageBox.StandardButton.Ok
+    assert popup.DEFAULT_BUTTON["ACKNOWLEDGE"] == QtWidgets.QMessageBox.StandardButton.Ok
 
 
 def test_default_button_confirm_decline_is_yes() -> None:
     """Verify the default button for CONFIRM_DECLINE."""
-    expected = QMessageBox.StandardButton.Yes
+    expected = QtWidgets.QMessageBox.StandardButton.Yes
     assert popup.DEFAULT_BUTTON["CONFIRM_DECLINE"] == expected
 
 
@@ -95,13 +95,13 @@ def mock_show(monkeypatch: pytest.MonkeyPatch) -> dict:
     def fake_show(
         title: str, text: str, icon: Any = None,
         buttons: Any = None, **kwargs: Any
-    ) -> QMessageBox.StandardButton:
+    ) -> QtWidgets.QMessageBox.StandardButton:
         """Mock implementation of popup.show."""
         captured["title"] = title
         captured["text"] = text
         captured["icon"] = icon
         captured["buttons"] = buttons
-        return captured.get("return_value", QMessageBox.StandardButton.Yes)
+        return captured.get("return_value", QtWidgets.QMessageBox.StandardButton.Yes)
 
     monkeypatch.setattr(popup, "show", fake_show)
     return captured
@@ -148,13 +148,13 @@ def test_show_question_uses_cancel_variant(mock_show: dict) -> None:
 @pytest.mark.parametrize(
     "button_returned, expected_result",
     [
-        (QMessageBox.StandardButton.Yes, True),
-        (QMessageBox.StandardButton.No, False),
+        (QtWidgets.QMessageBox.StandardButton.Yes, True),
+        (QtWidgets.QMessageBox.StandardButton.No, False),
     ]
 )
 def test_show_question_returns_expected(
     mock_show: dict,
-    button_returned: QMessageBox.StandardButton,
+    button_returned: QtWidgets.QMessageBox.StandardButton,
     expected_result: bool
 ) -> None:
     """Verify the return value of show_question."""

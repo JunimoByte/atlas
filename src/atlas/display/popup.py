@@ -11,10 +11,7 @@ Supports various message types with proper theming.
 import logging
 import sys
 from typing import Optional
-
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QIcon
-from PyQt6.QtWidgets import QApplication, QMessageBox
+from atlas.compatibility.qt import QtCore, QtGui, QtWidgets
 
 from atlas.lib.themes import apply as _apply_theme
 
@@ -29,30 +26,30 @@ LOGGER = logging.getLogger(__name__)
 # =============================================================================
 
 ICON_MAP = {
-    "INFORMATION": QMessageBox.Icon.Information,
-    "WARNING": QMessageBox.Icon.Warning,
-    "CRITICAL": QMessageBox.Icon.Critical,
-    "QUESTION": QMessageBox.Icon.Question,
+    "INFORMATION": QtWidgets.QMessageBox.Icon.Information,
+    "WARNING": QtWidgets.QMessageBox.Icon.Warning,
+    "CRITICAL": QtWidgets.QMessageBox.Icon.Critical,
+    "QUESTION": QtWidgets.QMessageBox.Icon.Question,
 }
 
 BUTTON_MAP = {
-    "ACKNOWLEDGE": QMessageBox.StandardButton.Ok,
-    "CONFIRM_DECLINE": QMessageBox.StandardButton.Yes
-    | QMessageBox.StandardButton.No,
-    "ACKNOWLEDGE_CANCEL": QMessageBox.StandardButton.Ok
-    | QMessageBox.StandardButton.Cancel,
+    "ACKNOWLEDGE": QtWidgets.QMessageBox.StandardButton.Ok,
+    "CONFIRM_DECLINE": QtWidgets.QMessageBox.StandardButton.Yes
+    | QtWidgets.QMessageBox.StandardButton.No,
+    "ACKNOWLEDGE_CANCEL": QtWidgets.QMessageBox.StandardButton.Ok
+    | QtWidgets.QMessageBox.StandardButton.Cancel,
     "CONFIRM_DECLINE_CANCEL": (
-        QMessageBox.StandardButton.Yes
-        | QMessageBox.StandardButton.No
-        | QMessageBox.StandardButton.Cancel
+        QtWidgets.QMessageBox.StandardButton.Yes
+        | QtWidgets.QMessageBox.StandardButton.No
+        | QtWidgets.QMessageBox.StandardButton.Cancel
     ),
 }
 
 DEFAULT_BUTTON = {
-    "ACKNOWLEDGE": QMessageBox.StandardButton.Ok,
-    "CONFIRM_DECLINE": QMessageBox.StandardButton.Yes,
-    "ACKNOWLEDGE_CANCEL": QMessageBox.StandardButton.Ok,
-    "CONFIRM_DECLINE_CANCEL": QMessageBox.StandardButton.Yes,
+    "ACKNOWLEDGE": QtWidgets.QMessageBox.StandardButton.Ok,
+    "CONFIRM_DECLINE": QtWidgets.QMessageBox.StandardButton.Yes,
+    "ACKNOWLEDGE_CANCEL": QtWidgets.QMessageBox.StandardButton.Ok,
+    "CONFIRM_DECLINE_CANCEL": QtWidgets.QMessageBox.StandardButton.Yes,
 }
 
 DEFAULT_STAY_ON_TOP = True
@@ -86,19 +83,19 @@ def show(
         Result of the message box execution.
     """
     try:
-        app = QApplication.instance() or QApplication(sys.argv)
+        app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv)
         app.setQuitOnLastWindowClosed(True)
 
-        msg = QMessageBox()
+        msg = QtWidgets.QMessageBox()
         msg.setObjectName("PopupMessageBox")
         msg.setWindowTitle(title)
         msg.setText(text)
-        msg.setIcon(ICON_MAP.get(icon, QMessageBox.Icon.Information))
+        msg.setIcon(ICON_MAP.get(icon, QtWidgets.QMessageBox.Icon.Information))
         msg.setStandardButtons(
-            BUTTON_MAP.get(buttons, QMessageBox.StandardButton.Ok)
+            BUTTON_MAP.get(buttons, QtWidgets.QMessageBox.StandardButton.Ok)
         )
         msg.setDefaultButton(
-            DEFAULT_BUTTON.get(buttons, QMessageBox.StandardButton.Ok)
+            DEFAULT_BUTTON.get(buttons, QtWidgets.QMessageBox.StandardButton.Ok)
         )
 
         if informative_text:
@@ -107,14 +104,14 @@ def show(
             msg.setDetailedText(detailed_text)
 
         flags = (
-            Qt.WindowType.Dialog | Qt.WindowType.MSWindowsFixedSizeDialogHint
+            QtCore.Qt.WindowType.Dialog | QtCore.Qt.WindowType.MSWindowsFixedSizeDialogHint
         )
         if stay_on_top:
-            flags |= Qt.WindowType.WindowStaysOnTopHint
+            flags |= QtCore.Qt.WindowType.WindowStaysOnTopHint
         msg.setWindowFlags(flags)
 
         for button in msg.buttons():
-            button.setIcon(QIcon())
+            button.setIcon(QtGui.QIcon())
 
         try:
             _apply_theme(msg)
@@ -124,7 +121,7 @@ def show(
         return msg.exec()
     except Exception as error:
         LOGGER.error("Failed to show popup: %s", error, exc_info=True)
-        return int(QMessageBox.StandardButton.Ok)
+        return int(QtWidgets.QMessageBox.StandardButton.Ok)
 
 
 # =============================================================================
@@ -224,4 +221,4 @@ def show_question(
         buttons=buttons,
         informative_text=details,
         stay_on_top=False,
-    ) == QMessageBox.StandardButton.Yes
+    ) == QtWidgets.QMessageBox.StandardButton.Yes

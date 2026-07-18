@@ -11,7 +11,7 @@ Handles button manipulation, visibility, and elapsed time formatting.
 import logging
 from typing import Any, Callable, Mapping, Optional, Tuple
 
-from PyQt6.QtWidgets import QAbstractButton, QDialogButtonBox
+from atlas.compatibility.qt import QtWidgets
 
 # =============================================================================
 # LOGGING
@@ -32,7 +32,7 @@ SECONDS_PER_MINUTE: int = 60
 # =============================================================================
 
 
-def set_text(button_box: QDialogButtonBox, name: str, text: str) -> None:
+def set_text(button_box: QtWidgets.QDialogButtonBox, name: str, text: str) -> None:
     """Set the text of a standard button safely.
 
     Args:
@@ -46,7 +46,7 @@ def set_text(button_box: QDialogButtonBox, name: str, text: str) -> None:
 
 
 def set_button_visible(
-    button_box: QDialogButtonBox, name: str, visible: bool
+    button_box: QtWidgets.QDialogButtonBox, name: str, visible: bool
 ) -> None:
     """Set the visibility of a standard button safely.
 
@@ -61,7 +61,7 @@ def set_button_visible(
 
 
 def set_connection(
-    button_box: QDialogButtonBox, name: str, command: Callable
+    button_box: QtWidgets.QDialogButtonBox, name: str, command: Callable
 ) -> None:
     """Connect a standard button signal to a command safely.
 
@@ -85,7 +85,7 @@ def set_connection(
 
 
 def configure_button(
-    button_box: QDialogButtonBox, name: str, conf: Mapping[str, Any]
+    button_box: QtWidgets.QDialogButtonBox, name: str, conf: Mapping[str, Any]
 ) -> None:
     """Configure button visibility and text using a dictionary.
 
@@ -100,11 +100,11 @@ def configure_button(
 
 
 def _get_button(
-    button_box: QDialogButtonBox, name: str
-) -> Optional[QAbstractButton]:
+    button_box: QtWidgets.QDialogButtonBox, name: str
+) -> Optional[QtWidgets.QAbstractButton]:
     """Retrieve a button safely by name."""
     try:
-        type_ = QDialogButtonBox.StandardButton[name]  # type: ignore
+        type_ = getattr(QtWidgets.QDialogButtonBox.StandardButton, name)
         return button_box.button(type_)
     except (KeyError, AttributeError):
         return None

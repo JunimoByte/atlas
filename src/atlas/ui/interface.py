@@ -11,18 +11,7 @@ and buttons.
 import logging
 from typing import Tuple
 
-from PyQt6.QtCore import QCoreApplication, QMetaObject, Qt
-from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import (
-    QDialog,
-    QDialogButtonBox,
-    QHBoxLayout,
-    QLabel,
-    QProgressBar,
-    QSizePolicy,
-    QVBoxLayout,
-    QWidget,
-)
+from atlas.compatibility.qt import QtCore, QtGui, QtWidgets
 
 # =============================================================================
 # LOGGING
@@ -35,12 +24,12 @@ LOGGER = logging.getLogger(__name__)
 # =============================================================================
 
 _WINDOW_FLAGS = (
-    Qt.WindowType.Dialog
-    | Qt.WindowType.CustomizeWindowHint
-    | Qt.WindowType.WindowTitleHint
-    | Qt.WindowType.WindowSystemMenuHint
-    | Qt.WindowType.WindowMinimizeButtonHint
-    | Qt.WindowType.WindowCloseButtonHint
+    QtCore.Qt.WindowType.Dialog
+    | QtCore.Qt.WindowType.CustomizeWindowHint
+    | QtCore.Qt.WindowType.WindowTitleHint
+    | QtCore.Qt.WindowType.WindowSystemMenuHint
+    | QtCore.Qt.WindowType.WindowMinimizeButtonHint
+    | QtCore.Qt.WindowType.WindowCloseButtonHint
 )
 
 _LAYOUT_MARGINS: Tuple[int, int, int, int] = (20, 10, 20, 20)
@@ -66,7 +55,7 @@ class UiDialog:
     Layout-driven design that scales on resize and high-DPI displays.
     """
 
-    def setup_ui(self, main_dialog: QDialog) -> None:
+    def setup_ui(self, main_dialog: QtWidgets.QDialog) -> None:
         """Initialize and arrange all UI components for the main dialog.
 
         Sets up the backdrop, layout, labels, progress bar, and buttons.
@@ -85,7 +74,7 @@ class UiDialog:
 
             self._setup_backdrop(main_dialog)
 
-            layout = QVBoxLayout(main_dialog)
+            layout = QtWidgets.QVBoxLayout(main_dialog)
             layout.setContentsMargins(*_LAYOUT_MARGINS)
             layout.setSpacing(_LAYOUT_SPACING)
 
@@ -94,7 +83,7 @@ class UiDialog:
             self._setup_buttons(layout)
 
             self.retranslate_ui(main_dialog)
-            QMetaObject.connectSlotsByName(main_dialog)
+            QtCore.QMetaObject.connectSlotsByName(main_dialog)
 
             LOGGER.debug("UI setup completed successfully.")
         except Exception as error:
@@ -105,13 +94,13 @@ class UiDialog:
 
     def _setup_backdrop(self, parent: QWidget) -> None:
         """Create the backdrop label behind all other UI elements."""
-        self.backdrop = QLabel(parent)
+        self.backdrop = QtWidgets.QLabel(parent)
         self.backdrop.setObjectName("Backdrop")
         self.backdrop.setGeometry(parent.rect())
         self.backdrop.lower()
 
     def _setup_labels(
-        self, parent: QWidget, layout: QVBoxLayout
+        self, parent: QtWidgets.QWidget, layout: QtWidgets.QVBoxLayout
     ) -> None:
         """Set up the title, content area, and time-elapsed labels.
 
@@ -128,22 +117,22 @@ class UiDialog:
         layout.addWidget(self.title)
 
         # Area for mutually-exclusive status labels.
-        content_area = QWidget(parent)
+        content_area = QtWidgets.QWidget(parent)
         content_area.setSizePolicy(
-            QSizePolicy.Policy.Expanding,
-            QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Expanding,
         )
-        inner = QVBoxLayout(content_area)
+        inner = QtWidgets.QVBoxLayout(content_area)
         inner.setContentsMargins(0, 6, 0, 0)
         inner.setSpacing(0)
 
         for attr_name, obj_name in _CONTENT_LABELS:
             label = self._make_label(
                 parent, base_font, scale=1.0, name=obj_name,
-                v_policy=QSizePolicy.Policy.Expanding,
+                v_policy=QtWidgets.QSizePolicy.Policy.Expanding,
                 align=(
-                    Qt.AlignmentFlag.AlignTop
-                    | Qt.AlignmentFlag.AlignLeft
+                    QtCore.Qt.AlignmentFlag.AlignTop
+                    | QtCore.Qt.AlignmentFlag.AlignLeft
                 ),
             )
             setattr(self, attr_name, label)
@@ -157,7 +146,7 @@ class UiDialog:
         layout.addWidget(self.time_elapsed)
         layout.addSpacing(20)
 
-    def _setup_progress_bar(self, layout: QVBoxLayout) -> None:
+    def _setup_progress_bar(self, layout: QtWidgets.QVBoxLayout) -> None:
         """Set up the progress bar and add it to the layout.
 
         The bar occupies 65 % of the row width, with empty space on
@@ -167,33 +156,33 @@ class UiDialog:
             layout: The top-level layout to add the progress bar into.
 
         """
-        self.progress_bar = QProgressBar()
+        self.progress_bar = QtWidgets.QProgressBar()
         self.progress_bar.setValue(0)
         self.progress_bar.setTextVisible(False)
         self.progress_bar.setObjectName("ProgressBar")
         self.progress_bar.setSizePolicy(
-            QSizePolicy.Policy.Expanding,
-            QSizePolicy.Policy.Fixed,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Fixed,
         )
 
-        row = QHBoxLayout()
+        row = QtWidgets.QHBoxLayout()
         row.setContentsMargins(0, 0, 0, 0)
         row.setSpacing(0)
         row.addWidget(self.progress_bar, 65)
         row.addStretch(35)
         layout.addLayout(row)
 
-    def _setup_buttons(self, layout: QVBoxLayout) -> None:
+    def _setup_buttons(self, layout: QtWidgets.QVBoxLayout) -> None:
         """Set up the OK/Cancel button box and add it to the layout.
 
         Args:
             layout: The top-level layout to add the button box into.
 
         """
-        self.selection = QDialogButtonBox(
-            QDialogButtonBox.StandardButton.Ok
-            | QDialogButtonBox.StandardButton.Cancel,
-            Qt.Orientation.Horizontal,
+        self.selection = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.StandardButton.Ok
+            | QtWidgets.QDialogButtonBox.StandardButton.Cancel,
+            QtCore.Qt.Orientation.Horizontal,
         )
         self.selection.setCenterButtons(False)
         self.selection.setObjectName("Selection")
@@ -201,48 +190,48 @@ class UiDialog:
 
     @staticmethod
     def _make_label(
-        parent: QWidget,
-        base_font: QFont,
+        parent: QtWidgets.QWidget,
+        base_font: QtGui.QFont,
         scale: float,
         name: str,
-        v_policy: QSizePolicy.Policy = QSizePolicy.Policy.Preferred,
-        align: Qt.AlignmentFlag = (
-            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
+        v_policy: QtWidgets.QSizePolicy.Policy = QtWidgets.QSizePolicy.Policy.Preferred,
+        align: QtCore.Qt.AlignmentFlag = (
+            QtCore.Qt.AlignmentFlag.AlignLeft | QtCore.Qt.AlignmentFlag.AlignVCenter
         ),
-    ) -> QLabel:
-        """Create a ``QLabel`` with scaled font, word wrap, and alignment.
+    ) -> QtWidgets.QLabel:
+        """Create a ``QtWidgets.QLabel`` with scaled font, word wrap, and alignment.
 
         Args:
             parent: Parent widget.
             base_font: Base font to derive the scaled font from.
             scale: Multiplier applied to the base point size.
-            name: Qt object name for the label.
+            name: QtCore.Qt object name for the label.
             v_policy: Vertical size policy for the label.
             align: Text alignment flags.
 
         Returns:
-            A fully configured ``QLabel`` instance.
+            A fully configured ``QtWidgets.QLabel`` instance.
 
         """
-        font = QFont(base_font)
+        font = QtGui.QFont(base_font)
         font.setPointSizeF(font.pointSizeF() * scale)
 
-        label = QLabel(parent)
+        label = QtWidgets.QLabel(parent)
         label.setFont(font)
         label.setWordWrap(True)
         label.setObjectName(name)
         label.setAlignment(align)
-        label.setSizePolicy(QSizePolicy.Policy.Expanding, v_policy)
+        label.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, v_policy)
         return label
 
-    def retranslate_ui(self, main_dialog: QDialog) -> None:
+    def retranslate_ui(self, main_dialog: QtWidgets.QDialog) -> None:
         """Apply localised text to all UI elements.
 
         Args:
             main_dialog: The main dialog widget whose title is also set.
 
         """
-        tr = QCoreApplication.translate
+        tr = QtCore.QCoreApplication.translate
 
         main_dialog.setWindowTitle(tr("MainDialog", "Atlas"))
         self.title.setText(tr(

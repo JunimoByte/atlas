@@ -151,7 +151,7 @@ def test_backdrop_sets_pixmap(monkeypatch: pytest.MonkeyPatch) -> None:
             """Initialise with a path."""
             self.path = path
 
-    monkeypatch.setattr(themes, "QPixmap", FakeQPixmap)
+    monkeypatch.setattr(themes.QtGui, "QPixmap", FakeQPixmap)
 
     themes.backdrop(mock_element)
 
@@ -173,7 +173,7 @@ def test_icon_sets_window_icon(monkeypatch: pytest.MonkeyPatch) -> None:
             """Initialise with a path."""
             self.path = path
 
-    monkeypatch.setattr(themes, "QIcon", FakeQIcon)
+    monkeypatch.setattr(themes.QtGui, "QIcon", FakeQIcon)
 
     themes.icon(mock_window)
 

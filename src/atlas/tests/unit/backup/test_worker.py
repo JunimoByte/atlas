@@ -12,7 +12,7 @@ from typing import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
-from PyQt6.QtWidgets import QApplication
+from atlas.compatibility.qt import QtWidgets
 
 from atlas.backup.pipeline import PipelineResult
 from atlas.backup.worker import Worker
@@ -23,9 +23,9 @@ from atlas.backup.worker import Worker
 
 
 @pytest.fixture(scope="session")
-def qapp() -> Generator[QApplication, None, None]:
-    """Provide a session-scoped QApplication instance for Qt signal tests."""
-    app = QApplication.instance() or QApplication([])
+def qapp() -> Generator[QtWidgets.QApplication, None, None]:
+    """Provide a session-scoped QtWidgets.QApplication instance for Qt signal tests."""
+    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     yield app
 
 
@@ -37,7 +37,7 @@ def mock_pipeline_cls() -> Generator[MagicMock, None, None]:
 
 
 @pytest.fixture
-def worker(qapp: QApplication) -> Worker:
+def worker(qapp: QtWidgets.QApplication) -> Worker:
     """Return a default Worker."""
     return Worker()
 

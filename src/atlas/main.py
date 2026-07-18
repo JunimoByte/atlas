@@ -11,9 +11,7 @@ Handles initialization, configuration verification, UI setup, and execution.
 import logging
 import sys
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QGuiApplication
-from PyQt6.QtWidgets import QApplication
+from atlas.compatibility.qt import QtCore, QtGui, QtWidgets
 
 from atlas.display import window
 from atlas.lib import browsers, permissions, themes
@@ -54,10 +52,10 @@ def main() -> None:
         return
 
     # Application initialization
-    QGuiApplication.setHighDpiScaleFactorRoundingPolicy(
-        Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
+    QtGui.QGuiApplication.setHighDpiScaleFactorRoundingPolicy(
+        QtCore.Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
     )
-    app = QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     win = window.Window()
     themes.initialize(win)
 

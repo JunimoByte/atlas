@@ -10,8 +10,7 @@ import time
 from unittest.mock import patch
 
 import pytest
-from PyQt6.QtCore import QTimer
-from PyQt6.QtWidgets import QApplication
+from atlas.compatibility.qt import QtCore, QtWidgets
 
 from atlas.display.controller import (
     THREAD_WAIT_TIMEOUT_MS,
@@ -23,7 +22,7 @@ from atlas.display.signals import Signals
 
 
 @pytest.fixture
-def signals(qapp: QApplication) -> Signals:
+def signals(qapp: QtWidgets.QApplication) -> Signals:
     return Signals()
 
 
@@ -35,7 +34,7 @@ def ctrl(signals: Signals) -> Controller:
 def test_controller_initial_state(ctrl: Controller) -> None:
     assert ctrl.worker is None
     assert ctrl._worker_thread is None
-    assert isinstance(ctrl.elapsed_timer, QTimer)
+    assert isinstance(ctrl.elapsed_timer, QtCore.QTimer)
     assert ctrl.state == ControllerState.IDLE
 
 

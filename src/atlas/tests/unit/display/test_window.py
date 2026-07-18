@@ -14,7 +14,7 @@ from typing import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
-from PyQt6.QtWidgets import QApplication
+from atlas.compatibility.qt import QtWidgets
 
 from atlas.display.window import UIMode, Window
 
@@ -24,7 +24,7 @@ from atlas.display.window import UIMode, Window
 
 
 @pytest.fixture
-def window(qapp: QApplication) -> Generator[Window, None, None]:
+def window(qapp: QtWidgets.QApplication) -> Generator[Window, None, None]:
     """Provide a Window with controller and show_warning patched out."""
     with patch("atlas.display.window.Controller") as MockController:
         ctrl = MagicMock()

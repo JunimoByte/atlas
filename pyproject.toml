@@ -8,10 +8,6 @@ license = { text = "AGPL-3.0-or-later" }
 readme = "README.md"
 keywords = ["backup", "browser", "profiles"]
 
-dependencies = [
-    "PyQt6>=6.5"
-]
-
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent"

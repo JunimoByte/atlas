@@ -11,7 +11,7 @@ Covers elapsed time formatting and button configuration helpers.
 import sys
 
 import pytest
-from PyQt6.QtWidgets import QAbstractButton, QApplication, QDialogButtonBox
+from atlas.compatibility.qt import QtWidgets
 
 from atlas.display import controls
 
@@ -54,18 +54,18 @@ def test_format_elapsed_time_without_info_no_parens() -> None:
 # =============================================================================
 
 
-def test_get_button_returns_none_for_invalid_name(qapp: QApplication) -> None:
+def test_get_button_returns_none_for_invalid_name(qapp: QtWidgets.QApplication) -> None:
     """Verify that None is returned for unknown button names."""
-    box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
+    box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.StandardButton.Ok)
     result = controls._get_button(box, "NotAButton")
     assert result is None
 
 
-def test_get_button_returns_button_for_valid_name(qapp: QApplication) -> None:
+def test_get_button_returns_button_for_valid_name(qapp: QtWidgets.QApplication) -> None:
     """Verify that a button is returned for valid names."""
-    box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
+    box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.StandardButton.Ok)
     result = controls._get_button(box, "Ok")
-    assert isinstance(result, QAbstractButton)
+    assert isinstance(result, QtWidgets.QAbstractButton)
 
 
 # =============================================================================
@@ -73,17 +73,17 @@ def test_get_button_returns_button_for_valid_name(qapp: QApplication) -> None:
 # =============================================================================
 
 
-def test_set_text_updates_button_label(qapp: QApplication) -> None:
+def test_set_text_updates_button_label(qapp: QtWidgets.QApplication) -> None:
     """Verify that set_text updates the button label."""
-    box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
+    box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.StandardButton.Ok)
     controls.set_text(box, "Ok", "Backup")
     button = controls._get_button(box, "Ok")
     assert button.text() == "Backup"
 
 
-def test_set_text_does_nothing_for_missing_button(qapp: QApplication) -> None:
+def test_set_text_does_nothing_for_missing_button(qapp: QtWidgets.QApplication) -> None:
     """Verify that set_text handles missing buttons gracefully."""
-    box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
+    box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.StandardButton.Ok)
     controls.set_text(box, "Ghost", "Irrelevant")  # shouldn't crash
 
 
@@ -92,17 +92,17 @@ def test_set_text_does_nothing_for_missing_button(qapp: QApplication) -> None:
 # =============================================================================
 
 
-def test_set_button_visible_hides_button(qapp: QApplication) -> None:
+def test_set_button_visible_hides_button(qapp: QtWidgets.QApplication) -> None:
     """Verify that buttons can be hidden."""
-    box = QDialogButtonBox(QDialogButtonBox.StandardButton.Cancel)
+    box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.StandardButton.Cancel)
     controls.set_button_visible(box, "Cancel", False)
     button = controls._get_button(box, "Cancel")
     assert not button.isVisible()
 
 
-def test_set_button_visible_shows_button(qapp: QApplication) -> None:
+def test_set_button_visible_shows_button(qapp: QtWidgets.QApplication) -> None:
     """Verify that buttons can be shown."""
-    box = QDialogButtonBox(QDialogButtonBox.StandardButton.Cancel)
+    box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.StandardButton.Cancel)
     controls.set_button_visible(box, "Cancel", False)
     controls.set_button_visible(box, "Cancel", True)
     button = controls._get_button(box, "Cancel")
@@ -115,24 +115,24 @@ def test_set_button_visible_shows_button(qapp: QApplication) -> None:
 
 
 def test_set_connection_ignores_invalid_signal_name(
-    qapp: QApplication
+    qapp: QtWidgets.QApplication
 ) -> None:
     """Verify that unknown signals are ignored."""
-    box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
+    box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.StandardButton.Ok)
     controls.set_connection(box, "clicked", lambda: None)  # shouldn't crash
 
 
-def test_set_connection_ignores_non_callable(qapp: QApplication) -> None:
+def test_set_connection_ignores_non_callable(qapp: QtWidgets.QApplication) -> None:
     """Verify that non-callable commands are ignored."""
-    box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
+    box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.StandardButton.Ok)
     controls.set_connection(
         box, "accepted", "not_a_callable"
     )  # shouldn't crash
 
 
-def test_set_connection_connects_accepted_signal(qapp: QApplication) -> None:
+def test_set_connection_connects_accepted_signal(qapp: QtWidgets.QApplication) -> None:
     """Verify that the accepted signal can be wired."""
-    box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
+    box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.StandardButton.Ok)
     called = []
     controls.set_connection(box, "accepted", lambda: called.append(True))
     box.accepted.emit()
@@ -145,10 +145,10 @@ def test_set_connection_connects_accepted_signal(qapp: QApplication) -> None:
 
 
 def test_configure_button_applies_visibility_and_text(
-    qapp: QApplication
+    qapp: QtWidgets.QApplication
 ) -> None:
     """Verify button configuration for visibility and text."""
-    box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
+    box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.StandardButton.Ok)
     controls.configure_button(box, "Ok", {"visible": True, "text": "Go"})
     button = controls._get_button(box, "Ok")
     assert not button.isHidden()
@@ -156,10 +156,10 @@ def test_configure_button_applies_visibility_and_text(
 
 
 def test_configure_button_hides_button_without_text(
-    qapp: QApplication
+    qapp: QtWidgets.QApplication
 ) -> None:
     """Verify that buttons are hidden when specified."""
-    box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
+    box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.StandardButton.Ok)
     controls.configure_button(box, "Ok", {"visible": False})
     button = controls._get_button(box, "Ok")
     assert not button.isVisible()
