@@ -123,15 +123,15 @@ def test_grab_returns_cached_data(
 
 
 def test_path_cache_population(sample_valid_browser: Dict[str, Any]) -> None:
-    """Verify that the path cache is populated correctly."""
+    """Verify that the path cache is populated with OS-scoped keys."""
     fake_path = os.path.join("mock_dir", "my", "fake", "profile")
-    types_json = {"PROFILE": [fake_path]}
+    types_json = {"Windows": {"PROFILE": [fake_path]}}
     result = browsers.verify_entries(
         browsers_json=sample_valid_browser, types_json=types_json
     )
     assert result is True
-    assert "PROFILE" in browsers._PATH_CACHE
-    assert browsers._PATH_CACHE["PROFILE"] == [fake_path]
+    assert "Windows.PROFILE" in browsers._PATH_CACHE
+    assert browsers._PATH_CACHE["Windows.PROFILE"] == [fake_path]
 
 
 # =============================================================================

@@ -140,11 +140,14 @@ def verify_entries(  # noqa: C901
         types_data = (
             types_json if types_json is not None else load_json("types.json")
         )
-        for type_name, paths in types_data.items():
-            if isinstance(paths, list):
-                _PATH_CACHE[type_name.upper()] = [
-                    str(p) for p in paths if isinstance(p, str)
-                ]
+        for os_name, os_types in types_data.items():
+            if not isinstance(os_types, dict):
+                continue
+            for type_name, paths in os_types.items():
+                if isinstance(paths, list):
+                    _PATH_CACHE["{}.{}".format(os_name, type_name.upper())] = [
+                        str(p) for p in paths if isinstance(p, str)
+                    ]
 
         LOGGER.info("Loaded %d valid browsers.", len(BROWSERS))
         LOGGER.info("Loaded %d path types.", len(_PATH_CACHE))

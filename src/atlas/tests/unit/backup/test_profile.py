@@ -29,10 +29,12 @@ from atlas.backup.profile import (
 
 @pytest.fixture(autouse=True)
 def clear_path_cache() -> None:
-    """Clear the profile path cache before each test."""
+    """Clear the profile path cache and lru_cache before each test."""
     profile_module._PATH_CACHE.clear()
+    profile_module._expand_path_by_type.cache_clear()
     yield
     profile_module._PATH_CACHE.clear()
+    profile_module._expand_path_by_type.cache_clear()
 
 
 # =============================================================================
