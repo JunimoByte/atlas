@@ -33,15 +33,67 @@ LOGGER = logging.getLogger(__name__)
 
 
 def _configure_linux_environment() -> None:
-    """Configure Qt environment variables for Linux compatibility."""
+    """Configure Qt environment variables for Linux compatibility.
+
+    Sets QT_QPA_PLATFORM for Wayland/X11 fallback and, crucially,
+    sets QT_QPA_PLATFORMTHEME so Qt loads the correct native desktop
+    integration plugin. This must run before QApplication is created.
+
+    The platform theme plugin determines whether Qt can read the
+    user's dark/light mode preference from the DE. Without it,
+    QStyleHints.colorScheme() returns Unknown on most Linux DEs.
+
+    Plugin mapping:
+        KDE Plasma  -> kde      (reads KDE color scheme directly)
+        GNOME       -> gnome    (reads GNOME/GTK color-scheme via D-Bus)
+        XFCE        -> xdgdesktopportal (uses XDG portal, most compatible)
+        Other/None  -> xdgdesktopportal (works on any modern compositor)
+
+    If the user or session has already set these variables, we
+    never override them.
+
+    """
     if not sys.platform.startswith("linux"):
         return
 
     try:
+        # --- Wayland / X11 platform fallback ---
         if not os.environ.get("QT_QPA_PLATFORM"):
             os.environ["QT_QPA_PLATFORM"] = "wayland;xcb"
             os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
             LOGGER.debug("QT_QPA_PLATFORM set to 'wayland;xcb'")
+
+        # --- Platform theme plugin (drives dark/light detection) ---
+        if not os.environ.get("QT_QPA_PLATFORMTHEME"):
+            desktop = (
+                os.environ.get("XDG_CURRENT_DESKTOP", "")
+                .upper()
+                .split(":")
+            )
+
+            if "KDE" in desktop:
+                # KDE ships its own 'kde' platform theme plugin that
+                # reads ~/.config/kdeglobals and the Plasma color scheme.
+                theme_plugin = "kde"
+            elif "GNOME" in desktop or "UNITY" in desktop:
+                # The 'gnome' plugin reads
+                # org.gnome.desktop.interface color-scheme via D-Bus.
+                # qgnomeplatform provides this; falls back gracefully
+                # if not installed.
+                theme_plugin = "gnome"
+            else:
+                # For XFCE, LXQt, Cinnamon, Mate, tiling WMs, etc.
+                # xdgdesktopportal queries org.freedesktop.portal.Settings
+                # (the modern cross-DE standard supported by
+                # xdg-desktop-portal-gtk and xdg-desktop-portal-kde).
+                theme_plugin = "xdgdesktopportal"
+
+            os.environ["QT_QPA_PLATFORMTHEME"] = theme_plugin
+            LOGGER.debug(
+                "QT_QPA_PLATFORMTHEME set to '%s' for desktop '%s'",
+                theme_plugin,
+                ":".join(desktop) or "(undetected)",
+            )
 
     except Exception:
         LOGGER.error(
