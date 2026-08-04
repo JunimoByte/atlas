@@ -102,12 +102,31 @@ def test_get_theme_linux(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_apply_light_sets_stylesheet(
     monkeypatch: pytest.MonkeyPatch, mock_window: MagicMock
 ) -> None:
-    """Verify that the Light theme stylesheet is applied."""
+    """Verify that the Light theme stylesheet is applied on Windows."""
+    monkeypatch.setattr(sys, "platform", "win32")
+    monkeypatch.setattr(
+        sys,
+        "getwindowsversion",
+        lambda: type("WinVer", (), {"major": 10})(),
+        raising=False,
+    )
     themes._apply_light(mock_window)
 
     mock_window.setStyleSheet.assert_called_once()
     style = mock_window.setStyleSheet.call_args[0][0]
     assert "background-color: #ffffff" in style
+
+
+def test_apply_light_linux(
+    monkeypatch: pytest.MonkeyPatch, mock_window: MagicMock
+) -> None:
+    """Verify Light theme on Linux skips setting hardcoded stylesheet."""
+    monkeypatch.setattr(sys, "platform", "linux")
+    if hasattr(sys, "getwindowsversion"):
+        monkeypatch.delattr(sys, "getwindowsversion", raising=False)
+
+    themes._apply_light(mock_window)
+    mock_window.setStyleSheet.assert_not_called()
 
 
 def test_apply_dark_calls_dwmapi(

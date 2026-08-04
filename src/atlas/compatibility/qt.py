@@ -65,18 +65,49 @@ _configure_linux_environment()
 QT_API = None
 """Name of the active Qt binding ('PyQt6' or 'PyQt5')."""
 
-try:
-    from PyQt6 import QtCore, QtGui, QtWidgets
+_is_win = sys.platform == "win32"
+_is_linux = sys.platform.startswith("linux")
+_py_ver = sys.version_info[:2]
 
-    QT_API = "PyQt6"
+# Binding resolution preferences:
+# - Windows with Python 3.8 or older -> fallback to PyQt5
+# - Linux with Python 3.8 or newer -> use PyQt6, else fallback to PyQt5
+if (_is_win and _py_ver <= (3, 8)) or (_is_linux and _py_ver < (3, 8)):
+    _primary, _secondary = "PyQt5", "PyQt6"
+else:
+    _primary, _secondary = "PyQt6", "PyQt5"
+
+
+def _import_qt_binding(binding_name: str):
+    """Import QtCore, QtGui, QtWidgets for specified binding name.
+
+    Args:
+        binding_name (str): 'PyQt6' or 'PyQt5'.
+
+    Returns:
+        tuple: (QtCore, QtGui, QtWidgets).
+
+    """
+    if binding_name == "PyQt6":
+        from PyQt6 import QtCore, QtGui, QtWidgets
+
+        return QtCore, QtGui, QtWidgets
+    else:
+        from PyQt5 import QtCore, QtGui, QtWidgets
+
+        return QtCore, QtGui, QtWidgets
+
+
+try:
+    QtCore, QtGui, QtWidgets = _import_qt_binding(_primary)
+    QT_API = _primary
 except ImportError:
     try:
-        from PyQt5 import QtCore, QtGui, QtWidgets  # noqa: F401
-
-        QT_API = "PyQt5"
+        QtCore, QtGui, QtWidgets = _import_qt_binding(_secondary)
+        QT_API = _secondary
     except ImportError:
         raise ImportError(
-            "Atlas requires PyQt6 or PyQt5. " "Neither package was found."
+            "Atlas requires PyQt6 or PyQt5. Neither package was found."
         )
 
 LOGGER.debug("Qt binding resolved: %s", QT_API)
