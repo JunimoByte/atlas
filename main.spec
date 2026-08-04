@@ -6,14 +6,11 @@ PyInstaller spec file for Atlas application.
 - Dynamically collects all submodules in 'backup', 'lib', 'display', and 'ui'
   for hidden imports.
 - Includes resources and configuration files.
-- Compatible with Windows 7+, Linux, and PyInstaller onefile builds.
-- Detects the active Qt binding at build time and excludes the other to
-  prevent PyInstaller's 'multiple Qt bindings' build error.
+- Detects which Qt binding is installed at build time and excludes the other
+  to prevent PyInstaller's 'multiple Qt bindings' error.
 """
 
-import ctypes.util
 import importlib
-import os
 import pkgutil
 import sys
 from typing import List
@@ -25,25 +22,15 @@ from PyInstaller.utils.hooks import collect_data_files
 # QT BINDING DETECTION
 # =============================================================================
 
-# Determine which Qt binding is active using the same logic as qt.py so that
-# PyInstaller only bundles one binding and avoids the
-# "multiple Qt bindings" build error.
-
-_py_ver = sys.version_info[:2]
-_is_win = sys.platform == "win32"
-_is_linux = sys.platform.startswith("linux")
-_has_xcb_cursor = bool(ctypes.util.find_library("xcb-cursor"))
-
-if (_is_win and _py_ver <= (3, 8)) or (
-    _is_linux and (not _has_xcb_cursor or _py_ver < (3, 8))
-):
-    _active_qt = "PyQt5"
-    _excluded_qt = "PyQt6"
-else:
+try:
+    import PyQt6.QtCore  # noqa: F401
     _active_qt = "PyQt6"
     _excluded_qt = "PyQt5"
+except ImportError:
+    _active_qt = "PyQt5"
+    _excluded_qt = "PyQt6"
 
-print(f"main.spec: active Qt binding = {_active_qt} (excluding {_excluded_qt})")
+print(f"main.spec: bundling {_active_qt}, excluding {_excluded_qt}")
 
 # =============================================================================
 # RESOURCES & CONFIGS
@@ -55,7 +42,6 @@ datas = [
     ('configs/*', 'configs'),
 ]
 
-# Collect Qt platform plugins for the active binding
 if _active_qt == "PyQt6":
     qt_plugin_subdirs = [
         'Qt6/plugins/styles',
@@ -75,10 +61,10 @@ if _active_qt == "PyQt6":
         except Exception:
             pass
 
-
 # =============================================================================
 # DYNAMIC HIDDEN IMPORTS
 # =============================================================================
+
 
 def collect_submodules(package_name: str) -> List[str]:
     """Recursively collect all submodules in a package for hiddenimports.
@@ -98,10 +84,7 @@ def collect_submodules(package_name: str) -> List[str]:
         ):
             hidden.append(modname)
     except Exception as error:
-        print(
-            f"Warning: failed to collect submodules for "
-            f"{package_name}: {error}"
-        )
+        print(f"Warning: failed to collect submodules for {package_name}: {error}")
     return hidden
 
 
@@ -117,10 +100,10 @@ hiddenimports = (
 # =============================================================================
 
 excludes_list = [
-    # Exclude the unused Qt binding to prevent PyInstaller build error
+    # Exclude whichever Qt binding is not being used
     _excluded_qt,
 
-    # Unused PyQt6 modules (no-ops when PyQt5 is active)
+    # Unused PyQt6 submodules
     'PyQt6.QtWebEngineWidgets',
     'PyQt6.QtWebEngineCore',
     'PyQt6.QtMultimedia',
@@ -204,7 +187,6 @@ a = Analysis(
 )
 
 pyz = PYZ(a.pure)
-
 
 # =============================================================================
 # EXECUTABLE

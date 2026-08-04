@@ -53,25 +53,15 @@ if errorlevel 1 (
 )
 
 REM ---------------------------------------------------------------------------
-REM 5. Detect Python version and install the correct Qt binding
-REM    If Windows and has Python 3.8 or older, fallback to PyQt5
-REM    If Linux and has Python 3.8 or newer, use PyQt6, else fallback to PyQt5
+REM 5. Install Qt binding -- try PyQt6 first, fall back to PyQt5
 REM ---------------------------------------------------------------------------
-echo Detecting Python version for Qt binding selection...
-for /f %%A in ('python -c "import sys; print(1 if sys.version_info >= (3, 9) else 0)"') do set USE_PYQT6=%%A
-
-if "!USE_PYQT6!"=="1" (
-    echo Python 3.9+ detected on Windows -- installing PyQt6...
-    python -m pip install --quiet "PyQt6>=6.0"
-    if errorlevel 1 (
-        echo PyQt6 failed, falling back to PyQt5...
-        python -m pip install --quiet "PyQt5>=5.15"
-    )
-) else (
-    echo Python 3.8 or older detected on Windows -- installing PyQt5 for compatibility...
+echo Installing Qt binding...
+python -m pip install --quiet "PyQt6>=6.0"
+if errorlevel 1 (
+    echo PyQt6 failed, falling back to PyQt5...
     python -m pip install --quiet "PyQt5>=5.15"
     if errorlevel 1 (
-        echo ERROR: Failed to install PyQt5.
+        echo ERROR: Failed to install PyQt5 fallback.
         exit /b 1
     )
 )

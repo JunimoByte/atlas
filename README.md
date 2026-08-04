@@ -36,7 +36,6 @@ Atlas follows a simple process for data reliability:
 
 - Python 3.8 or higher
 - PyQt6 6.0+ or PyQt5 5.15+
-- On Linux (Qt6): `libxcb-cursor0` package (`sudo apt install libxcb-cursor0` or `sudo dnf install xcb-util-cursor`)
 
 ### Installation from Source
 

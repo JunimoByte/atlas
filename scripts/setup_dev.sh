@@ -58,42 +58,13 @@ python -m pip install --quiet -e "$PROJECT_ROOT[dev]" || {
 }
 
 # ---------------------------------------------------------------------------
-# 5. Detect OS and Python version for Qt binding selection
-#    If Windows and has Python 3.8 or older, fallback to PyQt5
-#    If Linux and has Python 3.8 or newer, use PyQt6, else fallback to PyQt5
+# 5. Install Qt binding — try PyQt6 first, fall back to PyQt5
 # ---------------------------------------------------------------------------
-echo "Detecting OS and Python version for Qt binding selection..."
-IS_WIN=$(python -c "import sys; print(1 if sys.platform == 'win32' else 0)")
-PY_VER_38=$(python -c "import sys; print(1 if sys.version_info >= (3, 8) else 0)")
-PY_VER_39=$(python -c "import sys; print(1 if sys.version_info >= (3, 9) else 0)")
-
-if [ "$IS_WIN" -eq 1 ]; then
-    if [ "$PY_VER_39" -eq 1 ]; then
-        USE_PYQT6=1
-    else
-        USE_PYQT6=0
-    fi
-else
-    if [ "$PY_VER_38" -eq 1 ]; then
-        USE_PYQT6=1
-    else
-        USE_PYQT6=0
-    fi
-fi
-
-if [ "$USE_PYQT6" -eq 1 ]; then
-    echo "Installing PyQt6..."
-    if ! python -m pip install --quiet "PyQt6>=6.0"; then
-        echo "PyQt6 failed, falling back to PyQt5..."
-        python -m pip install --quiet "PyQt5>=5.15" || {
-            echo "ERROR: Failed to install PyQt5 fallback."
-            return 1 2>/dev/null || exit 1
-        }
-    fi
-else
-    echo "Installing PyQt5 for compatibility..."
+echo "Installing Qt binding..."
+if ! python -m pip install --quiet "PyQt6>=6.0"; then
+    echo "PyQt6 failed, falling back to PyQt5..."
     python -m pip install --quiet "PyQt5>=5.15" || {
-        echo "ERROR: Failed to install PyQt5."
+        echo "ERROR: Failed to install PyQt5 fallback."
         return 1 2>/dev/null || exit 1
     }
 fi
