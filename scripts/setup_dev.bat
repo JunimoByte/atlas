@@ -99,9 +99,9 @@ for /f %%Q in ('python -c "import importlib.util; p6=importlib.util.find_spec('P
 echo ============================================================
 echo.
 echo To activate the environment in PowerShell:
-echo   %VENV_PATH%\Scripts\Activate.ps1
+echo   .\venv\Scripts\Activate.ps1
 echo.
 echo Or in Command Prompt:
-echo   %VENV_PATH%\Scripts\activate.bat
+echo   .\venv\Scripts\activate.bat
 echo.
 endlocal

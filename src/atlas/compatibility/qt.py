@@ -18,12 +18,39 @@ Usage::
 # =============================================================================
 
 import logging
+import os
+import sys
 
 # =============================================================================
 # LOGGING
 # =============================================================================
 
 LOGGER = logging.getLogger(__name__)
+
+# =============================================================================
+# LINUX ENVIRONMENT CONFIGURATION
+# =============================================================================
+
+
+def _configure_linux_environment() -> None:
+    """Configure Qt environment variables for Linux compatibility."""
+    if not sys.platform.startswith("linux"):
+        return
+
+    try:
+        if not os.environ.get("QT_QPA_PLATFORM"):
+            os.environ["QT_QPA_PLATFORM"] = "wayland;xcb"
+            os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
+            LOGGER.debug("QT_QPA_PLATFORM set to 'wayland;xcb'")
+
+    except Exception:
+        LOGGER.error(
+            "Failed to configure Linux environment",
+            exc_info=True,
+        )
+
+
+_configure_linux_environment()
 
 # =============================================================================
 # QT BINDING RESOLUTION
