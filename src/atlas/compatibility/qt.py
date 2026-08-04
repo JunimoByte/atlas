@@ -17,6 +17,7 @@ Usage::
 # IMPORTS
 # =============================================================================
 
+import ctypes.util
 import logging
 import os
 import sys
@@ -32,28 +33,53 @@ LOGGER = logging.getLogger(__name__)
 # =============================================================================
 
 
+def _has_xcb_cursor() -> bool:
+    """Return True if libxcb-cursor is available on this system.
+
+    Qt6's xcb platform plugin requires libxcb-cursor0 (Qt >= 6.5).
+    If absent, falling back to PyQt5 avoids a hard crash on launch.
+
+    Returns:
+        bool: True if found or not running on Linux.
+
+    """
+    if not sys.platform.startswith("linux"):
+        return True
+    return bool(ctypes.util.find_library("xcb-cursor"))
+
+
 def _configure_linux_environment() -> None:
     """Configure Qt environment variables for Linux compatibility.
 
-    Sets QT_QPA_PLATFORM for Wayland/X11 fallback. If the user or
-    session has already set these variables, we never override them.
+    Sets QT_QPA_PLATFORM, preferring xcb on X11 sessions and
+    wayland on Wayland sessions. Never overrides variables the
+    user or session has already set.
 
     """
     if not sys.platform.startswith("linux"):
         return
 
     try:
-        # --- Wayland / X11 platform fallback ---
         if not os.environ.get("QT_QPA_PLATFORM"):
-            os.environ["QT_QPA_PLATFORM"] = "wayland;xcb"
+            is_wayland = bool(
+                os.environ.get("WAYLAND_DISPLAY")
+                or os.environ.get("XDG_SESSION_TYPE") == "wayland"
+            )
+            platform = "wayland;xcb" if is_wayland else "xcb;wayland"
+            os.environ["QT_QPA_PLATFORM"] = platform
             os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
-            LOGGER.debug("QT_QPA_PLATFORM set to 'wayland;xcb'")
+            LOGGER.debug("QT_QPA_PLATFORM set to '%s'", platform)
+
+        if not _has_xcb_cursor():
+            LOGGER.warning(
+                "Missing libxcb-cursor0. Install via: "
+                "'sudo apt install libxcb-cursor0' (Debian/Ubuntu) or "
+                "'sudo dnf install xcb-util-cursor' (Fedora/RHEL). "
+                "Falling back to PyQt5 if available."
+            )
 
     except Exception:
-        LOGGER.error(
-            "Failed to configure Linux environment",
-            exc_info=True,
-        )
+        LOGGER.error("Failed to configure Linux environment", exc_info=True)
 
 
 _configure_linux_environment()
@@ -65,37 +91,38 @@ _configure_linux_environment()
 QT_API = None
 """Name of the active Qt binding ('PyQt6' or 'PyQt5')."""
 
+_py_ver = sys.version_info[:2]
 _is_win = sys.platform == "win32"
 _is_linux = sys.platform.startswith("linux")
-_py_ver = sys.version_info[:2]
 
-# Binding resolution preferences:
-# - Windows with Python 3.8 or older -> fallback to PyQt5
-# - Linux with Python 3.8 or newer -> use PyQt6, else fallback to PyQt5
-if (_is_win and _py_ver <= (3, 8)) or (_is_linux and _py_ver < (3, 8)):
+# Selection rules:
+#   Windows Python <= 3.8         -> PyQt5 first
+#   Linux without libxcb-cursor   -> PyQt5 first (Qt6 xcb would crash)
+#   Linux Python < 3.8            -> PyQt5 first
+#   All other cases               -> PyQt6 first, PyQt5 fallback
+if (_is_win and _py_ver <= (3, 8)) or (
+    _is_linux and (not _has_xcb_cursor() or _py_ver < (3, 8))
+):
     _primary, _secondary = "PyQt5", "PyQt6"
 else:
     _primary, _secondary = "PyQt6", "PyQt5"
 
 
-def _import_qt_binding(binding_name: str):
-    """Import QtCore, QtGui, QtWidgets for specified binding name.
+def _import_qt_binding(name: str):
+    """Import and return (QtCore, QtGui, QtWidgets) for the given binding.
 
     Args:
-        binding_name (str): 'PyQt6' or 'PyQt5'.
+        name (str): Either 'PyQt6' or 'PyQt5'.
 
     Returns:
         tuple: (QtCore, QtGui, QtWidgets).
 
     """
-    if binding_name == "PyQt6":
+    if name == "PyQt6":
         from PyQt6 import QtCore, QtGui, QtWidgets
-
-        return QtCore, QtGui, QtWidgets
     else:
         from PyQt5 import QtCore, QtGui, QtWidgets
-
-        return QtCore, QtGui, QtWidgets
+    return QtCore, QtGui, QtWidgets
 
 
 try:

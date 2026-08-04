@@ -143,15 +143,8 @@ excludes_list = [
     'mimetypes',
 ]
 
-try:
-    import PyQt6.QtCore
-    excludes_list.append("PyQt5")
-except ImportError:
-    try:
-        import PyQt5.QtCore
-        excludes_list.append("PyQt6")
-    except ImportError:
-        pass
+# Do not forcefully exclude PyQt5/PyQt6 if installed to allow fallback
+# capabilities on older systems where Qt6 xcb plugins may fail.
 
 a = Analysis(
     ['src/atlas/main.py'],
