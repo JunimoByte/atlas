@@ -129,6 +129,9 @@ def _shell_known_folder_path() -> Optional[Path]:
         Optional[Path]: The Downloads path, or None on failure.
 
     """
+    if sys.platform != "win32":
+        return None
+
     try:
         from ctypes import wintypes
 
@@ -199,6 +202,9 @@ def _shell_folder_path_registry() -> Optional[Path]:
         Optional[Path]: The Downloads path, or None on failure.
 
     """
+    if sys.platform != "win32":
+        return None
+
     try:
         import winreg
 

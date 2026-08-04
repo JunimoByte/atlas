@@ -61,6 +61,7 @@ def test_apply_calls_correct_theme_function(
 
 def test_get_theme_windows_error(monkeypatch: pytest.MonkeyPatch) -> None:
     """Verify the fallback to Light theme if registry access fails."""
+    monkeypatch.setattr(sys, "platform", "win32")
     monkeypatch.setattr(
         sys,
         "getwindowsversion",
@@ -83,6 +84,15 @@ def test_get_theme_windows_error(monkeypatch: pytest.MonkeyPatch) -> None:
         del sys.modules["winreg"]
 
 
+def test_get_theme_linux(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify theme detection on Linux fallback."""
+    monkeypatch.setattr(sys, "platform", "linux")
+    if hasattr(sys, "getwindowsversion"):
+        monkeypatch.delattr(sys, "getwindowsversion", raising=False)
+
+    assert themes._get_theme() == "Light"
+
+
 def test_apply_light_sets_stylesheet(
     monkeypatch: pytest.MonkeyPatch, mock_window: MagicMock
 ) -> None:
@@ -98,6 +108,7 @@ def test_apply_dark_calls_dwmapi(
     monkeypatch: pytest.MonkeyPatch, mock_window: MagicMock
 ) -> None:
     """Verify that Dark theme attributes are applied on Windows."""
+    monkeypatch.setattr(sys, "platform", "win32")
     monkeypatch.setattr(
         sys,
         "getwindowsversion",
@@ -113,6 +124,18 @@ def test_apply_dark_calls_dwmapi(
 
         assert mock_dwm.DwmSetWindowAttribute.call_count == 2
         mock_window.setStyleSheet.assert_called_once()
+
+
+def test_apply_dark_linux(
+    monkeypatch: pytest.MonkeyPatch, mock_window: MagicMock
+) -> None:
+    """Verify Dark theme on Linux applies style without calling DWM."""
+    monkeypatch.setattr(sys, "platform", "linux")
+    if hasattr(sys, "getwindowsversion"):
+        monkeypatch.delattr(sys, "getwindowsversion", raising=False)
+
+    themes._apply_dark(mock_window)
+    mock_window.setStyleSheet.assert_called_once()
 
 
 def test_resource_path_dev(monkeypatch: pytest.MonkeyPatch) -> None:

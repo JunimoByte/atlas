@@ -62,7 +62,7 @@ def get_windows_version() -> Optional[Tuple[int, int]]:
         or None if not Windows or detection fails.
 
     """
-    if os.name != "nt":
+    if os.name != "nt" or not hasattr(sys, "getwindowsversion"):
         return None
 
     try:
