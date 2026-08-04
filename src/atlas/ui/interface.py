@@ -28,7 +28,6 @@ _WINDOW_FLAGS = (
     | QtCore.Qt.WindowType.CustomizeWindowHint
     | QtCore.Qt.WindowType.WindowTitleHint
     | QtCore.Qt.WindowType.WindowSystemMenuHint
-    | QtCore.Qt.WindowType.WindowMinimizeButtonHint
     | QtCore.Qt.WindowType.WindowCloseButtonHint
 )
 
@@ -59,8 +58,8 @@ class UiDialog:
         """Initialize and arrange all UI components for the main dialog.
 
         Sets up the backdrop, layout, labels, progress bar, and buttons.
-        The window supports resizing and maximizing; minimum size is
-        enforced via ``setMinimumSize``.
+        The window is fixed at _WINDOW_MIN_SIZE and cannot be resized
+        or maximized.
 
         Args:
             main_dialog: The parent widget to attach all components to.

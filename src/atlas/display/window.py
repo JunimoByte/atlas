@@ -104,15 +104,6 @@ class Window(QtWidgets.QDialog):
         self._last_elapsed_text: str = ""
         self.latest_scanned_info: str = ""
 
-        # Restrict window chrome to title bar + close button only.
-        # CustomizeWindowHint overrides WM defaults and prevents compositors
-        # (including GNOME/Mutter) from adding a maximize button.
-        self.setWindowFlags(
-            QtCore.Qt.WindowType.CustomizeWindowHint
-            | QtCore.Qt.WindowType.WindowTitleHint
-            | QtCore.Qt.WindowType.WindowCloseButtonHint
-        )
-
         self.signals = Signals()
         self.controller = Controller(self.signals)
         self._connect_signals()
