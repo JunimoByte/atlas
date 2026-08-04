@@ -72,6 +72,8 @@ try:
     QT_API = "PyQt6"
 except ImportError:
     try:
+        # Shadowing the PyQt6 names above is intentional: whichever
+        # branch succeeds exports QtCore/QtGui/QtWidgets to callers.
         from PyQt5 import QtCore, QtGui, QtWidgets  # noqa: F401
 
         QT_API = "PyQt5"

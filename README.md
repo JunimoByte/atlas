@@ -35,7 +35,7 @@ Atlas follows a simple process for data reliability:
 ### Requirements
 
 - Python 3.8 or higher
-- PyQt6 6.0+ or PyQt5 5.15+
+- PyQt6 6.0+ (Linux officially supports Glibc 2.35+ with PyQt6; PyQt5 fallback supported on older Windows/Python)
 
 ### Installation from Source
 

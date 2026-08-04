@@ -1,10 +1,12 @@
 """Atlas | Packages | Themes.
 
-Cross-platform theming system for Atlas.
+Theme detection and application for Atlas.
 
-Detects and applies light/dark themes on Windows via the registry
-and on Linux/macOS via Qt style hints. Supports stylesheets for
-buttons, progress bars, and labels across all platforms.
+On Windows: reads the registry and applies stylesheets + DWM
+titlebar colouring for light and dark modes.
+On all other platforms: theme detection is delegated to Qt style
+hints and the system palette; no stylesheets are applied, so the
+native DE theme is used as-is.
 """
 
 # =============================================================================
@@ -180,11 +182,11 @@ def _get_theme_qt_hints() -> str:
 
 
 def _get_theme_palette() -> str:
-    """Detect theme by measuring the system palette background luminance.
+    """Detect theme by measuring the application palette background luminance.
 
-    If the DE's platform theme plugin injected a dark QPalette, the
-    Window background role will have low lightness.  Works on PyQt5
-    and every Qt version with no hardcoded colours.
+    Used as a last-resort fallback when Qt style hints are unavailable.
+    Reads the Window background colour from the active QPalette; low
+    lightness indicates a dark theme.
 
     Returns:
         str: ``'Dark'``, ``'Light'``, or ``'Unknown'``.
@@ -254,20 +256,19 @@ def _apply_dark(window) -> None:
         return
 
     try:
-        if _is_windows():
-            try:
-                from ctypes import byref, c_int, c_void_p, sizeof, windll
+        try:
+            from ctypes import byref, c_int, c_void_p, sizeof, windll
 
-                hwnd = int(window.winId())
-                for attr in (20, 19):
-                    windll.dwmapi.DwmSetWindowAttribute(
-                        c_void_p(hwnd),
-                        c_int(attr),
-                        byref(c_int(1)),
-                        sizeof(c_int),
-                    )
-            except Exception as dwm_error:
-                LOGGER.debug("DWM dark titlebar failed: %s", dwm_error)
+            hwnd = int(window.winId())
+            for attr in (20, 19):
+                windll.dwmapi.DwmSetWindowAttribute(
+                    c_void_p(hwnd),
+                    c_int(attr),
+                    byref(c_int(1)),
+                    sizeof(c_int),
+                )
+        except Exception as dwm_error:
+            LOGGER.debug("DWM dark titlebar failed: %s", dwm_error)
 
         # Base style sheet
         style = """
