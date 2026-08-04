@@ -34,15 +34,16 @@ QT_API = None
 
 try:
     from PyQt6 import QtCore, QtGui, QtWidgets
+
     QT_API = "PyQt6"
 except ImportError:
     try:
         from PyQt5 import QtCore, QtGui, QtWidgets  # noqa: F401
+
         QT_API = "PyQt5"
     except ImportError:
         raise ImportError(
-            "Atlas requires PyQt6 or PyQt5. "
-            "Neither package was found."
+            "Atlas requires PyQt6 or PyQt5. " "Neither package was found."
         )
 
 LOGGER.debug("Qt binding resolved: %s", QT_API)

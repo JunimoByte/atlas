@@ -33,9 +33,7 @@ def temp_environment(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     output_dir.mkdir()
 
     # Patch output dir
-    monkeypatch.setattr(
-        atlas.backup.archive, "ZIP_OUTPUT_DIR", output_dir
-    )
+    monkeypatch.setattr(atlas.backup.archive, "ZIP_OUTPUT_DIR", output_dir)
     monkeypatch.setattr(
         atlas.backup.archive, "get_zip_output_dir", lambda: output_dir
     )
@@ -65,9 +63,7 @@ def temp_environment(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
             return [str(profile_path)]
         return []
 
-    monkeypatch.setattr(
-        "atlas.backup.profile.find_profile", mock_find_profile
-    )
+    monkeypatch.setattr("atlas.backup.profile.find_profile", mock_find_profile)
 
     return output_dir
 
@@ -128,6 +124,7 @@ def test_worker_integration_no_browsers(monkeypatch: pytest.MonkeyPatch):
 
     # Mock find_profile to return an empty list
     import atlas.backup.profile
+
     monkeypatch.setattr(
         atlas.backup.profile, "find_profile", lambda b, o, d: []
     )

@@ -24,7 +24,7 @@ from atlas.compatibility.qt import QtWidgets
 
 @pytest.fixture(scope="session")
 def qapp() -> Generator[QtWidgets.QApplication, None, None]:
-    """Provide a session-scoped QtWidgets.QApplication instance for Qt signal tests."""
+    """Provide a session-scoped QApplication for Qt signal tests."""
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     yield app
 
@@ -72,6 +72,7 @@ def test_run_emits_no_browsers_found_when_empty(
     worker: Worker, mock_pipeline_cls: MagicMock
 ) -> None:
     """Verify that no_browsers_found is emitted when no profiles exist."""
+
     def trigger_no_browsers(*args, **kwargs):
         worker.no_browsers_found.emit()
         return PipelineResult.NO_BROWSERS_FOUND
@@ -98,6 +99,7 @@ def test_run_emits_disk_space_error_when_insufficient(
     worker: Worker, mock_pipeline_cls: MagicMock
 ) -> None:
     """Verify that disk_space_error is emitted on failure."""
+
     def trigger_disk_error(*args, **kwargs):
         worker.disk_space_error.emit("15 GB", "1 MB")
         return PipelineResult.INSUFFICIENT_DISK_SPACE
@@ -192,9 +194,7 @@ def test_run_emits_failed_when_pipeline_reports_failure(
     worker.run()
 
     assert done_calls == []
-    assert failures == [
-        "The backup process could not complete successfully."
-    ]
+    assert failures == ["The backup process could not complete successfully."]
 
 
 # =============================================================================

@@ -69,9 +69,7 @@ def get_windows_version() -> Optional[Tuple[int, int]]:
         ver_info = sys.getwindowsversion()
         return int(ver_info.major), int(ver_info.minor)
     except Exception as error:
-        LOGGER.debug(
-            "Failed to get Windows version: {}".format(error)
-        )
+        LOGGER.debug("Failed to get Windows version: {}".format(error))
         return None
 
 

@@ -65,7 +65,7 @@ class Pipeline:
         scanned_callback: Optional[Callable[[str], None]] = None,
         estimated_callback: Optional[Callable[[str], None]] = None,
         no_browsers_found_callback: Optional[Callable[[], None]] = None,
-        disk_space_error_callback: Optional[Callable[[str, str], None]] = None
+        disk_space_error_callback: Optional[Callable[[str, str], None]] = None,
     ) -> None:
         """Initialize the Pipeline.
 
@@ -148,7 +148,9 @@ class Pipeline:
             try:
                 return operation(*args, **kwargs)
             except (
-                PermissionError, FileNotFoundError, ScanTimeoutError
+                PermissionError,
+                FileNotFoundError,
+                ScanTimeoutError,
             ) as error:
                 LOGGER.debug(
                     "Non-retryable error on attempt %d: %s", attempt + 1, error
@@ -156,10 +158,12 @@ class Pipeline:
                 raise
             except Exception as error:
                 if attempt < MAX_RETRIES - 1:
-                    wait_time = RETRY_DELAY * (2 ** attempt)
+                    wait_time = RETRY_DELAY * (2**attempt)
                     LOGGER.warning(
                         "Attempt %d failed: %s. Retrying in %ss...",
-                        attempt + 1, error, wait_time
+                        attempt + 1,
+                        error,
+                        wait_time,
                     )
                     if self._cooperative_sleep(wait_time):
                         return None
@@ -227,7 +231,7 @@ class Pipeline:
             self._emit(
                 self.disk_space_error_callback,
                 Size.format_size(total_size),
-                available_space
+                available_space,
             )
             return False
         return True
@@ -269,9 +273,10 @@ class Pipeline:
 
         self._emit(self.scanned_callback, f"{scanned} / {total} scanned")
 
-        if not browser_matches or sum(
-            len(p) for p in browser_matches.values()
-        ) == 0:
+        if (
+            not browser_matches
+            or sum(len(p) for p in browser_matches.values()) == 0
+        ):
             self._emit(self.no_browsers_found_callback)
             return {}
 
@@ -329,9 +334,7 @@ class Pipeline:
 
         return total_size
 
-    def perform_backup(
-        self, browser_matches: Dict[str, List[str]]
-    ) -> bool:
+    def perform_backup(self, browser_matches: Dict[str, List[str]]) -> bool:
         """Compress profiles into ZIP archives.
 
         Note: browser_matches keys are unique browser names.
@@ -362,7 +365,7 @@ class Pipeline:
                     archive.compress,
                     paths,
                     zip_name,
-                    cancel_callback=self.is_cancelled
+                    cancel_callback=self.is_cancelled,
                 )
                 gc.collect()
 
@@ -370,9 +373,7 @@ class Pipeline:
                     LOGGER.info("Archive created: %s", zip_name)
                 elif not self._cancelled:
                     backup_succeeded = False
-                    LOGGER.error(
-                        "Failed to create archive: %s", zip_name
-                    )
+                    LOGGER.error("Failed to create archive: %s", zip_name)
 
             except FileNotFoundError as error:
                 LOGGER.warning("Skipped archive %s: %s", zip_name, error)

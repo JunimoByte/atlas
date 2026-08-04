@@ -51,7 +51,7 @@ def test_uimode_has_four_states() -> None:
         (UIMode.SCANNING, "scanning"),
         (UIMode.COMPLETED, "completed"),
         (UIMode.ERROR, "error"),
-    ]
+    ],
 )
 def test_uimode_values(mode: UIMode, expected_value: str) -> None:
     """Verify that UIMode states map to the expected string values."""
@@ -119,7 +119,7 @@ def test_window_initial_latest_scanned_info(window: Window) -> None:
         (0, 10, 0, 0),
         (5, 0, 42, 42),
         (5, -1, 42, 42),
-    ]
+    ],
 )
 def test_update_progress_states(
     window: Window, current: int, total: int, expected: int, initial_val: int
@@ -143,7 +143,7 @@ def test_update_elapsed_time_sets_label(window: Window) -> None:
 
 
 def test_update_elapsed_time_uses_formatted_size_as_info(
-    window: Window
+    window: Window,
 ) -> None:
     """Verify that the formatted size is included in the time label."""
     window.formatted_size = "120 MB"
@@ -152,7 +152,7 @@ def test_update_elapsed_time_uses_formatted_size_as_info(
 
 
 def test_update_elapsed_time_uses_scanned_info_when_no_size(
-    window: Window
+    window: Window,
 ) -> None:
     """Verify the fallback to scanned info in the time label."""
     window.formatted_size = ""
@@ -256,7 +256,7 @@ def test_error_mode_sets_custom_text(window: Window) -> None:
 
 
 def test_error_mode_without_text_does_not_overwrite_label(
-    window: Window
+    window: Window,
 ) -> None:
     """Verify that the error label is preserved if no text is provided."""
     window.interface.cancel_description.setText("Original")

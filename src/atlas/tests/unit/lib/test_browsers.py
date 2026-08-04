@@ -28,11 +28,17 @@ def sample_valid_browser() -> Dict[str, Any]:
             "Windows": [
                 {
                     "Path": os.path.join(
-                        "mock_drive", "Users", "Test", "AppData", "Local",
-                        "Google", "Chrome", "User Data"
+                        "mock_drive",
+                        "Users",
+                        "Test",
+                        "AppData",
+                        "Local",
+                        "Google",
+                        "Chrome",
+                        "User Data",
                     ),
                     "Type": "profile",
-                    "Signature": ["Preferences", "Bookmarks"]
+                    "Signature": ["Preferences", "Bookmarks"],
                 }
             ]
         }
@@ -45,11 +51,7 @@ def sample_invalid_browser() -> Dict[str, Any]:
     return {
         "Firefox": {
             "Windows": [
-                {
-                    "Path": "",
-                    "Type": 123,  # Wrong type
-                    "Signature": None
-                }
+                {"Path": "", "Type": 123, "Signature": None}  # Wrong type
             ]
         }
     }
@@ -78,7 +80,7 @@ def test_validate_entry_valid(sample_valid_browser: Dict[str, Any]) -> None:
 
 
 def test_validate_entry_invalid(
-    sample_invalid_browser: Dict[str, Any]
+    sample_invalid_browser: Dict[str, Any],
 ) -> None:
     """Verify that missing or incorrectly typed fields are caught."""
     entry = sample_invalid_browser["Firefox"]["Windows"][0]
@@ -88,7 +90,7 @@ def test_validate_entry_invalid(
 
 
 def test_verify_entries_loads_valid_config(
-    sample_valid_browser: Dict[str, Any]
+    sample_valid_browser: Dict[str, Any],
 ) -> None:
     """Verify that valid configurations are loaded into memory."""
     result = browsers.verify_entries(
@@ -100,7 +102,7 @@ def test_verify_entries_loads_valid_config(
 
 
 def test_verify_entries_rejects_invalid_config(
-    sample_invalid_browser: Dict[str, Any]
+    sample_invalid_browser: Dict[str, Any],
 ) -> None:
     """Verify that invalid configurations are rejected."""
     result = browsers.verify_entries(
@@ -111,7 +113,7 @@ def test_verify_entries_rejects_invalid_config(
 
 
 def test_grab_returns_cached_data(
-    sample_valid_browser: Dict[str, Any]
+    sample_valid_browser: Dict[str, Any],
 ) -> None:
     """Verify that the cached browser data is returned."""
     browsers.BROWSERS.update(sample_valid_browser)

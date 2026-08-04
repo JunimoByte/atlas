@@ -26,7 +26,7 @@ def pipeline() -> Pipeline:
     """Return a Pipeline with no callbacks and a mocked browser list."""
     with patch(
         "atlas.backup.pipeline.browsers.grab",
-        return_value={"Chrome": {}, "Firefox": {}}
+        return_value={"Chrome": {}, "Firefox": {}},
     ):
         p = Pipeline()
     return p
@@ -57,7 +57,7 @@ def test_cancel_sets_flag(pipeline: Pipeline) -> None:
     [
         (True, True),
         (False, False),
-    ]
+    ],
 )
 def test_check_cancelled_state(
     pipeline: Pipeline, pre_cancel: bool, expected: bool
@@ -73,7 +73,7 @@ def test_check_cancelled_state(
     [
         ("scan_profiles", []),
         ("estimate_size", [{"Chrome": [os.path.join("some", "path")]}]),
-    ]
+    ],
 )
 def test_cancelled_pipeline_returns_early(
     pipeline: Pipeline, method_name: str, call_args: list
@@ -130,7 +130,7 @@ def test_retry_operation_retries_on_generic_error(pipeline: Pipeline) -> None:
 
 
 def test_retry_operation_does_not_retry_permission_error(
-    pipeline: Pipeline
+    pipeline: Pipeline,
 ) -> None:
     """Verify that PermissionError is raised without retries."""
     call_count = {"n": 0}
@@ -147,7 +147,7 @@ def test_retry_operation_does_not_retry_permission_error(
 
 
 def test_retry_operation_raises_after_all_retries_fail(
-    pipeline: Pipeline
+    pipeline: Pipeline,
 ) -> None:
     """Verify that exhaustively failed retries raise an error."""
     with patch("atlas.backup.pipeline.time.sleep"):
@@ -173,7 +173,7 @@ def test_scan_profiles_populates_matches(pipeline: Pipeline) -> None:
     """Verify that profile matches are populated."""
     with patch(
         "atlas.backup.pipeline.Profile.find_profile",
-        return_value=[os.path.join("fake", "profile", "path")]
+        return_value=[os.path.join("fake", "profile", "path")],
     ):
         result = pipeline.scan_profiles()
 
@@ -193,12 +193,10 @@ def test_estimate_size_sums_sizes(pipeline: Pipeline) -> None:
     pipeline.estimated_callback = emitted.append
 
     with patch(
-        "atlas.backup.pipeline.Size.get_directory_size",
-        return_value=1024
+        "atlas.backup.pipeline.Size.get_directory_size", return_value=1024
     ):
         with patch(
-            "atlas.backup.pipeline.Size.format_size",
-            return_value="1 KB"
+            "atlas.backup.pipeline.Size.format_size", return_value="1 KB"
         ):
             result = pipeline.estimate_size(
                 {"Chrome": [os.path.join("path", "a")]}
@@ -209,7 +207,7 @@ def test_estimate_size_sums_sizes(pipeline: Pipeline) -> None:
 
 
 def test_estimate_size_returns_zero_for_empty_matches(
-    pipeline: Pipeline
+    pipeline: Pipeline,
 ) -> None:
     """Verify that empty matches result in zero size."""
     result = pipeline.estimate_size({})
@@ -229,7 +227,7 @@ def test_perform_backup_calls_compress_per_browser(pipeline: Pipeline) -> None:
     }
     with patch(
         "atlas.backup.pipeline.archive.compress",
-        return_value=os.path.join("output", "Chrome.zip")
+        return_value=os.path.join("output", "Chrome.zip"),
     ) as mock_c:
         pipeline.perform_backup(matches)
 
@@ -243,7 +241,7 @@ def test_perform_backup_emits_progress(pipeline: Pipeline) -> None:
 
     with patch(
         "atlas.backup.pipeline.archive.compress",
-        return_value=os.path.join("out", "x.zip")
+        return_value=os.path.join("out", "x.zip"),
     ):
         pipeline.perform_backup({"Chrome": ["p"]})
 
@@ -260,7 +258,7 @@ def test_perform_backup_stops_on_cancel(pipeline: Pipeline) -> None:
 
 
 def test_perform_backup_returns_false_on_archive_failure(
-    pipeline: Pipeline
+    pipeline: Pipeline,
 ) -> None:
     """Return False when a browser archive could not be created."""
     with patch(
@@ -289,9 +287,7 @@ def test_pipeline_repr(pipeline: Pipeline) -> None:
 # =============================================================================
 
 
-def test_run_returns_success_when_backup_completes(
-    pipeline: Pipeline
-) -> None:
+def test_run_returns_success_when_backup_completes(pipeline: Pipeline) -> None:
     """Return SUCCESS when every pipeline stage completes."""
     with patch.object(
         pipeline, "scan_profiles", return_value={"Chrome": ["/p"]}
@@ -309,7 +305,7 @@ def test_run_returns_success_when_backup_completes(
 
 
 def test_run_returns_failed_when_backup_phase_fails(
-    pipeline: Pipeline
+    pipeline: Pipeline,
 ) -> None:
     """Return FAILED when the backup phase does not complete."""
     with patch.object(
@@ -328,7 +324,7 @@ def test_run_returns_failed_when_backup_phase_fails(
 
 
 def test_run_returns_no_browsers_found_when_scan_is_empty(
-    pipeline: Pipeline
+    pipeline: Pipeline,
 ) -> None:
     """Return NO_BROWSERS_FOUND when scanning finds no profiles."""
     with patch.object(pipeline, "scan_profiles", return_value={}):
@@ -338,7 +334,7 @@ def test_run_returns_no_browsers_found_when_scan_is_empty(
 
 
 def test_run_returns_insufficient_disk_space_when_check_fails(
-    pipeline: Pipeline
+    pipeline: Pipeline,
 ) -> None:
     """Return INSUFFICIENT_DISK_SPACE when free space is too low."""
     with patch.object(

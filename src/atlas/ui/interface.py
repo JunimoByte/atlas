@@ -87,9 +87,7 @@ class UiDialog:
 
             LOGGER.debug("UI setup completed successfully.")
         except Exception as error:
-            LOGGER.error(
-                "Failed to setup UI: %s", error, exc_info=True
-            )
+            LOGGER.error("Failed to setup UI: %s", error, exc_info=True)
             raise
 
     def _setup_backdrop(self, parent: QtWidgets.QWidget) -> None:
@@ -112,7 +110,10 @@ class UiDialog:
         base_font = parent.font()
 
         self.title = self._make_label(
-            parent, base_font, scale=1.4, name="Title",
+            parent,
+            base_font,
+            scale=1.4,
+            name="Title",
         )
         layout.addWidget(self.title)
 
@@ -128,7 +129,10 @@ class UiDialog:
 
         for attr_name, obj_name in _CONTENT_LABELS:
             label = self._make_label(
-                parent, base_font, scale=1.0, name=obj_name,
+                parent,
+                base_font,
+                scale=1.0,
+                name=obj_name,
                 v_policy=QtWidgets.QSizePolicy.Policy.Expanding,
                 align=(
                     QtCore.Qt.AlignmentFlag.AlignTop
@@ -141,7 +145,10 @@ class UiDialog:
         layout.addWidget(content_area, stretch=1)
 
         self.time_elapsed = self._make_label(
-            parent, base_font, scale=0.9, name="TimeElapsed",
+            parent,
+            base_font,
+            scale=0.9,
+            name="TimeElapsed",
         )
         layout.addWidget(self.time_elapsed)
         layout.addSpacing(20)
@@ -237,33 +244,43 @@ class UiDialog:
         tr = QtCore.QCoreApplication.translate
 
         main_dialog.setWindowTitle(tr("MainDialog", "Atlas"))
-        self.title.setText(tr(
-            "MainDialog",
-            '<span style="font-size:16pt;">Atlas</span> '
-            '<span style="font-size:11pt; vertical-align:super;">1.0'
-            "</span>",
-        ))
-        self.description.setText(tr(
-            "MainDialog",
-            "Atlas will automatically detect all installed web browsers "
-            "and back up your user profiles into an output directory. "
-            'Press \u201cOK\u201d to initiate the backup or '
-            '\u201cCancel\u201d to exit.',
-        ))
-        self.progress_description.setText(tr(
-            "MainDialog",
-            "Backing up browser profiles. Performance may vary "
-            "depending on your system\u2019s storage device.",
-        ))
-        self.completed_description.setText(tr(
-            "MainDialog",
-            "All browser profiles have been successfully backed up, "
-            "compressed, and saved to the specified output folder. "
-            "You may now close the application.",
-        ))
-        self.cancel_description.setText(tr(
-            "MainDialog",
-            "The backup operation was canceled. You may now safely "
-            "close this window.",
-        ))
+        self.title.setText(
+            tr(
+                "MainDialog",
+                '<span style="font-size:16pt;">Atlas</span> '
+                '<span style="font-size:11pt; vertical-align:super;">1.0'
+                "</span>",
+            )
+        )
+        self.description.setText(
+            tr(
+                "MainDialog",
+                "Atlas will automatically detect all installed web browsers "
+                "and back up your user profiles into an output directory. "
+                "Press \u201cOK\u201d to initiate the backup or "
+                "\u201cCancel\u201d to exit.",
+            )
+        )
+        self.progress_description.setText(
+            tr(
+                "MainDialog",
+                "Backing up browser profiles. Performance may vary "
+                "depending on your system\u2019s storage device.",
+            )
+        )
+        self.completed_description.setText(
+            tr(
+                "MainDialog",
+                "All browser profiles have been successfully backed up, "
+                "compressed, and saved to the specified output folder. "
+                "You may now close the application.",
+            )
+        )
+        self.cancel_description.setText(
+            tr(
+                "MainDialog",
+                "The backup operation was canceled. You may now safely "
+                "close this window.",
+            )
+        )
         self.time_elapsed.setText(tr("MainDialog", "Time Elapsed: "))

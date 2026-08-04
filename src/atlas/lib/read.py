@@ -30,9 +30,7 @@ def _get_base_path() -> str:
     if getattr(sys, "frozen", False):
         return getattr(sys, "_MEIPASS", os.getcwd())
 
-    return os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "../../..")
-    )
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
 
 
 def load_json(filename: str, config_dir: str = "configs") -> Dict[str, Any]:

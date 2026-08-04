@@ -74,7 +74,7 @@ def _validate_profile_path(
     # Normalize path to lowercase for Windows case-insensitivity
     cache_key = (
         str(path).lower(),
-        tuple(signature) if isinstance(signature, list) else signature
+        tuple(signature) if isinstance(signature, list) else signature,
     )
     if cache_key in _PATH_CACHE:
         return _PATH_CACHE[cache_key]
@@ -138,7 +138,7 @@ def _expand_wildcard(base: Path, rel_path: Path) -> List[Path]:
 def find_profile(
     browser_name: str,
     operating_system: str,
-    browsers_data: Optional[Dict[str, Any]] = None
+    browsers_data: Optional[Dict[str, Any]] = None,
 ) -> List[str]:
     """Locate all valid profile directories for a browser on a given OS.
 
@@ -196,8 +196,7 @@ def find_profile(
 
 
 def get_browser_name_from_path(
-    path_str: str,
-    browsers_data: Optional[Dict[str, Any]] = None
+    path_str: str, browsers_data: Optional[Dict[str, Any]] = None
 ) -> str:
     """Return the browser name for a given profile path.
 

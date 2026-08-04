@@ -27,6 +27,7 @@ def mock_window() -> MagicMock:
     window.winId.return_value = 12345
     return window
 
+
 # =============================================================================
 # TESTS
 # =============================================================================
@@ -44,11 +45,13 @@ def test_apply_with_none_window(caplog: pytest.LogCaptureFixture) -> None:
     [
         ("Light", "_apply_light", "_apply_dark"),
         ("Dark", "_apply_dark", "_apply_light"),
-    ]
+    ],
 )
 def test_apply_calls_correct_theme_function(
-    mock_window: MagicMock, theme_name: str,
-    target_mock: str, skipped_mock: str
+    mock_window: MagicMock,
+    theme_name: str,
+    target_mock: str,
+    skipped_mock: str,
 ) -> None:
     """Verify that the correct theme function is called."""
     with patch("atlas.lib.themes._get_theme", return_value=theme_name):

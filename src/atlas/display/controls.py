@@ -32,7 +32,9 @@ SECONDS_PER_MINUTE: int = 60
 # =============================================================================
 
 
-def set_text(button_box: QtWidgets.QDialogButtonBox, name: str, text: str) -> None:
+def set_text(
+    button_box: QtWidgets.QDialogButtonBox, name: str, text: str
+) -> None:
     """Set the text of a standard button safely.
 
     Args:
@@ -140,5 +142,5 @@ def format_elapsed_time(elapsed: int, info: str = "") -> str:
         parts.append("{}m".format(minutes))
     parts.append("{}s".format(seconds))
 
-    base = "Time Elapsed: {}".format(' '.join(parts))
+    base = "Time Elapsed: {}".format(" ".join(parts))
     return "{} ({})".format(base, info) if info else base

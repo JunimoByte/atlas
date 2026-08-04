@@ -127,16 +127,16 @@ class Window(QtWidgets.QDialog):
     def _connect_signals(self) -> None:
         """Connect global signals to UI slots using mappings."""
         signal_map = {
-            "backup_started":  self._on_backup_started,
+            "backup_started": self._on_backup_started,
             "backup_finished": self.complete,
             "backup_cancelled": self.reject,
-            "progress":        self._update_progress,
-            "elapsed_time":    self._update_elapsed_time,
-            "estimated_size":  self._set_formatted_size,
+            "progress": self._update_progress,
+            "elapsed_time": self._update_elapsed_time,
+            "estimated_size": self._set_formatted_size,
             "scanned_entries": self._set_scanned_info,
             "disk_space_error": self._handle_disk_space_error,
             "no_browsers_found": self._handle_no_browsers,
-            "worker_error":    self._handle_worker_error,
+            "worker_error": self._handle_worker_error,
         }
         for signal_name, slot in signal_map.items():
             getattr(self.signals, signal_name).connect(slot)

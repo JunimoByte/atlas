@@ -90,11 +90,14 @@ def test_scan_files_respects_blacklist(
     source = tmp_path / "source"
     source.mkdir()
 
-    create_files(source, [
-        "valid.txt",
-        "skip.log",
-        "__pycache__/ignored.pyc",
-    ])
+    create_files(
+        source,
+        [
+            "valid.txt",
+            "skip.log",
+            "__pycache__/ignored.pyc",
+        ],
+    )
 
     results = list(archive.scan_files([source]))
     names = [f.name for _, f in results]
@@ -133,7 +136,7 @@ def test_compress_rejects_invalid_input(temp_output_dir: Path) -> None:
 
 
 def test_resolve_output_zip_path_stays_within_output_dir(
-    temp_output_dir: Path
+    temp_output_dir: Path,
 ) -> None:
     """Resolve a normal ZIP path inside the configured output directory."""
     result = archive._resolve_output_zip_path("test.zip")
@@ -141,7 +144,7 @@ def test_resolve_output_zip_path_stays_within_output_dir(
 
 
 def test_resolve_output_zip_path_rejects_parent_traversal(
-    temp_output_dir: Path
+    temp_output_dir: Path,
 ) -> None:
     """Reject ZIP paths that escape the configured output directory."""
     with pytest.raises(ValueError):

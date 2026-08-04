@@ -70,7 +70,7 @@ def test_expand_wildcard_empty_rel_path_returns_base(tmp_path: Path) -> None:
 
 
 def test_validate_profile_path_returns_none_for_missing(
-    tmp_path: Path
+    tmp_path: Path,
 ) -> None:
     """Verify that None is returned for nonexistent paths."""
     assert _validate_profile_path(tmp_path / "nonexistent", None) is None
@@ -93,13 +93,14 @@ def test_validate_profile_path_with_missing_signature(tmp_path: Path) -> None:
 
 
 def test_validate_profile_path_with_list_signature_any_match(
-    tmp_path: Path
+    tmp_path: Path,
 ) -> None:
     """Verify that any matching signature in a list satisfies validation."""
     (tmp_path / "Bookmarks").write_text("{}")
-    assert _validate_profile_path(
-        tmp_path, ["Preferences", "Bookmarks"]
-    ) is not None
+    assert (
+        _validate_profile_path(tmp_path, ["Preferences", "Bookmarks"])
+        is not None
+    )
 
 
 def test_validate_profile_path_caches_result(tmp_path: Path) -> None:
@@ -138,16 +139,14 @@ def test_find_profile_discovers_real_path(tmp_path: Path) -> None:
                 {
                     "Path": str(profile_dir),
                     "Type": "APPDATA",
-                    "Signature": "Preferences"
+                    "Signature": "Preferences",
                 }
             ]
         }
     }
 
     with patch.object(
-        profile_module,
-        "_expand_path_by_type",
-        return_value=[profile_dir]
+        profile_module, "_expand_path_by_type", return_value=[profile_dir]
     ):
         result = find_profile(
             "TestBrowser", "windows", browsers_data=fake_browsers
@@ -172,9 +171,7 @@ def test_find_profile_deduplicates_paths(tmp_path: Path) -> None:
     }
 
     with patch.object(
-        profile_module,
-        "_expand_path_by_type",
-        return_value=[profile_dir]
+        profile_module, "_expand_path_by_type", return_value=[profile_dir]
     ):
         result = find_profile(
             "TestBrowser", "windows", browsers_data=fake_browsers
@@ -194,12 +191,11 @@ def test_get_browser_name_from_path_returns_unknown_for_empty() -> None:
 
 
 def test_get_browser_name_from_path_returns_unknown_for_no_match(
-    tmp_path: Path
+    tmp_path: Path,
 ) -> None:
     """Verify that 'Unknown' is returned when no browser matches the path."""
     result = get_browser_name_from_path(
-        str(tmp_path / "SomeRandomPath"),
-        browsers_data={}
+        str(tmp_path / "SomeRandomPath"), browsers_data={}
     )
     assert result == "Unknown"
 

@@ -63,9 +63,7 @@ def open_folder(folder_path: Optional[Path] = None) -> None:
         folder = folder_path.resolve()
 
         if not folder.exists():
-            LOGGER.warning(
-                "Selected folder missing: %s", folder
-            )
+            LOGGER.warning("Selected folder missing: %s", folder)
             show_warning(
                 title="Caution",
                 message="Folder Not Found",

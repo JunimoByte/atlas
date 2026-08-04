@@ -32,9 +32,7 @@ def run_pipeline(
     scanned_callback: Optional[Callable[[str], None]] = None,
     estimated_callback: Optional[Callable[[str], None]] = None,
     no_browsers_found_callback: Optional[Callable[[], None]] = None,
-    disk_space_error_callback: Optional[
-        Callable[[str, str], None]
-    ] = None,
+    disk_space_error_callback: Optional[Callable[[str, str], None]] = None,
 ) -> Tuple[PipelineResult, Optional[Pipeline]]:
     """Execute the backup pipeline without any Qt dependency.
 

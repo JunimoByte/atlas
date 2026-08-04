@@ -57,19 +57,19 @@ class ControllerState(Enum):
 
 
 VALID_TRANSITIONS = {
-    ControllerState.IDLE:       {ControllerState.RUNNING},
-    ControllerState.RUNNING:    {
+    ControllerState.IDLE: {ControllerState.RUNNING},
+    ControllerState.RUNNING: {
         ControllerState.SUCCESS,
         ControllerState.EMPTY,
         ControllerState.BLOCKED,
         ControllerState.CANCELLING,
         ControllerState.FAILED,
     },
-    ControllerState.SUCCESS:    {ControllerState.IDLE},
-    ControllerState.EMPTY:      {ControllerState.IDLE},
-    ControllerState.BLOCKED:    {ControllerState.IDLE},
+    ControllerState.SUCCESS: {ControllerState.IDLE},
+    ControllerState.EMPTY: {ControllerState.IDLE},
+    ControllerState.BLOCKED: {ControllerState.IDLE},
     ControllerState.CANCELLING: {ControllerState.IDLE, ControllerState.FAILED},
-    ControllerState.FAILED:     {ControllerState.IDLE},
+    ControllerState.FAILED: {ControllerState.IDLE},
 }
 
 
@@ -119,9 +119,7 @@ class Controller(QtCore.QObject):
             return False
 
         LOGGER.debug(
-            "State transition: %s -> %s",
-            self.state.name,
-            new_state.name
+            "State transition: %s -> %s", self.state.name, new_state.name
         )
         self.state = new_state
         return True

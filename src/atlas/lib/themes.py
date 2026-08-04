@@ -57,9 +57,7 @@ def initialize(window) -> None:
         hints = QtGui.QGuiApplication.styleHints()
         if hints and hasattr(hints, "colorSchemeChanged"):
             hints.colorSchemeChanged.connect(
-                lambda: QtCore.QTimer.singleShot(
-                    0, lambda: apply(window)
-                )
+                lambda: QtCore.QTimer.singleShot(0, lambda: apply(window))
             )
         else:
             LOGGER.debug(
@@ -67,9 +65,7 @@ def initialize(window) -> None:
                 "live theme updates disabled."
             )
     except Exception:
-        LOGGER.debug(
-            "Failed to enable live theme updates", exc_info=True
-        )
+        LOGGER.debug("Failed to enable live theme updates", exc_info=True)
 
 
 def apply(window) -> None:
@@ -179,14 +175,12 @@ def _get_theme() -> str:
 def _apply_light(window) -> None:
     """Apply light theme to the window."""
     try:
-        window.setStyleSheet(
-            """
+        window.setStyleSheet("""
             QWidget#MainDialog {
                 color: #000000;
                 background-color: #ffffff;
             }
-            """
-        )
+            """)
     except Exception as error:
         LOGGER.error("Failed to apply light theme: %s", error)
 
@@ -197,6 +191,7 @@ def _apply_dark(window) -> None:
         if _is_windows():
             try:
                 from ctypes import byref, c_int, c_void_p, sizeof, windll
+
                 hwnd = int(window.winId())
                 for attr in (20, 19):
                     windll.dwmapi.DwmSetWindowAttribute(
@@ -206,9 +201,7 @@ def _apply_dark(window) -> None:
                         sizeof(c_int),
                     )
             except Exception as dwm_error:
-                LOGGER.debug(
-                    "DWM dark titlebar failed: %s", dwm_error
-                )
+                LOGGER.debug("DWM dark titlebar failed: %s", dwm_error)
 
         # Base style sheet
         style = """
@@ -287,9 +280,7 @@ def resource_path(filename: str) -> str:
             # then to assets
             project_root = os.path.dirname(
                 os.path.dirname(
-                    os.path.dirname(
-                        os.path.dirname(os.path.abspath(__file__))
-                    )
+                    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
                 )
             )
 

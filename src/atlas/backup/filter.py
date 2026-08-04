@@ -53,7 +53,7 @@ MAX_FILE_SIZE = 25 * 1024**3
 
 def scan_files(  # noqa: C901
     source_paths: List[Path],
-    cancel_callback: Optional[Callable[[], bool]] = None
+    cancel_callback: Optional[Callable[[], bool]] = None,
 ) -> Generator[Tuple[Path, Path], None, None]:
     """Walk directories and yield (source_root, file_path) pairs to compress.
 
@@ -105,8 +105,8 @@ def scan_files(  # noqa: C901
 
                                 if (
                                     file_ext in SKIP_FILE_WITH_EXTENSION
-                                    and file_name in
-                                    SKIP_FILE_WITH_EXTENSION[file_ext]
+                                    and file_name
+                                    in SKIP_FILE_WITH_EXTENSION[file_ext]
                                 ):
                                     continue
 
@@ -123,7 +123,7 @@ def scan_files(  # noqa: C901
                             LOGGER.debug(
                                 "Scandir entry error for %s: %s",
                                 getattr(entry, "path", "<unknown>"),
-                                error
+                                error,
                             )
                             continue
             except OSError as error:

@@ -84,7 +84,9 @@ def show(
 
     """
     try:
-        app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv)
+        app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(
+            sys.argv
+        )
         app.setQuitOnLastWindowClosed(True)
 
         msg = QtWidgets.QMessageBox()
@@ -96,7 +98,9 @@ def show(
             BUTTON_MAP.get(buttons, QtWidgets.QMessageBox.StandardButton.Ok)
         )
         msg.setDefaultButton(
-            DEFAULT_BUTTON.get(buttons, QtWidgets.QMessageBox.StandardButton.Ok)
+            DEFAULT_BUTTON.get(
+                buttons, QtWidgets.QMessageBox.StandardButton.Ok
+            )
         )
 
         if informative_text:
@@ -173,9 +177,7 @@ def show_error(
     )
 
 
-def show_info(
-    title: str, message: str, details: Optional[str] = None
-) -> int:
+def show_info(title: str, message: str, details: Optional[str] = None) -> int:
     """Show an informational popup.
 
     Args:
@@ -216,11 +218,14 @@ def show_question(
 
     """
     buttons = "CONFIRM_DECLINE_CANCEL" if cancel_button else "CONFIRM_DECLINE"
-    return show(
-        title,
-        "<b>{}</b>".format(message),
-        icon="QUESTION",
-        buttons=buttons,
-        informative_text=details,
-        stay_on_top=False,
-    ) == QtWidgets.QMessageBox.StandardButton.Yes
+    return (
+        show(
+            title,
+            "<b>{}</b>".format(message),
+            icon="QUESTION",
+            buttons=buttons,
+            informative_text=details,
+            stay_on_top=False,
+        )
+        == QtWidgets.QMessageBox.StandardButton.Yes
+    )

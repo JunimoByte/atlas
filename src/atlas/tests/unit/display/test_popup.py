@@ -51,7 +51,10 @@ def test_button_map_contains_all_keys() -> None:
 
 def test_button_map_acknowledge_is_ok() -> None:
     """Verify the ACKNOWLEDGE button mapping."""
-    assert popup.BUTTON_MAP["ACKNOWLEDGE"] == QtWidgets.QMessageBox.StandardButton.Ok
+    assert (
+        popup.BUTTON_MAP["ACKNOWLEDGE"]
+        == QtWidgets.QMessageBox.StandardButton.Ok
+    )
 
 
 def test_button_map_confirm_decline_includes_yes_and_no() -> None:
@@ -94,15 +97,20 @@ def mock_show(monkeypatch: pytest.MonkeyPatch) -> dict:
     captured = {}
 
     def fake_show(
-        title: str, text: str, icon: Any = None,
-        buttons: Any = None, **kwargs: Any
+        title: str,
+        text: str,
+        icon: Any = None,
+        buttons: Any = None,
+        **kwargs: Any,
     ) -> QtWidgets.QMessageBox.StandardButton:
         """Mock implementation of popup.show."""
         captured["title"] = title
         captured["text"] = text
         captured["icon"] = icon
         captured["buttons"] = buttons
-        return captured.get("return_value", QtWidgets.QMessageBox.StandardButton.Yes)
+        return captured.get(
+            "return_value", QtWidgets.QMessageBox.StandardButton.Yes
+        )
 
     monkeypatch.setattr(popup, "show", fake_show)
     return captured
@@ -133,7 +141,7 @@ def test_show_info_calls_show_with_information(mock_show: dict) -> None:
 
 
 def test_show_question_uses_confirm_decline_by_default(
-    mock_show: dict
+    mock_show: dict,
 ) -> None:
     """Verify the default buttons for questions."""
     popup.show_question("Q", "Are you sure?")
@@ -151,12 +159,12 @@ def test_show_question_uses_cancel_variant(mock_show: dict) -> None:
     [
         (QtWidgets.QMessageBox.StandardButton.Yes, True),
         (QtWidgets.QMessageBox.StandardButton.No, False),
-    ]
+    ],
 )
 def test_show_question_returns_expected(
     mock_show: dict,
     button_returned: QtWidgets.QMessageBox.StandardButton,
-    expected_result: bool
+    expected_result: bool,
 ) -> None:
     """Verify the return value of show_question."""
     mock_show["return_value"] = button_returned

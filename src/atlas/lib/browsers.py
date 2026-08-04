@@ -73,7 +73,7 @@ def _validate_entry(
 
 def verify_entries(  # noqa: C901
     browsers_json: Optional[Dict[str, Any]] = None,
-    types_json: Optional[Dict[str, Any]] = None
+    types_json: Optional[Dict[str, Any]] = None,
 ) -> bool:
     """Load and validate browser configuration.
 
@@ -90,7 +90,8 @@ def verify_entries(  # noqa: C901
 
     try:
         data = (
-            browsers_json if browsers_json is not None
+            browsers_json
+            if browsers_json is not None
             else load_json("browsers.json")
         )
         if not data:

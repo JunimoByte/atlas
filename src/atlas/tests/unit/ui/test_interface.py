@@ -23,7 +23,7 @@ from atlas.ui.interface import UiDialog
 
 @pytest.fixture(scope="session")
 def app() -> Generator[QtWidgets.QApplication, None, None]:
-    """Provide session-scoped QtWidgets.QApplication instance for Qt widgets."""
+    """Provide session-scoped QApplication instance for Qt widgets."""
     app_instance = QtWidgets.QApplication.instance()
     if app_instance is None:
         app_instance = QtWidgets.QApplication([])

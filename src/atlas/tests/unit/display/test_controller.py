@@ -34,7 +34,7 @@ def ctrl(signals: Signals) -> Controller:
 
 
 def test_controller_initial_state(ctrl: Controller) -> None:
-    """Verify that Controller initializes in IDLE state with default members."""
+    """Verify Controller initializes in IDLE state with default members."""
     assert ctrl.worker is None
     assert ctrl._worker_thread is None
     assert isinstance(ctrl.elapsed_timer, QtCore.QTimer)
@@ -50,8 +50,9 @@ def test_controller_holds_signals_reference(
 
 def test_start_backup_sets_active_flag(ctrl: Controller) -> None:
     """Verify that start_backup transitions state to RUNNING."""
-    with patch.object(ctrl, "_deploy_worker"), \
-         patch.object(ctrl, "_start_elapsed_timer"):
+    with patch.object(ctrl, "_deploy_worker"), patch.object(
+        ctrl, "_start_elapsed_timer"
+    ):
         ctrl.start_backup()
     assert ctrl.state == ControllerState.RUNNING
 
@@ -62,8 +63,9 @@ def test_start_backup_emits_backup_started(
     """Verify that start_backup emits the backup_started signal."""
     received = []
     signals.backup_started.connect(lambda: received.append(True))
-    with patch.object(ctrl, "_deploy_worker"), \
-         patch.object(ctrl, "_start_elapsed_timer"):
+    with patch.object(ctrl, "_deploy_worker"), patch.object(
+        ctrl, "_start_elapsed_timer"
+    ):
         ctrl.start_backup()
     assert received == [True]
 
@@ -74,8 +76,9 @@ def test_start_backup_is_idempotent(
     """Verify that repeated start_backup calls do not re-trigger setup."""
     started = []
     signals.backup_started.connect(lambda: started.append(True))
-    with patch.object(ctrl, "_deploy_worker"), \
-         patch.object(ctrl, "_start_elapsed_timer"):
+    with patch.object(ctrl, "_deploy_worker"), patch.object(
+        ctrl, "_start_elapsed_timer"
+    ):
         ctrl.start_backup()
         ctrl.start_backup()
     assert len(started) == 1
@@ -100,8 +103,9 @@ def test_start_backup_resets_on_deploy_error(
 def test_cancel_backup_sets_cancelling_flag(ctrl: Controller) -> None:
     """Verify that cancel_backup transitions state to CANCELLING."""
     ctrl.state = ControllerState.RUNNING
-    with patch.object(ctrl, "_stop_elapsed_timer"), \
-         patch.object(ctrl, "_request_worker_shutdown"):
+    with patch.object(ctrl, "_stop_elapsed_timer"), patch.object(
+        ctrl, "_request_worker_shutdown"
+    ):
         ctrl.cancel_backup()
     assert ctrl.state == ControllerState.CANCELLING
 
@@ -155,27 +159,30 @@ def test_handle_thread_finished_unexpected(
 
 def test_cleanup_calls_stop_elapsed_timer(ctrl: Controller) -> None:
     """Verify cleanup stops the elapsed timer."""
-    with patch.object(ctrl, "_stop_elapsed_timer") as mock_stop, \
-         patch.object(ctrl, "_request_worker_shutdown"):
+    with patch.object(ctrl, "_stop_elapsed_timer") as mock_stop, patch.object(
+        ctrl, "_request_worker_shutdown"
+    ):
         ctrl.cleanup()
     mock_stop.assert_called_once()
 
 
 def test_cleanup_calls_request_worker_shutdown_when_active(
-    ctrl: Controller
+    ctrl: Controller,
 ) -> None:
     """Verify cleanup requests worker shutdown when backup is active."""
     ctrl.state = ControllerState.RUNNING
-    with patch.object(ctrl, "_stop_elapsed_timer"), \
-         patch.object(ctrl, "_request_worker_shutdown") as mock_cleanup:
+    with patch.object(ctrl, "_stop_elapsed_timer"), patch.object(
+        ctrl, "_request_worker_shutdown"
+    ) as mock_cleanup:
         ctrl.cleanup()
     mock_cleanup.assert_called_once()
 
 
 def test_cleanup_skips_worker_when_inactive(ctrl: Controller) -> None:
     """Verify cleanup skips worker shutdown when backup is inactive."""
-    with patch.object(ctrl, "_stop_elapsed_timer"), \
-         patch.object(ctrl, "_request_worker_shutdown") as mock_cleanup:
+    with patch.object(ctrl, "_stop_elapsed_timer"), patch.object(
+        ctrl, "_request_worker_shutdown"
+    ) as mock_cleanup:
         ctrl.cleanup()
     mock_cleanup.assert_not_called()
 
@@ -183,8 +190,9 @@ def test_cleanup_skips_worker_when_inactive(ctrl: Controller) -> None:
 def test_handle_worker_completion_sets_success(ctrl: Controller) -> None:
     """Verify worker completion updates state to SUCCESS."""
     ctrl.state = ControllerState.RUNNING
-    with patch.object(ctrl, "_stop_elapsed_timer"), \
-         patch.object(ctrl, "_request_worker_shutdown"):
+    with patch.object(ctrl, "_stop_elapsed_timer"), patch.object(
+        ctrl, "_request_worker_shutdown"
+    ):
         ctrl._handle_worker_completion()
     assert ctrl.state == ControllerState.SUCCESS
 
@@ -192,8 +200,9 @@ def test_handle_worker_completion_sets_success(ctrl: Controller) -> None:
 def test_handle_worker_failure_sets_failed_state(ctrl: Controller) -> None:
     """Verify worker failure updates state to FAILED."""
     ctrl.state = ControllerState.RUNNING
-    with patch.object(ctrl, "_stop_elapsed_timer"), \
-         patch.object(ctrl, "_request_worker_shutdown"):
+    with patch.object(ctrl, "_stop_elapsed_timer"), patch.object(
+        ctrl, "_request_worker_shutdown"
+    ):
         ctrl._handle_worker_failure("boom")
     assert ctrl.state == ControllerState.FAILED
 
@@ -205,8 +214,9 @@ def test_handle_worker_failure_emits_signal(
     ctrl.state = ControllerState.RUNNING
     received = []
     signals.worker_error.connect(lambda message: received.append(message))
-    with patch.object(ctrl, "_stop_elapsed_timer"), \
-         patch.object(ctrl, "_request_worker_shutdown"):
+    with patch.object(ctrl, "_stop_elapsed_timer"), patch.object(
+        ctrl, "_request_worker_shutdown"
+    ):
         ctrl._handle_worker_failure("boom")
     assert received == ["boom"]
 
@@ -218,8 +228,9 @@ def test_handle_worker_failure_ignored_while_cancelling(
     ctrl.state = ControllerState.CANCELLING
     received = []
     signals.worker_error.connect(lambda message: received.append(message))
-    with patch.object(ctrl, "_stop_elapsed_timer") as mock_stop, \
-         patch.object(ctrl, "_request_worker_shutdown") as mock_shutdown:
+    with patch.object(ctrl, "_stop_elapsed_timer") as mock_stop, patch.object(
+        ctrl, "_request_worker_shutdown"
+    ) as mock_shutdown:
         ctrl._handle_worker_failure("boom")
     mock_stop.assert_not_called()
     mock_shutdown.assert_not_called()
@@ -234,19 +245,19 @@ def test_handle_disk_space_error_emits_signal(
     ctrl.state = ControllerState.RUNNING
     received = []
     signals.disk_space_error.connect(lambda r, a: received.append((r, a)))
-    with patch.object(ctrl, "_stop_elapsed_timer"), \
-         patch.object(ctrl, "_request_worker_shutdown"):
+    with patch.object(ctrl, "_stop_elapsed_timer"), patch.object(
+        ctrl, "_request_worker_shutdown"
+    ):
         ctrl._handle_disk_space_error("5 GB", "1 GB")
     assert received == [("5 GB", "1 GB")]
 
 
-def test_handle_disk_space_error_sets_blocked_state(
-    ctrl: Controller
-) -> None:
+def test_handle_disk_space_error_sets_blocked_state(ctrl: Controller) -> None:
     """Verify disk space error sets state to BLOCKED."""
     ctrl.state = ControllerState.RUNNING
-    with patch.object(ctrl, "_stop_elapsed_timer"), \
-         patch.object(ctrl, "_request_worker_shutdown"):
+    with patch.object(ctrl, "_stop_elapsed_timer"), patch.object(
+        ctrl, "_request_worker_shutdown"
+    ):
         ctrl._handle_disk_space_error("5 GB", "1 GB")
     assert ctrl.state == ControllerState.BLOCKED
 
@@ -258,8 +269,9 @@ def test_handle_no_browsers_emits_signal(
     ctrl.state = ControllerState.RUNNING
     received = []
     signals.no_browsers_found.connect(lambda: received.append(True))
-    with patch.object(ctrl, "_stop_elapsed_timer"), \
-         patch.object(ctrl, "_request_worker_shutdown"):
+    with patch.object(ctrl, "_stop_elapsed_timer"), patch.object(
+        ctrl, "_request_worker_shutdown"
+    ):
         ctrl._handle_no_browsers()
     assert received == [True]
 
@@ -267,15 +279,14 @@ def test_handle_no_browsers_emits_signal(
 def test_handle_no_browsers_sets_empty_state(ctrl: Controller) -> None:
     """Verify no browsers error sets state to EMPTY."""
     ctrl.state = ControllerState.RUNNING
-    with patch.object(ctrl, "_stop_elapsed_timer"), \
-         patch.object(ctrl, "_request_worker_shutdown"):
+    with patch.object(ctrl, "_stop_elapsed_timer"), patch.object(
+        ctrl, "_request_worker_shutdown"
+    ):
         ctrl._handle_no_browsers()
     assert ctrl.state == ControllerState.EMPTY
 
 
-def test_tick_emits_elapsed_time(
-    ctrl: Controller, signals: Signals
-) -> None:
+def test_tick_emits_elapsed_time(ctrl: Controller, signals: Signals) -> None:
     """Verify timer tick emits elapsed_time signal."""
     ctrl.state = ControllerState.RUNNING
     ctrl.elapsed_start_time = time.monotonic() - 5.0

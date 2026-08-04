@@ -43,12 +43,12 @@ def clean_blacklist(monkeypatch: pytest.MonkeyPatch) -> None:
     [
         (512, "512 B"),
         (1024, "1 KB"),
-        (1024 ** 2, "1 MB"),
-        (1024 ** 3, "1 GB"),
+        (1024**2, "1 MB"),
+        (1024**3, "1 GB"),
         (0, "0 B"),
         (-1, "Invalid size"),
         ("not a number", "Unknown size"),
-    ]
+    ],
 )
 def test_format_size_variations(value: object, expected: str) -> None:
     """Verify size formatting for various inputs and edge cases."""
@@ -73,7 +73,7 @@ def test_get_directory_size_sums_files(tmp_path: Path) -> None:
 
 
 def test_get_directory_size_excludes_blacklisted_folder(
-    tmp_path: Path
+    tmp_path: Path,
 ) -> None:
     """Verify that blacklisted folders are excluded from size calculation."""
     (tmp_path / "__pycache__").mkdir()

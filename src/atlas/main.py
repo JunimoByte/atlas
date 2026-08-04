@@ -21,7 +21,7 @@ from atlas.lib import browsers, permissions, themes
 
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 
 LOGGER = logging.getLogger(__name__)
