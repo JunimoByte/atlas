@@ -83,7 +83,7 @@ fi
 
 if [ "$USE_PYQT6" -eq 1 ]; then
     echo "Installing PyQt6..."
-    if ! python -m pip install --quiet "PyQt6>=6.4"; then
+    if ! python -m pip install --quiet "PyQt6>=6.0"; then
         echo "PyQt6 failed, falling back to PyQt5..."
         python -m pip install --quiet "PyQt5>=5.15" || {
             echo "ERROR: Failed to install PyQt5 fallback."

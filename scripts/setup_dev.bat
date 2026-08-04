@@ -62,7 +62,7 @@ for /f %%A in ('python -c "import sys; print(1 if sys.version_info >= (3, 9) els
 
 if "!USE_PYQT6!"=="1" (
     echo Python 3.9+ detected on Windows -- installing PyQt6...
-    python -m pip install --quiet "PyQt6>=6.4"
+    python -m pip install --quiet "PyQt6>=6.0"
     if errorlevel 1 (
         echo PyQt6 failed, falling back to PyQt5...
         python -m pip install --quiet "PyQt5>=5.15"
