@@ -17,7 +17,7 @@ import subprocess
 from pathlib import Path
 from typing import Optional
 
-from atlas.backup import archive as Archive
+from atlas.backup import archive as Archive  # noqa: N812
 from atlas.display.popup import show_warning
 
 # =============================================================================
@@ -115,14 +115,32 @@ def open_folder(folder_path: Optional[Path] = None) -> None:
 
 
 def _open_folder_platform(folder_path: Path) -> None:
-    """Open a folder using the system file manager."""
+    """Open a folder using the platform's native file manager.
+
+    Dispatches to the appropriate OS command:
+    - Windows: ``os.startfile``
+    - macOS:   ``open``
+    - Linux:   ``xdg-open`` (LD_LIBRARY_PATH stripped for
+      PyInstaller compatibility)
+
+    Args:
+        folder_path (Path): Absolute path to open.
+
+    """
     system = platform.system().lower()
 
     if system == "windows":
-        os.startfile(folder_path)
+        start = getattr(os, "startfile", None)
+        if start is not None:
+            start(folder_path)
+        else:
+            LOGGER.warning("os.startfile not available on this platform.")
     elif system == "darwin":
         subprocess.call(["open", str(folder_path)])
     else:
+        # Linux and other POSIX systems.
+        # Strip LD_LIBRARY_PATH so PyInstaller's bundled libs do not
+        # interfere with the file manager's own shared libraries.
         env = os.environ.copy()
         env.pop("LD_LIBRARY_PATH", None)
         subprocess.Popen(

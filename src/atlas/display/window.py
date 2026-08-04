@@ -14,7 +14,6 @@ from enum import Enum
 from typing import Any, Dict, Optional, Tuple
 
 from atlas.compatibility.qt import QtCore, QtGui, QtWidgets
-
 from atlas.display.controller import Controller
 from atlas.display.controls import (
     _get_button,
@@ -330,6 +329,7 @@ class Window(QtWidgets.QDialog):
 
         Args:
             message: Error message to display.
+
         """
         self._set_ui_mode(UIMode.ERROR, message)
         LOGGER.error("Worker error displayed: %s", message)
@@ -355,14 +355,14 @@ class Window(QtWidgets.QDialog):
     # DIALOGUE & EVENTS
     # =========================================================================
 
-    def closeEvent(self, event: Any) -> None:
+    def closeEvent(self, event: Any) -> None:  # noqa: N802
         """Handle cleanup on close."""
         LOGGER.debug("Window closing")
         self.controller.cleanup()
         LOGGER.debug("Event accepted")
         event.accept()
 
-    def resizeEvent(self, event: Any) -> None:
+    def resizeEvent(self, event: Any) -> None:  # noqa: N802
         """Handle scaling of the backdrop on window resize."""
         super().resizeEvent(event)
 

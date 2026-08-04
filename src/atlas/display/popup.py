@@ -11,8 +11,8 @@ Supports various message types with proper theming.
 import logging
 import sys
 from typing import Optional
-from atlas.compatibility.qt import QtCore, QtGui, QtWidgets
 
+from atlas.compatibility.qt import QtCore, QtGui, QtWidgets
 from atlas.lib.themes import apply as _apply_theme
 
 # =============================================================================
@@ -81,6 +81,7 @@ def show(
 
     Returns:
         Result of the message box execution.
+
     """
     try:
         app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv)
@@ -104,7 +105,8 @@ def show(
             msg.setDetailedText(detailed_text)
 
         flags = (
-            QtCore.Qt.WindowType.Dialog | QtCore.Qt.WindowType.MSWindowsFixedSizeDialogHint
+            QtCore.Qt.WindowType.Dialog
+            | QtCore.Qt.WindowType.MSWindowsFixedSizeDialogHint
         )
         if stay_on_top:
             flags |= QtCore.Qt.WindowType.WindowStaysOnTopHint

@@ -11,9 +11,8 @@ Wraps the Qt-free Pipeline with PyQt signals for UI integration.
 import logging
 from typing import Optional
 
-from atlas.compatibility.qt import QtCore
-
 from atlas.backup.pipeline import Pipeline, PipelineResult
+from atlas.compatibility.qt import QtCore
 
 # =============================================================================
 # LOGGING

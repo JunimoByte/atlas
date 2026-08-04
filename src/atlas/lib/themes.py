@@ -2,8 +2,9 @@
 
 Cross-platform theming system for Atlas.
 
-Automatically applies light/dark themes on Windows.
-Supports buttons, progress bars, and labels.
+Detects and applies light/dark themes on Windows via the registry
+and on Linux/macOS via Qt style hints. Supports stylesheets for
+buttons, progress bars, and labels across all platforms.
 """
 
 # =============================================================================
@@ -49,14 +50,26 @@ def initialize(window) -> None:
 
     apply(window)
 
+    # Wire live theme-change listener if the Qt version supports it.
+    # colorSchemeChanged was added in Qt 6.5; gracefully skip on older
+    # versions and on platforms where the signal is absent.
     try:
         hints = QtGui.QGuiApplication.styleHints()
-        if hints:
+        if hints and hasattr(hints, "colorSchemeChanged"):
             hints.colorSchemeChanged.connect(
-                lambda: QtCore.QTimer.singleShot(0, lambda: apply(window))
+                lambda: QtCore.QTimer.singleShot(
+                    0, lambda: apply(window)
+                )
+            )
+        else:
+            LOGGER.debug(
+                "colorSchemeChanged unavailable; "
+                "live theme updates disabled."
             )
     except Exception:
-        LOGGER.error("Failed to enable live theme updates", exc_info=True)
+        LOGGER.debug(
+            "Failed to enable live theme updates", exc_info=True
+        )
 
 
 def apply(window) -> None:
@@ -91,6 +104,7 @@ def _is_windows() -> bool:
 
     Returns:
         bool: True if on Windows, False otherwise.
+
     """
     return sys.platform == "win32" and hasattr(sys, "getwindowsversion")
 
@@ -100,6 +114,7 @@ def _is_windows_11_or_newer() -> bool:
 
     Returns:
         bool: True if on Windows 11 or newer, False otherwise.
+
     """
     if not _is_windows():
         return False
@@ -120,6 +135,7 @@ def _get_theme() -> str:
 
     Returns:
         str: 'Dark' or 'Light'.
+
     """
     if _is_windows():
         try:
@@ -180,9 +196,9 @@ def _apply_dark(window) -> None:
     try:
         if _is_windows():
             try:
+                from ctypes import byref, c_int, c_void_p, sizeof, windll
                 hwnd = int(window.winId())
                 for attr in (20, 19):
-                    from ctypes import byref, c_int, c_void_p, sizeof, windll
                     windll.dwmapi.DwmSetWindowAttribute(
                         c_void_p(hwnd),
                         c_int(attr),
@@ -190,7 +206,9 @@ def _apply_dark(window) -> None:
                         sizeof(c_int),
                     )
             except Exception as dwm_error:
-                LOGGER.debug("Failed to set DWM dark titlebar: %s", dwm_error)
+                LOGGER.debug(
+                    "DWM dark titlebar failed: %s", dwm_error
+                )
 
         # Base style sheet
         style = """

@@ -12,8 +12,8 @@ import sys
 from typing import Generator
 
 import pytest
-from atlas.compatibility.qt import QtWidgets
 
+from atlas.compatibility.qt import QtWidgets
 from atlas.ui.interface import UiDialog
 
 # =============================================================================

@@ -12,8 +12,8 @@ import sys
 from typing import Any
 
 import pytest
-from atlas.compatibility.qt import QtWidgets
 
+from atlas.compatibility.qt import QtWidgets
 from atlas.display import popup
 
 # =============================================================================
@@ -73,7 +73,8 @@ def test_default_button_keys_match_button_map() -> None:
 
 def test_default_button_acknowledge_is_ok() -> None:
     """Verify the default button for ACKNOWLEDGE."""
-    assert popup.DEFAULT_BUTTON["ACKNOWLEDGE"] == QtWidgets.QMessageBox.StandardButton.Ok
+    expected = QtWidgets.QMessageBox.StandardButton.Ok
+    assert popup.DEFAULT_BUTTON["ACKNOWLEDGE"] == expected
 
 
 def test_default_button_confirm_decline_is_yes() -> None:

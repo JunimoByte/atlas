@@ -13,7 +13,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from atlas.backup import archive as Archive
+from atlas.backup import archive as Archive  # noqa: N812
 from atlas.lib import integration
 
 # =============================================================================

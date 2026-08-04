@@ -1,5 +1,4 @@
-"""
-Atlas | Packages | Safe JSON Loader
+"""Atlas | Packages | Safe JSON Loader.
 
 Safely loads JSON configuration files. Works in both development and
 PyInstaller bundles.
@@ -47,6 +46,7 @@ def load_json(filename: str, config_dir: str = "configs") -> Dict[str, Any]:
 
     Returns:
         Dict[str, Any]: Parsed JSON data, or empty dict on failure.
+
     """
     try:
         base_path = _get_base_path()

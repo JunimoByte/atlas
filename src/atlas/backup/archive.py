@@ -16,11 +16,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Callable, Iterable, Optional, Tuple, Union
 
-
-from atlas.lib.directories import get_downloads_dir
 from atlas.backup.attribute import create_zip_info
 from atlas.backup.disk import relative_zip_path, safe_unlink
 from atlas.backup.filter import scan_files
+from atlas.lib.directories import get_downloads_dir
 
 # =============================================================================
 # LOGGING
@@ -251,7 +250,7 @@ def write_zip(
 # =============================================================================
 
 
-def compress(
+def compress(  # noqa: C901
     source: Union[str, Path, list],
     zip_name: Optional[str] = None,
     cancel_callback: Optional[Callable[[], bool]] = None

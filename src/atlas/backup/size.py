@@ -91,7 +91,7 @@ def format_size(bytes_size: Union[int, float]) -> str:
     return "Unknown size"
 
 
-def get_directory_size(path_str: Union[str, Path]) -> int:
+def get_directory_size(path_str: Union[str, Path]) -> int:  # noqa: C901
     """Recursively compute the total size of a directory.
 
     Uses ``os.scandir`` with a manual stack for performance. On Windows,

@@ -51,7 +51,7 @@ MAX_FILE_SIZE = 25 * 1024**3
 # =============================================================================
 
 
-def scan_files(
+def scan_files(  # noqa: C901
     source_paths: List[Path],
     cancel_callback: Optional[Callable[[], bool]] = None
 ) -> Generator[Tuple[Path, Path], None, None]:

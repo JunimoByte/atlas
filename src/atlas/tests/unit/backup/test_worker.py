@@ -12,10 +12,10 @@ from typing import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
-from atlas.compatibility.qt import QtWidgets
 
 from atlas.backup.pipeline import PipelineResult
 from atlas.backup.worker import Worker
+from atlas.compatibility.qt import QtWidgets
 
 # =============================================================================
 # FIXTURES

@@ -13,6 +13,7 @@ import sys
 from typing import Generator
 
 import pytest
+
 from atlas.compatibility.qt import QtWidgets
 
 # =============================================================================

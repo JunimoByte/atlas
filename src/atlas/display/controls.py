@@ -39,6 +39,7 @@ def set_text(button_box: QtWidgets.QDialogButtonBox, name: str, text: str) -> No
         button_box: The button box containing the button.
         name: The name of the StandardButton (e.g., 'Ok', 'Cancel').
         text: The new text to display.
+
     """
     button = _get_button(button_box, name)
     if button:
@@ -54,6 +55,7 @@ def set_button_visible(
         button_box: The button box.
         name: The name of the StandardButton (e.g., 'Ok', 'Cancel').
         visible: Whether the button should be visible.
+
     """
     button = _get_button(button_box, name)
     if button:
@@ -71,6 +73,7 @@ def set_connection(
         button_box: The button box.
         name: The signal name ('accepted' or 'rejected').
         command: The slot to connect to.
+
     """
     if name not in VALID_SIGNALS or not callable(command):
         return
@@ -93,6 +96,7 @@ def configure_button(
         button_box: The button box.
         name: The name of the button.
         conf: Config dict with keys 'visible' and 'text'.
+
     """
     set_button_visible(button_box, name, conf.get("visible", False))
     if "text" in conf:
@@ -124,6 +128,7 @@ def format_elapsed_time(elapsed: int, info: str = "") -> str:
 
     Returns:
         Formatted string like 'Time Elapsed: 1m 30s (Scanning...)'.
+
     """
     hours, rem = divmod(elapsed, SECONDS_PER_HOUR)
     minutes, seconds = divmod(rem, SECONDS_PER_MINUTE)

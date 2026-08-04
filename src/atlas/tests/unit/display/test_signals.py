@@ -11,8 +11,8 @@ Verifies signal definitions and emission behaviour.
 import sys
 
 import pytest
-from atlas.compatibility.qt import QtWidgets
 
+from atlas.compatibility.qt import QtWidgets
 from atlas.display.signals import Signals
 
 # =============================================================================

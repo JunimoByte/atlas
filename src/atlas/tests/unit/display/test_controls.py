@@ -11,8 +11,8 @@ Covers elapsed time formatting and button configuration helpers.
 import sys
 
 import pytest
-from atlas.compatibility.qt import QtWidgets
 
+from atlas.compatibility.qt import QtWidgets
 from atlas.display import controls
 
 # =============================================================================

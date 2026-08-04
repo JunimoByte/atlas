@@ -37,7 +37,7 @@ try:
     QT_API = "PyQt6"
 except ImportError:
     try:
-        from PyQt5 import QtCore, QtGui, QtWidgets
+        from PyQt5 import QtCore, QtGui, QtWidgets  # noqa: F401
         QT_API = "PyQt5"
     except ImportError:
         raise ImportError(

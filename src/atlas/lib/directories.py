@@ -37,7 +37,7 @@ _DOWNLOADS_SUBDIR = "Downloads"
 
 
 def get_downloads_dir() -> Path:
-    """Return the path to the current user's Downloads directory.
+    r"""Return the path to the current user's Downloads directory.
 
     Resolve the Downloads folder using platform-specific methods
     with progressively broader fallbacks so that the result is
@@ -186,7 +186,7 @@ def _shell_known_folder_path() -> Optional[Path]:
 
 
 def _shell_folder_path_registry() -> Optional[Path]:
-    """Read the Downloads path from the Windows registry (XP+).
+    r"""Read the Downloads path from the Windows registry (XP+).
 
     Queries ``HKCU\\...\\User Shell Folders`` for the Downloads
     GUID ``{374DE290-123F-4565-9164-39C4925E467B}``.  Windows XP

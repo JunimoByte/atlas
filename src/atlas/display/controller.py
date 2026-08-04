@@ -13,9 +13,8 @@ import time
 from enum import Enum, auto
 from typing import Optional
 
+from atlas.backup import worker as Backup  # noqa: N812
 from atlas.compatibility.qt import QtCore
-
-from atlas.backup import worker as Backup
 from atlas.display.signals import Signals
 
 # =============================================================================
@@ -84,7 +83,11 @@ class Controller(QtCore.QObject):
     - Maintain an airtight finite state machine
     """
 
-    def __init__(self, signals: Signals, parent: Optional[QtCore.QObject] = None) -> None:
+    def __init__(
+        self,
+        signals: Signals,
+        parent: Optional[QtCore.QObject] = None,
+    ) -> None:
         """Initialize the Controller."""
         super().__init__(parent)
         self.signals = signals
@@ -126,7 +129,10 @@ class Controller(QtCore.QObject):
     def _force_state(
         self, new_state: ControllerState, reason: str = ""
     ) -> None:
-        """Bypass FSM for shutdown/recovery paths where safety > correctness.
+        """Bypass FSM validation for shutdown and recovery paths.
+
+        Used where safety takes priority over strict correctness,
+        such as forced shutdowns or error recovery.
         """
         LOGGER.warning(
             "FORCED state transition: %s -> %s (%s)",

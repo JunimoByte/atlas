@@ -19,8 +19,8 @@ from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 
 from atlas.backup import archive
-from atlas.backup import profile as Profile
-from atlas.backup import size as Size
+from atlas.backup import profile as Profile  # noqa: N812
+from atlas.backup import size as Size  # noqa: N812
 from atlas.backup.size import ScanTimeoutError
 from atlas.lib import browsers
 
@@ -75,6 +75,7 @@ class Pipeline:
             estimated_callback: Callback for estimated size.
             no_browsers_found_callback: Callback when no profiles are found.
             disk_space_error_callback: Callback for insufficient disk space.
+
         """
         self._cancelled = False
         self._cancel_logged = False
@@ -112,6 +113,7 @@ class Pipeline:
 
     def _cooperative_sleep(self, seconds: float) -> bool:
         """Sleep in small increments to remain responsive to cancellation.
+
         Returns True if cancelled during sleep, False otherwise.
         """
         steps = int(seconds * 10)
@@ -336,6 +338,7 @@ class Pipeline:
 
         Returns:
             bool: True if every archive is created successfully.
+
         """
         total = len(browser_matches)
         completed = 0

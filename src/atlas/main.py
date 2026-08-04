@@ -12,7 +12,6 @@ import logging
 import sys
 
 from atlas.compatibility.qt import QtCore, QtGui, QtWidgets
-
 from atlas.display import window
 from atlas.lib import browsers, permissions, themes
 
