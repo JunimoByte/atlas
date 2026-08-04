@@ -74,12 +74,6 @@ def apply(window) -> None:
     Detect the current OS theme (Light or Dark) and apply the
     corresponding stylesheets and window attributes.
 
-    On Linux, if a native platform theme plugin is active
-    (kde, gnome, xdgdesktopportal, gtk3) and the theme cannot
-    be determined, the DE is already managing the full palette
-    and style.  In that case we deliberately skip our own
-    stylesheet so we do not override the native appearance.
-
     Args:
         window (QWidget): The main application window to style.
 
@@ -91,13 +85,6 @@ def apply(window) -> None:
     theme = _get_theme()
 
     if theme == "Unknown":
-        if _linux_has_native_theme():
-            # The DE platform plugin owns the palette — do not interfere.
-            LOGGER.debug(
-                "Native DE theme active; skipping stylesheet override."
-            )
-            return
-        # No native plugin and still Unknown: default to Light.
         theme = "Light"
 
     try:
@@ -119,35 +106,6 @@ def _is_windows() -> bool:
 
     """
     return sys.platform == "win32" and hasattr(sys, "getwindowsversion")
-
-
-def _is_linux() -> bool:
-    """Return True if running on Linux.
-
-    Returns:
-        bool: True if on Linux, False otherwise.
-
-    """
-    return sys.platform.startswith("linux")
-
-
-def _linux_has_native_theme() -> bool:
-    """Return True if a DE-native platform theme plugin is active.
-
-    When a proper plugin is loaded (kde, gnome, xdgdesktopportal),
-    the platform manages the full application palette and style.
-    In that case we should not apply our own stylesheet on top of it,
-    as doing so would override the DE's own colours.
-
-    Returns:
-        bool: True if native theming is available, False otherwise.
-
-    """
-    if not _is_linux():
-        return False
-    native_plugins = {"kde", "gnome", "xdgdesktopportal", "gtk3", "gtk2"}
-    active = os.environ.get("QT_QPA_PLATFORMTHEME", "").lower()
-    return active in native_plugins
 
 
 def _is_windows_11_or_newer() -> bool:
@@ -221,51 +179,6 @@ def _get_theme_qt_hints() -> str:
     return "Unknown"
 
 
-def _get_theme_xdg_portal() -> str:
-    """Detect theme via the XDG Desktop Portal D-Bus interface.
-
-    Queries ``org.freedesktop.appearance color-scheme`` directly.
-    Works on any modern DE with ``xdg-desktop-portal`` installed,
-    even when Qt's colorScheme() returns Unknown.
-
-    Portal values: 0 = no preference, 1 = prefer dark, 2 = prefer light.
-
-    Returns:
-        str: ``'Dark'``, ``'Light'``, or ``'Unknown'``.
-
-    """
-    try:
-        import subprocess
-
-        result = subprocess.run(
-            [
-                "gdbus",
-                "call",
-                "--session",
-                "--dest",
-                "org.freedesktop.portal.Desktop",
-                "--object-path",
-                "/org/freedesktop/portal/desktop",
-                "--method",
-                "org.freedesktop.portal.Settings.Read",
-                "org.freedesktop.appearance",
-                "color-scheme",
-            ],
-            capture_output=True,
-            text=True,
-            timeout=1,
-        )
-        if result.returncode == 0:
-            output = result.stdout.strip()
-            if "1" in output:
-                return "Dark"
-            if "2" in output:
-                return "Light"
-    except Exception:
-        pass
-    return "Unknown"
-
-
 def _get_theme_palette() -> str:
     """Detect theme by measuring the system palette background luminance.
 
@@ -294,14 +207,11 @@ def _get_theme() -> str:
     Delegates to platform-specific and layered detection helpers.
     Returns ``'Dark'``, ``'Light'``, or ``'Unknown'``.
 
-    Detection order on Linux/macOS:
+    Detection order:
 
-    1. Qt 6.5+ ``QStyleHints.colorScheme()`` — works when a native
-       platform theme plugin (kde, gnome, xdgdesktopportal) is active.
-    2. XDG Desktop Portal D-Bus — catches DEs where colorScheme()
-       returns Unknown but xdg-desktop-portal is installed.
-    3. System palette luminance — works on PyQt5 and any Qt version.
-    4. ``'Unknown'`` — caller decides what to do.
+    1. Windows registry (on Windows).
+    2. Qt 6.5+ ``QStyleHints.colorScheme()``.
+    3. System palette luminance.
 
     Returns:
         str: ``'Dark'``, ``'Light'``, or ``'Unknown'``.
@@ -313,11 +223,6 @@ def _get_theme() -> str:
     result = _get_theme_qt_hints()
     if result != "Unknown":
         return result
-
-    if _is_linux():
-        result = _get_theme_xdg_portal()
-        if result != "Unknown":
-            return result
 
     return _get_theme_palette()
 
