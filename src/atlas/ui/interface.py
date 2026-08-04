@@ -92,7 +92,7 @@ class UiDialog:
             )
             raise
 
-    def _setup_backdrop(self, parent: QWidget) -> None:
+    def _setup_backdrop(self, parent: QtWidgets.QWidget) -> None:
         """Create the backdrop label behind all other UI elements."""
         self.backdrop = QtWidgets.QLabel(parent)
         self.backdrop.setObjectName("Backdrop")
@@ -194,12 +194,15 @@ class UiDialog:
         base_font: QtGui.QFont,
         scale: float,
         name: str,
-        v_policy: QtWidgets.QSizePolicy.Policy = QtWidgets.QSizePolicy.Policy.Preferred,
+        v_policy: QtWidgets.QSizePolicy.Policy = (
+            QtWidgets.QSizePolicy.Policy.Preferred
+        ),
         align: QtCore.Qt.AlignmentFlag = (
-            QtCore.Qt.AlignmentFlag.AlignLeft | QtCore.Qt.AlignmentFlag.AlignVCenter
+            QtCore.Qt.AlignmentFlag.AlignLeft
+            | QtCore.Qt.AlignmentFlag.AlignVCenter
         ),
     ) -> QtWidgets.QLabel:
-        """Create a ``QtWidgets.QLabel`` with scaled font, word wrap, and alignment.
+        """Create a QLabel with scaled font, word wrap, and alignment.
 
         Args:
             parent: Parent widget.
