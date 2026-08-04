@@ -135,13 +135,13 @@ def test_apply_dark_calls_dwmapi(
 def test_apply_dark_linux(
     monkeypatch: pytest.MonkeyPatch, mock_window: MagicMock
 ) -> None:
-    """Verify Dark theme on Linux applies style without calling DWM."""
+    """Verify Dark theme on Linux skips setting hardcoded stylesheet."""
     monkeypatch.setattr(sys, "platform", "linux")
     if hasattr(sys, "getwindowsversion"):
         monkeypatch.delattr(sys, "getwindowsversion", raising=False)
 
     themes._apply_dark(mock_window)
-    mock_window.setStyleSheet.assert_called_once()
+    mock_window.setStyleSheet.assert_not_called()
 
 
 def test_resource_path_dev(monkeypatch: pytest.MonkeyPatch) -> None:

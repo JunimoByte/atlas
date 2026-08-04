@@ -234,6 +234,9 @@ def _get_theme() -> str:
 
 def _apply_light(window) -> None:
     """Apply light theme to the window."""
+    if not _is_windows():
+        return
+
     try:
         window.setStyleSheet("""
             QWidget#MainDialog {
@@ -247,6 +250,9 @@ def _apply_light(window) -> None:
 
 def _apply_dark(window) -> None:
     """Apply dark theme to the window."""
+    if not _is_windows():
+        return
+
     try:
         if _is_windows():
             try:
