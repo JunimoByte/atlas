@@ -98,5 +98,10 @@ for /f %%V in ('python -c "import sys; print(sys.version.split()[0])"') do echo 
 for /f %%Q in ('python -c "import importlib.util; p6=importlib.util.find_spec('PyQt6'); p5=importlib.util.find_spec('PyQt5'); print('PyQt6' if p6 else 'PyQt5' if p5 else 'None') "') do echo  Qt binding: %%Q
 echo ============================================================
 echo.
-echo Your venv is now active in this shell.
+echo To activate the environment in PowerShell:
+echo   %VENV_PATH%\Scripts\Activate.ps1
+echo.
+echo Or in Command Prompt:
+echo   %VENV_PATH%\Scripts\activate.bat
+echo.
 endlocal
