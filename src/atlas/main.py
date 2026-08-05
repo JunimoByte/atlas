@@ -51,9 +51,15 @@ def main() -> None:
         return
 
     # Application initialization
-    QtGui.QGuiApplication.setHighDpiScaleFactorRoundingPolicy(
-        QtCore.Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
+    has_policy_setter = hasattr(
+        QtGui.QGuiApplication, "setHighDpiScaleFactorRoundingPolicy"
     )
+    has_policy_enum = hasattr(QtCore.Qt, "HighDpiScaleFactorRoundingPolicy")
+
+    if has_policy_setter and has_policy_enum:
+        QtGui.QGuiApplication.setHighDpiScaleFactorRoundingPolicy(
+            QtCore.Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
+        )
     app = QtWidgets.QApplication(sys.argv)
     win = window.Window()
     themes.initialize(win)

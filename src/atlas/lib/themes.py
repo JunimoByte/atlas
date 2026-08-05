@@ -370,16 +370,74 @@ def resource_path(filename: str) -> str:
 # =============================================================================
 
 
+def _is_tiling_wm() -> bool:
+    """Check if the current Linux environment is a tiling window manager.
+
+    Tiling WMs typically force windows to maximize or tile dynamically,
+    which ruins the appearance of fixed-size backdrop images.
+
+    Returns:
+        bool: True if a known tiling WM is detected, False otherwise.
+    """
+    import sys
+    if not sys.platform.startswith("linux"):
+        return False
+
+    tiling_wms = {
+        "awesome",
+        "qtile",
+        "leftwm",
+        "spectrwm",
+        "ratpoison",
+        "stumpwm",
+        "exwm",
+        "lspwm",
+        "niri",
+        "amethyst",
+        "worm",
+        "berry",
+        "notched",
+        "wingo",
+        "cage",
+        "i3",
+        "sway",
+        "bspwm",
+        "dwm",
+        "dwl",
+        "river",
+        "herbstluftwm",
+        "hyprland",
+        "xmonad",
+    }
+
+    if "SWAYSOCK" in os.environ:
+        return True
+
+    for env_var in (
+        "XDG_CURRENT_DESKTOP",
+        "XDG_SESSION_DESKTOP",
+        "DESKTOP_SESSION",
+    ):
+        value = os.environ.get(env_var, "").lower()
+        if any(wm in value for wm in tiling_wms):
+            return True
+
+    return False
+
+
 def backdrop(element) -> None:
     """Set a backdrop image to a widget.
 
     Load 'images/Backdrop.png' from resources and scale it to fill
-    the element.
+    the element. Automatically disabled on tiling WMs.
 
     Args:
         element (QtWidgets.QLabel): The widget to apply the backdrop to.
 
     """
+    if _is_tiling_wm():
+        LOGGER.info("Tiling WM detected. Backdrop disabled.")
+        return
     try:
         image_path = resource_path("images/Backdrop.png")
 
