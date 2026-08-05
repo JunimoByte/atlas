@@ -32,12 +32,49 @@ LOGGER = logging.getLogger(__name__)
 # =============================================================================
 
 
-def _configure_linux_environment() -> None:
-    """Configure Qt platform environment variables for Linux.
+def _configure_frozen_linux_environment() -> None:
+    """Suppress GIO module conflicts when running as a frozen binary.
 
-    Sets QT_QPA_PLATFORM to prefer xcb (X11) on X11 sessions and
-    wayland on Wayland sessions. Never overrides variables the user
-    or session has already set.
+    PyInstaller bundles GLib from the build system (Ubuntu 20.04). On
+    newer distros (Ubuntu 22.04+), GIO tries to load system modules
+    compiled against a newer GLib, producing ``undefined symbol``
+    errors. Setting ``GIO_MODULE_DIR`` to an empty string prevents GIO
+    from searching the system module directory entirely.
+
+    ``NO_AT_BRIDGE`` silences the ATK accessibility-bridge signature
+    mismatch warning that appears on GNOME 46+ desktops.
+
+    Only applied when the process is a frozen PyInstaller build so
+    development runs are unaffected.
+
+    """
+    if not sys.platform.startswith("linux"):
+        return
+    if not getattr(sys, "frozen", False):
+        return
+
+    try:
+        os.environ.setdefault("GIO_MODULE_DIR", "")
+        os.environ.setdefault("NO_AT_BRIDGE", "1")
+        LOGGER.debug(
+            "Frozen Linux: GIO_MODULE_DIR and NO_AT_BRIDGE suppressed."
+        )
+    except Exception:
+        LOGGER.error(
+            "Failed to configure frozen Linux environment", exc_info=True
+        )
+
+
+def _configure_linux_environment() -> None:
+    """Configure the Qt platform backend for Linux.
+
+    Forces Qt to use the xcb (X11/XWayland) backend on Linux so that
+    GNOME's Wayland compositor (Mutter) does not override window flags
+    with its own Client-Side Decorations. XWayland is available on all
+    Ubuntu 22.04 LTS+ and equivalent systems, making this safe.
+
+    The variable is only set if the user has not already defined it,
+    so explicit overrides from the shell are always respected.
 
     """
     if not sys.platform.startswith("linux"):
@@ -45,18 +82,15 @@ def _configure_linux_environment() -> None:
 
     try:
         if not os.environ.get("QT_QPA_PLATFORM"):
-            is_wayland = bool(
-                os.environ.get("WAYLAND_DISPLAY")
-                or os.environ.get("XDG_SESSION_TYPE") == "wayland"
-            )
-            platform = "wayland;xcb" if is_wayland else "xcb;wayland"
-            os.environ["QT_QPA_PLATFORM"] = platform
-            os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
-            LOGGER.debug("QT_QPA_PLATFORM set to '%s'", platform)
+            os.environ["QT_QPA_PLATFORM"] = "xcb"
+            LOGGER.debug("QT_QPA_PLATFORM forced to 'xcb' for Linux.")
     except Exception:
-        LOGGER.error("Failed to configure Linux environment", exc_info=True)
+        LOGGER.error(
+            "Failed to configure Linux environment", exc_info=True
+        )
 
 
+_configure_frozen_linux_environment()
 _configure_linux_environment()
 
 # =============================================================================
