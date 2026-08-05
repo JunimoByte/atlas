@@ -18,13 +18,18 @@ gui = [
     "pyinstaller>=6.0",
 ]
 
-# Pure linting/testing tools — no Qt (installed separately by setup scripts)
+# Pure linting/testing tools -- no Qt (installed separately by setup scripts)
+# PEP 508 environment markers let pip pick the right version automatically:
+#   Python 3.8 (Windows 7) gets the last compatible releases.
+#   Python 3.9+ (Windows 10/11) gets the latest available release.
 dev = [
-    "pytest>=8.0",
+    "pytest>=7.0",
     "pytest-qt>=4.0",
-    "ruff>=0.6.0",
-    "black>=24.0.0",
-    "flake8>=7.0.0",
+    "black>=23.0.0",
+    "flake8>=5.0.0,<7.0.0; python_version < '3.9'",
+    "flake8>=7.0.0; python_version >= '3.9'",
+    "ruff>=0.1.0,<0.5.0; python_version < '3.9'",
+    "ruff>=0.5.0; python_version >= '3.9'",
 ]
 
 [project.scripts]

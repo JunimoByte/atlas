@@ -43,26 +43,41 @@ python -m pip install --upgrade pip --quiet
 
 REM ---------------------------------------------------------------------------
 REM 4. Install dev tools (pytest, ruff, black, flake8, pytest-qt)
-REM    Note: quotes wrap the full extras expression to avoid shell splitting
+REM    Note: some tools may not support older Python versions (e.g. Python 3.8
+REM    on Windows 7). A failure here is non-fatal; Qt and the app will still
+REM    work, but linting/testing tools may be unavailable.
 REM ---------------------------------------------------------------------------
 echo Installing dev tools...
 python -m pip install --quiet -e "%PROJECT_ROOT%[dev]"
 if errorlevel 1 (
-    echo ERROR: Failed to install dev dependencies.
-    exit /b 1
+    echo WARNING: Some dev tools could not be installed on this Python version.
+    echo          Linting and testing may be limited. Continuing setup...
 )
 
 REM ---------------------------------------------------------------------------
-REM 5. Install Qt binding -- try PyQt6 first, fall back to PyQt5
+REM 5. Install Qt binding
+REM    PyQt6 requires Python 3.9+. On Python 3.8 (e.g. Windows 7) we skip
+REM    straight to PyQt5 without wasting time on a doomed PyQt6 attempt.
 REM ---------------------------------------------------------------------------
 echo Installing Qt binding...
-python -m pip install --quiet "PyQt6>=6.0"
-if errorlevel 1 (
-    echo PyQt6 failed, falling back to PyQt5...
+for /f %%M in ('python -c "import sys; print(sys.version_info.minor)"') do set "PY_MINOR=%%M"
+
+if %PY_MINOR% LEQ 8 (
+    echo Python 3.8 detected -- installing PyQt5 directly...
     python -m pip install --quiet "PyQt5>=5.15"
     if errorlevel 1 (
-        echo ERROR: Failed to install PyQt5 fallback.
+        echo ERROR: Failed to install PyQt5.
         exit /b 1
+    )
+) else (
+    python -m pip install --quiet "PyQt6>=6.0"
+    if errorlevel 1 (
+        echo PyQt6 failed, falling back to PyQt5...
+        python -m pip install --quiet "PyQt5>=5.15"
+        if errorlevel 1 (
+            echo ERROR: Failed to install PyQt5 fallback.
+            exit /b 1
+        )
     )
 )
 
@@ -87,10 +102,20 @@ for /f %%V in ('python -c "import sys; print(sys.version.split()[0])"') do echo 
 for /f %%Q in ('python -c "import importlib.util; p6=importlib.util.find_spec('PyQt6'); p5=importlib.util.find_spec('PyQt5'); print('PyQt6' if p6 else 'PyQt5' if p5 else 'None') "') do echo  Qt binding: %%Q
 echo ============================================================
 echo.
-echo To activate the environment in PowerShell:
-echo   .\venv\Scripts\Activate.ps1
+echo ============================================================
 echo.
-echo Or in Command Prompt:
-echo   .\venv\Scripts\activate.bat
+echo  HOW TO ACTIVATE THE VIRTUAL ENVIRONMENT:
+echo.
+echo  If you are in COMMAND PROMPT (cmd.exe) -- use this:
+echo    %VENV_PATH%\Scripts\activate.bat
+echo.
+echo  If you are in POWERSHELL -- use this:
+echo    First run ONCE to allow scripts (no admin needed):
+echo      Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+echo    Then activate:
+echo      %VENV_PATH%\Scripts\Activate.ps1
+echo.
+echo  NOTE: Do NOT run Activate.ps1 from cmd.exe -- it will open in Notepad.
+echo        Use activate.bat in cmd.exe instead.
 echo.
 endlocal
