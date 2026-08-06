@@ -66,9 +66,20 @@ class UiDialog:
 
         """
         try:
+            from atlas.lib.themes import _is_tiling_wm
+
             main_dialog.setObjectName("MainDialog")
-            main_dialog.setFixedSize(*_WINDOW_MIN_SIZE)
-            main_dialog.setWindowFlags(_WINDOW_FLAGS)
+
+            if _is_tiling_wm():
+                # Tiling WMs expect normal, resizable windows to tile
+                # them natively.
+                main_dialog.setMinimumSize(*_WINDOW_MIN_SIZE)
+                main_dialog.setWindowFlags(QtCore.Qt.WindowType.Window)
+            else:
+                # Traditional floating desktops use a fixed-size,
+                # custom-decorated dialog.
+                main_dialog.setFixedSize(*_WINDOW_MIN_SIZE)
+                main_dialog.setWindowFlags(_WINDOW_FLAGS)
 
             self._setup_backdrop(main_dialog)
 
