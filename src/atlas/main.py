@@ -11,10 +11,7 @@ Handles initialization, configuration verification, UI setup, and execution.
 import logging
 import sys
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QGuiApplication
-from PyQt6.QtWidgets import QApplication
-
+from atlas.compatibility.qt import QtCore, QtGui, QtWidgets
 from atlas.display import window
 from atlas.lib import browsers, permissions, themes
 
@@ -24,7 +21,7 @@ from atlas.lib import browsers, permissions, themes
 
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 
 LOGGER = logging.getLogger(__name__)
@@ -54,10 +51,16 @@ def main() -> None:
         return
 
     # Application initialization
-    QGuiApplication.setHighDpiScaleFactorRoundingPolicy(
-        Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
+    has_policy_setter = hasattr(
+        QtGui.QGuiApplication, "setHighDpiScaleFactorRoundingPolicy"
     )
-    app = QApplication(sys.argv)
+    has_policy_enum = hasattr(QtCore.Qt, "HighDpiScaleFactorRoundingPolicy")
+
+    if has_policy_setter and has_policy_enum:
+        QtGui.QGuiApplication.setHighDpiScaleFactorRoundingPolicy(
+            QtCore.Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
+        )
+    app = QtWidgets.QApplication(sys.argv)
     win = window.Window()
     themes.initialize(win)
 

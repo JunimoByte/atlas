@@ -13,10 +13,7 @@ import logging
 from enum import Enum
 from typing import Any, Dict, Optional, Tuple
 
-from PyQt6.QtCore import QCoreApplication, QSize
-from PyQt6.QtGui import QIcon
-from PyQt6.QtWidgets import QDialog
-
+from atlas.compatibility.qt import QtCore, QtGui, QtWidgets
 from atlas.display.controller import Controller
 from atlas.display.controls import (
     _get_button,
@@ -66,7 +63,7 @@ class UIMode(Enum):
     ERROR = "error"
 
 
-class Window(QDialog):
+class Window(QtWidgets.QDialog):
     """Main application window for backup operations.
 
     Handle UI initialization, worker thread management, button controls,
@@ -130,16 +127,16 @@ class Window(QDialog):
     def _connect_signals(self) -> None:
         """Connect global signals to UI slots using mappings."""
         signal_map = {
-            "backup_started":  self._on_backup_started,
+            "backup_started": self._on_backup_started,
             "backup_finished": self.complete,
             "backup_cancelled": self.reject,
-            "progress":        self._update_progress,
-            "elapsed_time":    self._update_elapsed_time,
-            "estimated_size":  self._set_formatted_size,
+            "progress": self._update_progress,
+            "elapsed_time": self._update_elapsed_time,
+            "estimated_size": self._set_formatted_size,
             "scanned_entries": self._set_scanned_info,
             "disk_space_error": self._handle_disk_space_error,
             "no_browsers_found": self._handle_no_browsers,
-            "worker_error":    self._handle_worker_error,
+            "worker_error": self._handle_worker_error,
         }
         for signal_name, slot in signal_map.items():
             getattr(self.signals, signal_name).connect(slot)
@@ -173,8 +170,8 @@ class Window(QDialog):
         for name in BUTTON_NAMES:
             button = _get_button(self.interface.selection, name)
             if button:
-                button.setIcon(QIcon())
-                button.setIconSize(QSize(0, 0))
+                button.setIcon(QtGui.QIcon())
+                button.setIconSize(QtCore.QSize(0, 0))
 
     def _prepare_home(self) -> None:
         """Prepare the home state of the UI."""
@@ -332,6 +329,7 @@ class Window(QDialog):
 
         Args:
             message: Error message to display.
+
         """
         self._set_ui_mode(UIMode.ERROR, message)
         LOGGER.error("Worker error displayed: %s", message)
@@ -349,7 +347,7 @@ class Window(QDialog):
         # Allow the UI to update with "Stopping scan..." before shutting down.
         # This is safe here because cancel_backup() does not
         # re-enter the event loop.
-        QCoreApplication.processEvents()
+        QtCore.QCoreApplication.processEvents()
 
         self.controller.cancel_backup()
 
@@ -357,14 +355,14 @@ class Window(QDialog):
     # DIALOGUE & EVENTS
     # =========================================================================
 
-    def closeEvent(self, event: Any) -> None:
+    def closeEvent(self, event: Any) -> None:  # noqa: N802
         """Handle cleanup on close."""
         LOGGER.debug("Window closing")
         self.controller.cleanup()
         LOGGER.debug("Event accepted")
         event.accept()
 
-    def resizeEvent(self, event: Any) -> None:
+    def resizeEvent(self, event: Any) -> None:  # noqa: N802
         """Handle scaling of the backdrop on window resize."""
         super().resizeEvent(event)
 

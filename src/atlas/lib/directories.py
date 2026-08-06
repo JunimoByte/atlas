@@ -37,7 +37,7 @@ _DOWNLOADS_SUBDIR = "Downloads"
 
 
 def get_downloads_dir() -> Path:
-    """Return the path to the current user's Downloads directory.
+    r"""Return the path to the current user's Downloads directory.
 
     Resolve the Downloads folder using platform-specific methods
     with progressively broader fallbacks so that the result is
@@ -79,9 +79,7 @@ def get_downloads_dir() -> Path:
     for candidate in candidates:
         resolved = candidate.resolve()
         if _ensure_directory(resolved):
-            LOGGER.info(
-                "Resolved Downloads directory: %s", resolved
-            )
+            LOGGER.info("Resolved Downloads directory: %s", resolved)
             return resolved
 
     # Guaranteed last resort: directory next to the executable.
@@ -129,6 +127,9 @@ def _shell_known_folder_path() -> Optional[Path]:
         Optional[Path]: The Downloads path, or None on failure.
 
     """
+    if sys.platform != "win32":
+        return None
+
     try:
         from ctypes import wintypes
 
@@ -149,8 +150,14 @@ def _shell_known_folder_path() -> Optional[Path]:
         folderid_downloads.Data2 = 0x123F
         folderid_downloads.Data3 = 0x4565
         folderid_downloads.Data4[:] = (
-            0x91, 0x64, 0x39, 0xC4,
-            0x92, 0x5E, 0x46, 0x7B,
+            0x91,
+            0x64,
+            0x39,
+            0xC4,
+            0x92,
+            0x5E,
+            0x46,
+            0x7B,
         )
 
         shell32 = ctypes.windll.shell32
@@ -176,14 +183,12 @@ def _shell_known_folder_path() -> Optional[Path]:
         return folder
 
     except Exception as error:
-        LOGGER.debug(
-            "SHGetKnownFolderPath failed: %s", error
-        )
+        LOGGER.debug("SHGetKnownFolderPath failed: %s", error)
         return None
 
 
 def _shell_folder_path_registry() -> Optional[Path]:
-    """Read the Downloads path from the Windows registry (XP+).
+    r"""Read the Downloads path from the Windows registry (XP+).
 
     Queries ``HKCU\\...\\User Shell Folders`` for the Downloads
     GUID ``{374DE290-123F-4565-9164-39C4925E467B}``.  Windows XP
@@ -199,6 +204,9 @@ def _shell_folder_path_registry() -> Optional[Path]:
         Optional[Path]: The Downloads path, or None on failure.
 
     """
+    if sys.platform != "win32":
+        return None
+
     try:
         import winreg
 
@@ -215,21 +223,16 @@ def _shell_folder_path_registry() -> Optional[Path]:
 
         if not path.is_absolute():
             LOGGER.debug(
-                "Registry Downloads path is relative, "
-                "ignoring: %s",
+                "Registry Downloads path is relative, " "ignoring: %s",
                 path,
             )
             return None
 
-        LOGGER.debug(
-            "Resolved Downloads from registry: %s", path
-        )
+        LOGGER.debug("Resolved Downloads from registry: %s", path)
         return path
 
     except Exception as error:
-        LOGGER.debug(
-            "Registry Downloads lookup failed: %s", error
-        )
+        LOGGER.debug("Registry Downloads lookup failed: %s", error)
         return None
 
 
@@ -278,27 +281,19 @@ def _parse_xdg_user_dirs_file() -> Optional[Path]:
     dirs_file = Path(config_home) / "user-dirs.dirs"
 
     if not dirs_file.is_file():
-        LOGGER.debug(
-            "user-dirs.dirs not found at %s", dirs_file
-        )
+        LOGGER.debug("user-dirs.dirs not found at %s", dirs_file)
         return None
 
     try:
         content = dirs_file.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError) as error:
-        LOGGER.debug(
-            "Could not read %s: %s", dirs_file, error
-        )
+        LOGGER.debug("Could not read %s: %s", dirs_file, error)
         return None
 
-    pattern = re.compile(
-        r'^XDG_DOWNLOAD_DIR\s*=\s*"(.+)"', re.MULTILINE
-    )
+    pattern = re.compile(r'^XDG_DOWNLOAD_DIR\s*=\s*"(.+)"', re.MULTILINE)
     match = pattern.search(content)
     if match is None:
-        LOGGER.debug(
-            "XDG_DOWNLOAD_DIR not found in %s", dirs_file
-        )
+        LOGGER.debug("XDG_DOWNLOAD_DIR not found in %s", dirs_file)
         return None
 
     raw_value = match.group(1)

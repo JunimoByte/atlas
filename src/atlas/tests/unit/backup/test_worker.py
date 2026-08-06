@@ -12,10 +12,10 @@ from typing import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
-from PyQt6.QtWidgets import QApplication
 
 from atlas.backup.pipeline import PipelineResult
 from atlas.backup.worker import Worker
+from atlas.compatibility.qt import QtWidgets
 
 # =============================================================================
 # FIXTURES
@@ -23,9 +23,9 @@ from atlas.backup.worker import Worker
 
 
 @pytest.fixture(scope="session")
-def qapp() -> Generator[QApplication, None, None]:
-    """Provide a session-scoped QApplication instance for Qt signal tests."""
-    app = QApplication.instance() or QApplication([])
+def qapp() -> Generator[QtWidgets.QApplication, None, None]:
+    """Provide a session-scoped QApplication for Qt signal tests."""
+    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     yield app
 
 
@@ -37,7 +37,7 @@ def mock_pipeline_cls() -> Generator[MagicMock, None, None]:
 
 
 @pytest.fixture
-def worker(qapp: QApplication) -> Worker:
+def worker(qapp: QtWidgets.QApplication) -> Worker:
     """Return a default Worker."""
     return Worker()
 
@@ -72,6 +72,7 @@ def test_run_emits_no_browsers_found_when_empty(
     worker: Worker, mock_pipeline_cls: MagicMock
 ) -> None:
     """Verify that no_browsers_found is emitted when no profiles exist."""
+
     def trigger_no_browsers(*args, **kwargs):
         worker.no_browsers_found.emit()
         return PipelineResult.NO_BROWSERS_FOUND
@@ -98,6 +99,7 @@ def test_run_emits_disk_space_error_when_insufficient(
     worker: Worker, mock_pipeline_cls: MagicMock
 ) -> None:
     """Verify that disk_space_error is emitted on failure."""
+
     def trigger_disk_error(*args, **kwargs):
         worker.disk_space_error.emit("15 GB", "1 MB")
         return PipelineResult.INSUFFICIENT_DISK_SPACE
@@ -192,9 +194,7 @@ def test_run_emits_failed_when_pipeline_reports_failure(
     worker.run()
 
     assert done_calls == []
-    assert failures == [
-        "The backup process could not complete successfully."
-    ]
+    assert failures == ["The backup process could not complete successfully."]
 
 
 # =============================================================================

@@ -9,14 +9,14 @@ with expected types for clarity and IDE support.
 # IMPORTS
 # =============================================================================
 
-from PyQt6.QtCore import QObject, pyqtSignal
+from atlas.compatibility.qt import QtCore
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
 
-class Signals(QObject):
+class Signals(QtCore.QObject):
     """Define all application signals for Atlas.
 
     Signals act as a contract between the Controller (logic)
@@ -24,17 +24,17 @@ class Signals(QObject):
     """
 
     # Backup workflow lifecycle
-    backup_started = pyqtSignal()
+    backup_started = QtCore.pyqtSignal()
     """Emit when a backup process starts. No arguments."""
 
-    backup_finished = pyqtSignal()
+    backup_finished = QtCore.pyqtSignal()
     """Emit when a backup process completes successfully. No arguments."""
 
-    backup_cancelled = pyqtSignal()
+    backup_cancelled = QtCore.pyqtSignal()
     """Emit when a backup process is cancelled by the user. No arguments."""
 
     # Progress reporting
-    progress = pyqtSignal(int, int)
+    progress = QtCore.pyqtSignal(int, int)
     """Report backup progress.
 
     Args:
@@ -42,14 +42,14 @@ class Signals(QObject):
         total: Total items to process
     """
 
-    estimated_size = pyqtSignal(str)
+    estimated_size = QtCore.pyqtSignal(str)
     """Report estimated backup size.
 
     Args:
         size_str: Formatted size string (e.g., '120 MB')
     """
 
-    scanned_entries = pyqtSignal(str)
+    scanned_entries = QtCore.pyqtSignal(str)
     """Report latest scanned entry.
 
     Args:
@@ -57,7 +57,7 @@ class Signals(QObject):
     """
 
     # Elapsed time
-    elapsed_time = pyqtSignal(int)
+    elapsed_time = QtCore.pyqtSignal(int)
     """Report elapsed backup time.
 
     Args:
@@ -65,7 +65,7 @@ class Signals(QObject):
     """
 
     # Error reporting
-    disk_space_error = pyqtSignal(str, str)
+    disk_space_error = QtCore.pyqtSignal(str, str)
     """Report insufficient disk space.
 
     Args:
@@ -73,10 +73,10 @@ class Signals(QObject):
         available: Space currently available
     """
 
-    no_browsers_found = pyqtSignal()
+    no_browsers_found = QtCore.pyqtSignal()
     """Emit when no supported browsers are detected. No arguments."""
 
-    worker_error = pyqtSignal(str)
+    worker_error = QtCore.pyqtSignal(str)
     """Emit when the worker thread encounters an unhandled exception or crash.
 
     Args:

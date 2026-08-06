@@ -71,9 +71,9 @@ def _validate_entry(
     return errors
 
 
-def verify_entries(
-    browsers_json: Optional[Dict[str, Any]] = None,  # noqa: C901
-    types_json: Optional[Dict[str, Any]] = None
+def verify_entries(  # noqa: C901
+    browsers_json: Optional[Dict[str, Any]] = None,
+    types_json: Optional[Dict[str, Any]] = None,
 ) -> bool:
     """Load and validate browser configuration.
 
@@ -90,7 +90,8 @@ def verify_entries(
 
     try:
         data = (
-            browsers_json if browsers_json is not None
+            browsers_json
+            if browsers_json is not None
             else load_json("browsers.json")
         )
         if not data:
@@ -139,11 +140,14 @@ def verify_entries(
         types_data = (
             types_json if types_json is not None else load_json("types.json")
         )
-        for type_name, paths in types_data.items():
-            if isinstance(paths, list):
-                _PATH_CACHE[type_name.upper()] = [
-                    str(p) for p in paths if isinstance(p, str)
-                ]
+        for os_name, os_types in types_data.items():
+            if not isinstance(os_types, dict):
+                continue
+            for type_name, paths in os_types.items():
+                if isinstance(paths, list):
+                    _PATH_CACHE["{}.{}".format(os_name, type_name.upper())] = [
+                        str(p) for p in paths if isinstance(p, str)
+                    ]
 
         LOGGER.info("Loaded %d valid browsers.", len(BROWSERS))
         LOGGER.info("Loaded %d path types.", len(_PATH_CACHE))

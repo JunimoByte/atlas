@@ -29,6 +29,15 @@
                     "Local State"
                 ]
             }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "google-chrome",
+                "Signature": [
+                    "Local State"
+                ]
+            }
         ]
     },
     "Firefox": {
@@ -46,6 +55,23 @@
             {
                 "Type": "APPDATA",
                 "Path": "Phoenix/Profiles",
+                "Signature": false
+            }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": ".mozilla/firefox",
+                "Signature": false
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "org.mozilla.firefox/.mozilla/firefox",
+                "Signature": false
+            },
+            {
+                "Type": "SNAP",
+                "Path": "firefox/common/.mozilla/firefox",
                 "Signature": false
             }
         ]
@@ -85,6 +111,15 @@
                 "Path": "Microsoft.MicrosoftEdge_*",
                 "Signature": [
                     "AC"
+                ]
+            }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "microsoft-edge",
+                "Signature": [
+                    "Local State"
                 ]
             }
         ]

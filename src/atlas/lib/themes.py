@@ -1,9 +1,12 @@
 """Atlas | Packages | Themes.
 
-Cross-platform theming system for Atlas.
+Theme detection and application for Atlas.
 
-Automatically applies light/dark themes on Windows.
-Supports buttons, progress bars, and labels.
+On Windows: reads the registry and applies stylesheets + DWM
+titlebar colouring for light and dark modes.
+On all other platforms: theme detection is delegated to Qt style
+hints and the system palette; no stylesheets are applied, so the
+native DE theme is used as-is.
 """
 
 # =============================================================================
@@ -14,9 +17,7 @@ import logging
 import os
 import sys
 
-from PyQt6.QtCore import QTimer
-from PyQt6.QtGui import QGuiApplication, QIcon, QPixmap
-from PyQt6.QtWidgets import QLabel
+from atlas.compatibility.qt import QtCore, QtGui, QtWidgets
 
 # =============================================================================
 # LOGGING
@@ -45,20 +46,28 @@ def initialize(window) -> None:
 
     icon(window)
 
-    backdrop_label = window.findChild(QLabel, "Backdrop")
+    backdrop_label = window.findChild(QtWidgets.QLabel, "Backdrop")
     if backdrop_label:
         backdrop(backdrop_label)
 
     apply(window)
 
+    # Wire live theme-change listener if the Qt version supports it.
+    # colorSchemeChanged was added in Qt 6.5; gracefully skip on older
+    # versions and on platforms where the signal is absent.
     try:
-        hints = QGuiApplication.styleHints()
-        if hints:
+        hints = QtGui.QGuiApplication.styleHints()
+        if hints and hasattr(hints, "colorSchemeChanged"):
             hints.colorSchemeChanged.connect(
-                lambda: QTimer.singleShot(0, lambda: apply(window))
+                lambda: QtCore.QTimer.singleShot(0, lambda: apply(window))
+            )
+        else:
+            LOGGER.debug(
+                "colorSchemeChanged unavailable; "
+                "live theme updates disabled."
             )
     except Exception:
-        LOGGER.error("Failed to enable live theme updates", exc_info=True)
+        LOGGER.debug("Failed to enable live theme updates", exc_info=True)
 
 
 def apply(window) -> None:
@@ -75,8 +84,11 @@ def apply(window) -> None:
         LOGGER.warning("No window provided! Skipping theme application.")
         return
 
-    # Detect and apply theme
     theme = _get_theme()
+
+    if theme == "Unknown":
+        theme = "Light"
+
     try:
         _apply_light(window) if theme == "Light" else _apply_dark(window)
     except Exception:
@@ -84,27 +96,137 @@ def apply(window) -> None:
 
 
 # =============================================================================
+# PLATFORM HELPERS
+# =============================================================================
+
+
+def _is_windows() -> bool:
+    """Return True if running on Windows OS.
+
+    Returns:
+        bool: True if on Windows, False otherwise.
+
+    """
+    return sys.platform == "win32" and hasattr(sys, "getwindowsversion")
+
+
+def _is_windows_11_or_newer() -> bool:
+    """Return True if running on Windows 11 or newer.
+
+    Returns:
+        bool: True if on Windows 11 or newer, False otherwise.
+
+    """
+    if not _is_windows():
+        return False
+    try:
+        ver = sys.getwindowsversion()
+        return int(ver.major) >= 10 and int(ver.build) >= 22000
+    except Exception:
+        return False
+
+
+# =============================================================================
 # THEME DETECTION
 # =============================================================================
 
 
-def _get_theme() -> str:
-    """Detect current Windows theme (light/dark)."""
-    if sys.getwindowsversion().major < 10:
-        return "Light"
+def _get_theme_windows() -> str:
+    """Detect theme from the Windows registry.
 
+    Returns:
+        str: ``'Dark'``, ``'Light'``.
+
+    """
     try:
+        ver = sys.getwindowsversion()
+        if ver.major < 10:
+            return "Light"
+
         import winreg
 
         with winreg.OpenKey(
             winreg.HKEY_CURRENT_USER,
-            r"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize",
+            r"Software\Microsoft\Windows\CurrentVersion"
+            r"\Themes\Personalize",
         ) as key:
             value, _ = winreg.QueryValueEx(key, "AppsUseLightTheme")
 
         return "Dark" if value == 0 else "Light"
     except Exception:
         return "Light"
+
+
+def _get_theme_qt_hints() -> str:
+    """Detect theme via Qt 6.5+ QStyleHints.colorScheme().
+
+    Returns:
+        str: ``'Dark'``, ``'Light'``, or ``'Unknown'`` if unsupported.
+
+    """
+    try:
+        hints = QtGui.QGuiApplication.styleHints()
+        if not hasattr(hints, "colorScheme"):
+            return "Unknown"
+        scheme = hints.colorScheme()
+        color_scheme = getattr(QtCore.Qt, "ColorScheme", None)
+        if color_scheme is None:
+            return "Unknown"
+        if scheme == color_scheme.Dark:
+            return "Dark"
+        if scheme == color_scheme.Light:
+            return "Light"
+    except Exception:
+        pass
+    return "Unknown"
+
+
+def _get_theme_palette() -> str:
+    """Detect theme by measuring the application palette background luminance.
+
+    Used as a last-resort fallback when Qt style hints are unavailable.
+    Reads the Window background colour from the active QPalette; low
+    lightness indicates a dark theme.
+
+    Returns:
+        str: ``'Dark'``, ``'Light'``, or ``'Unknown'``.
+
+    """
+    try:
+        app = QtWidgets.QApplication.instance()
+        if app is not None:
+            bg = app.palette().color(QtGui.QPalette.ColorRole.Window)
+            if bg.isValid():
+                return "Dark" if bg.lightness() < 128 else "Light"
+    except Exception:
+        pass
+    return "Unknown"
+
+
+def _get_theme() -> str:
+    """Detect the current system theme (light or dark).
+
+    Delegates to platform-specific and layered detection helpers.
+    Returns ``'Dark'``, ``'Light'``, or ``'Unknown'``.
+
+    Detection order:
+
+    1. Windows registry (on Windows).
+    2. Qt 6.5+ ``QStyleHints.colorScheme()``.
+    3. System palette luminance.
+
+    Returns:
+        str: ``'Dark'``, ``'Light'``, or ``'Unknown'``.
+
+    """
+    if _is_windows():
+        return _get_theme_windows()
+
+    result = _get_theme_qt_hints()
+    if result != "Unknown":
+        return result
+
+    return _get_theme_palette()
 
 
 # =============================================================================
@@ -114,31 +236,39 @@ def _get_theme() -> str:
 
 def _apply_light(window) -> None:
     """Apply light theme to the window."""
+    if not _is_windows():
+        return
+
     try:
-        window.setStyleSheet(
-            """
+        window.setStyleSheet("""
             QWidget#MainDialog {
                 color: #000000;
                 background-color: #ffffff;
             }
-            """
-        )
+            """)
     except Exception as error:
         LOGGER.error("Failed to apply light theme: %s", error)
 
 
 def _apply_dark(window) -> None:
     """Apply dark theme to the window."""
+    if not _is_windows():
+        return
 
     try:
-        hwnd = int(window.winId())
-
-        # Apply Windows dark mode attributes
-        for attr in (20, 19):
+        try:
             from ctypes import byref, c_int, c_void_p, sizeof, windll
-            windll.dwmapi.DwmSetWindowAttribute(
-                c_void_p(hwnd), c_int(attr), byref(c_int(1)), sizeof(c_int)
-            )
+
+            hwnd = int(window.winId())
+            for attr in (20, 19):
+                windll.dwmapi.DwmSetWindowAttribute(
+                    c_void_p(hwnd),
+                    c_int(attr),
+                    byref(c_int(1)),
+                    sizeof(c_int),
+                )
+        except Exception as dwm_error:
+            LOGGER.debug("DWM dark titlebar failed: %s", dwm_error)
 
         # Base style sheet
         style = """
@@ -217,9 +347,7 @@ def resource_path(filename: str) -> str:
             # then to assets
             project_root = os.path.dirname(
                 os.path.dirname(
-                    os.path.dirname(
-                        os.path.dirname(os.path.abspath(__file__))
-                    )
+                    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
                 )
             )
 
@@ -230,26 +358,11 @@ def resource_path(filename: str) -> str:
 
     except Exception:
         LOGGER.error(
-            "Failed to resolve resource path for '%s'", filename, exc_info=True
+            "Failed to resolve resource path for '%s'",
+            filename,
+            exc_info=True,
         )
         return filename  # fallback, may fail gracefully
-
-
-# =============================================================================
-# WINDOWS UTILITIES
-# =============================================================================
-
-
-def _is_windows_11_or_newer() -> bool:
-    """Return True if running on Windows 11 or newer.
-
-    Use the build number from sys.getwindowsversion().
-    """
-    try:
-        ver = sys.getwindowsversion()
-        return ver.major >= 10 and ver.build >= 22000
-    except Exception:
-        return False
 
 
 # =============================================================================
@@ -257,16 +370,74 @@ def _is_windows_11_or_newer() -> bool:
 # =============================================================================
 
 
+def _is_tiling_wm() -> bool:
+    """Check if the current Linux environment is a tiling window manager.
+
+    Tiling WMs typically force windows to maximize or tile dynamically,
+    which ruins the appearance of fixed-size backdrop images.
+
+    Returns:
+        bool: True if a known tiling WM is detected, False otherwise.
+    """
+    import sys
+    if not sys.platform.startswith("linux"):
+        return False
+
+    tiling_wms = {
+        "awesome",
+        "qtile",
+        "leftwm",
+        "spectrwm",
+        "ratpoison",
+        "stumpwm",
+        "exwm",
+        "lspwm",
+        "niri",
+        "amethyst",
+        "worm",
+        "berry",
+        "notched",
+        "wingo",
+        "cage",
+        "i3",
+        "sway",
+        "bspwm",
+        "dwm",
+        "dwl",
+        "river",
+        "herbstluftwm",
+        "hyprland",
+        "xmonad",
+    }
+
+    if "SWAYSOCK" in os.environ:
+        return True
+
+    for env_var in (
+        "XDG_CURRENT_DESKTOP",
+        "XDG_SESSION_DESKTOP",
+        "DESKTOP_SESSION",
+    ):
+        value = os.environ.get(env_var, "").lower()
+        if any(wm in value for wm in tiling_wms):
+            return True
+
+    return False
+
+
 def backdrop(element) -> None:
     """Set a backdrop image to a widget.
 
     Load 'images/Backdrop.png' from resources and scale it to fill
-    the element.
+    the element. Automatically disabled on tiling WMs.
 
     Args:
-        element (QLabel): The widget to apply the backdrop to.
+        element (QtWidgets.QLabel): The widget to apply the backdrop to.
 
     """
+    if _is_tiling_wm():
+        LOGGER.info("Tiling WM detected. Backdrop disabled.")
+        return
     try:
         image_path = resource_path("images/Backdrop.png")
 
@@ -274,7 +445,7 @@ def backdrop(element) -> None:
             LOGGER.warning("Backdrop image not found: %s", image_path)
             return
 
-        element.setPixmap(QPixmap(image_path))
+        element.setPixmap(QtGui.QPixmap(image_path))
         element.setScaledContents(True)
 
         LOGGER.debug("Backdrop set successfully: %s", image_path)
@@ -299,7 +470,7 @@ def icon(window) -> None:
             LOGGER.warning("Icon file not found: %s", icon_path)
             return
 
-        window.setWindowIcon(QIcon(icon_path))
+        window.setWindowIcon(QtGui.QIcon(icon_path))
         LOGGER.debug("Window icon set successfully: %s", icon_path)
 
     except Exception as error:

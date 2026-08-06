@@ -198,11 +198,10 @@ def test_parse_xdg_user_dirs_file(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    with patch.object(Path, "home", return_value=tmp_path), \
-         patch.dict(
-             "os.environ",
-             {"XDG_CONFIG_HOME": str(config_dir)},
-         ):
+    with patch.object(Path, "home", return_value=tmp_path), patch.dict(
+        "os.environ",
+        {"XDG_CONFIG_HOME": str(config_dir)},
+    ):
         result = directories._parse_xdg_user_dirs_file()
         assert result is not None
         assert result == tmp_path / "MyDownloads"
@@ -221,18 +220,14 @@ def test_parse_xdg_user_dirs_file_missing() -> None:
 def test_read_xdg_env_var_absolute(tmp_path: Path) -> None:
     """Verify reading an absolute XDG_DOWNLOAD_DIR env var."""
     target = tmp_path / "EnvDir"
-    with patch.dict(
-        "os.environ", {"XDG_DOWNLOAD_DIR": str(target)}
-    ):
+    with patch.dict("os.environ", {"XDG_DOWNLOAD_DIR": str(target)}):
         result = directories._read_xdg_env_var()
         assert result == target
 
 
 def test_read_xdg_env_var_relative() -> None:
     """Verify relative XDG_DOWNLOAD_DIR is rejected."""
-    with patch.dict(
-        "os.environ", {"XDG_DOWNLOAD_DIR": "relative/path"}
-    ):
+    with patch.dict("os.environ", {"XDG_DOWNLOAD_DIR": "relative/path"}):
         result = directories._read_xdg_env_var()
         assert result is None
 
@@ -253,9 +248,7 @@ def test_exe_adjacent_dir_frozen(tmp_path: Path) -> None:
     """Verify frozen mode returns directory next to sys.executable."""
     fake_exe = tmp_path / "Atlas.exe"
 
-    with patch.object(
-        sys, "frozen", True, create=True
-    ), patch.object(
+    with patch.object(sys, "frozen", True, create=True), patch.object(
         sys, "executable", str(fake_exe)
     ):
         result = directories._get_exe_adjacent_dir()
@@ -264,9 +257,7 @@ def test_exe_adjacent_dir_frozen(tmp_path: Path) -> None:
 
 def test_exe_adjacent_dir_dev() -> None:
     """Verify dev mode returns a path relative to the src root."""
-    with patch.object(
-        sys, "frozen", False, create=True
-    ):
+    with patch.object(sys, "frozen", False, create=True):
         result = directories._get_exe_adjacent_dir()
         assert result.name == "output"
         assert result.is_absolute()

@@ -26,7 +26,7 @@ def sample_json_file(tmp_path: Path) -> Path:
     """Create a temporary valid JSON file for testing."""
     file_path = tmp_path / "valid.json"
     content = {"key": "value", "number": 42}
-    with file_path.open('w', encoding='utf-8') as f:
+    with file_path.open("w", encoding="utf-8") as f:
         f.write(json.dumps(content))
     return file_path
 
@@ -35,7 +35,7 @@ def sample_json_file(tmp_path: Path) -> Path:
 def invalid_json_file(tmp_path: Path) -> Path:
     """Create a temporary invalid JSON file (malformed)."""
     file_path = tmp_path / "invalid.json"
-    with file_path.open('w', encoding='utf-8') as f:
+    with file_path.open("w", encoding="utf-8") as f:
         f.write("{invalid_json: true")
     return file_path
 
@@ -44,7 +44,7 @@ def invalid_json_file(tmp_path: Path) -> Path:
 def non_dict_json_file(tmp_path: Path) -> Path:
     """Create a temporary JSON file with a list instead of a dict."""
     file_path = tmp_path / "list.json"
-    with file_path.open('w', encoding='utf-8') as f:
+    with file_path.open("w", encoding="utf-8") as f:
         f.write(json.dumps([1, 2, 3]))
     return file_path
 
@@ -70,7 +70,7 @@ def test_load_json_valid_file(sample_json_file: Path) -> None:
 
 @pytest.mark.parametrize(
     "fixture_name",
-    ["missing_json_file", "invalid_json_file", "non_dict_json_file"]
+    ["missing_json_file", "invalid_json_file", "non_dict_json_file"],
 )
 def test_load_json_failure_states(
     fixture_name: str, request: pytest.FixtureRequest

@@ -36,7 +36,7 @@ def test_run_pipeline_failure(mock_pipeline_cls: MagicMock) -> None:
 
 @patch("atlas.backup.runner.Pipeline")
 def test_run_pipeline_initialization_failure(
-    mock_pipeline_cls: MagicMock
+    mock_pipeline_cls: MagicMock,
 ) -> None:
     """Verify that a Pipeline instantiation failure safely returns FAILED."""
     mock_pipeline_cls.side_effect = ValueError("bad args")

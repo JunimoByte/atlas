@@ -11,8 +11,8 @@ Verifies signal definitions and emission behaviour.
 import sys
 
 import pytest
-from PyQt6.QtWidgets import QApplication
 
+from atlas.compatibility.qt import QtWidgets
 from atlas.display.signals import Signals
 
 # =============================================================================
@@ -21,7 +21,7 @@ from atlas.display.signals import Signals
 
 
 @pytest.fixture
-def signals(qapp: QApplication) -> Signals:
+def signals(qapp: QtWidgets.QApplication) -> Signals:
     """Provide a fresh Signals instance for each test."""
     return Signals()
 

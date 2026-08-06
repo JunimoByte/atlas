@@ -16,11 +16,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Callable, Iterable, Optional, Tuple, Union
 
-
-from atlas.lib.directories import get_downloads_dir
 from atlas.backup.attribute import create_zip_info
 from atlas.backup.disk import relative_zip_path, safe_unlink
 from atlas.backup.filter import scan_files
+from atlas.lib.directories import get_downloads_dir
 
 # =============================================================================
 # LOGGING
@@ -130,7 +129,7 @@ def _write_file_to_zip(
     zip_file: zipfile.ZipFile,
     file_path: Path,
     zip_info: zipfile.ZipInfo,
-    cancel_callback: Optional[Callable[[], bool]] = None
+    cancel_callback: Optional[Callable[[], bool]] = None,
 ) -> bool:
     """Write a single file to the ZIP archive.
 
@@ -175,7 +174,7 @@ def _write_file_to_zip(
 def write_zip(
     files: Iterable[Tuple[Path, Path]],
     zip_path: Path,
-    cancel_callback: Optional[Callable[[], bool]] = None
+    cancel_callback: Optional[Callable[[], bool]] = None,
 ) -> None:
     """Write files to a ZIP archive safely.
 
@@ -251,10 +250,10 @@ def write_zip(
 # =============================================================================
 
 
-def compress(
+def compress(  # noqa: C901
     source: Union[str, Path, list],
     zip_name: Optional[str] = None,
-    cancel_callback: Optional[Callable[[], bool]] = None
+    cancel_callback: Optional[Callable[[], bool]] = None,
 ) -> Optional[Path]:
     """Compress one or multiple directories into a ZIP archive safely.
 

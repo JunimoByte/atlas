@@ -27,6 +27,7 @@ def mock_window() -> MagicMock:
     window.winId.return_value = 12345
     return window
 
+
 # =============================================================================
 # TESTS
 # =============================================================================
@@ -44,11 +45,13 @@ def test_apply_with_none_window(caplog: pytest.LogCaptureFixture) -> None:
     [
         ("Light", "_apply_light", "_apply_dark"),
         ("Dark", "_apply_dark", "_apply_light"),
-    ]
+    ],
 )
 def test_apply_calls_correct_theme_function(
-    mock_window: MagicMock, theme_name: str,
-    target_mock: str, skipped_mock: str
+    mock_window: MagicMock,
+    theme_name: str,
+    target_mock: str,
+    skipped_mock: str,
 ) -> None:
     """Verify that the correct theme function is called."""
     with patch("atlas.lib.themes._get_theme", return_value=theme_name):
@@ -61,6 +64,7 @@ def test_apply_calls_correct_theme_function(
 
 def test_get_theme_windows_error(monkeypatch: pytest.MonkeyPatch) -> None:
     """Verify the fallback to Light theme if registry access fails."""
+    monkeypatch.setattr(sys, "platform", "win32")
     monkeypatch.setattr(
         sys,
         "getwindowsversion",
@@ -71,9 +75,12 @@ def test_get_theme_windows_error(monkeypatch: pytest.MonkeyPatch) -> None:
     class FakeWinreg:
         """Mock winreg module for Windows registry testing."""
 
-        def OpenKey(self, *args, **kwargs):
-            """Mock OpenKey to raise an exception."""
+        def open_key(self, *args, **kwargs):  # noqa: N802
+            """Mock open_key to raise an exception."""
             raise Exception("fail")
+
+        # winreg expects OpenKey as the API name
+        OpenKey = open_key  # noqa: N815
 
     sys.modules["winreg"] = FakeWinreg()
 
@@ -83,10 +90,26 @@ def test_get_theme_windows_error(monkeypatch: pytest.MonkeyPatch) -> None:
         del sys.modules["winreg"]
 
 
+def test_get_theme_linux(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify theme detection on Linux fallback."""
+    monkeypatch.setattr(sys, "platform", "linux")
+    if hasattr(sys, "getwindowsversion"):
+        monkeypatch.delattr(sys, "getwindowsversion", raising=False)
+
+    assert themes._get_theme() in ("Light", "Dark")
+
+
 def test_apply_light_sets_stylesheet(
     monkeypatch: pytest.MonkeyPatch, mock_window: MagicMock
 ) -> None:
-    """Verify that the Light theme stylesheet is applied."""
+    """Verify that the Light theme stylesheet is applied on Windows."""
+    monkeypatch.setattr(sys, "platform", "win32")
+    monkeypatch.setattr(
+        sys,
+        "getwindowsversion",
+        lambda: type("WinVer", (), {"major": 10})(),
+        raising=False,
+    )
     themes._apply_light(mock_window)
 
     mock_window.setStyleSheet.assert_called_once()
@@ -94,10 +117,23 @@ def test_apply_light_sets_stylesheet(
     assert "background-color: #ffffff" in style
 
 
+def test_apply_light_linux(
+    monkeypatch: pytest.MonkeyPatch, mock_window: MagicMock
+) -> None:
+    """Verify Light theme on Linux skips setting hardcoded stylesheet."""
+    monkeypatch.setattr(sys, "platform", "linux")
+    if hasattr(sys, "getwindowsversion"):
+        monkeypatch.delattr(sys, "getwindowsversion", raising=False)
+
+    themes._apply_light(mock_window)
+    mock_window.setStyleSheet.assert_not_called()
+
+
 def test_apply_dark_calls_dwmapi(
     monkeypatch: pytest.MonkeyPatch, mock_window: MagicMock
 ) -> None:
     """Verify that Dark theme attributes are applied on Windows."""
+    monkeypatch.setattr(sys, "platform", "win32")
     monkeypatch.setattr(
         sys,
         "getwindowsversion",
@@ -113,6 +149,18 @@ def test_apply_dark_calls_dwmapi(
 
         assert mock_dwm.DwmSetWindowAttribute.call_count == 2
         mock_window.setStyleSheet.assert_called_once()
+
+
+def test_apply_dark_linux(
+    monkeypatch: pytest.MonkeyPatch, mock_window: MagicMock
+) -> None:
+    """Verify Dark theme on Linux skips setting hardcoded stylesheet."""
+    monkeypatch.setattr(sys, "platform", "linux")
+    if hasattr(sys, "getwindowsversion"):
+        monkeypatch.delattr(sys, "getwindowsversion", raising=False)
+
+    themes._apply_dark(mock_window)
+    mock_window.setStyleSheet.assert_not_called()
 
 
 def test_resource_path_dev(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -151,7 +199,7 @@ def test_backdrop_sets_pixmap(monkeypatch: pytest.MonkeyPatch) -> None:
             """Initialise with a path."""
             self.path = path
 
-    monkeypatch.setattr(themes, "QPixmap", FakeQPixmap)
+    monkeypatch.setattr(themes.QtGui, "QPixmap", FakeQPixmap)
 
     themes.backdrop(mock_element)
 
@@ -173,7 +221,7 @@ def test_icon_sets_window_icon(monkeypatch: pytest.MonkeyPatch) -> None:
             """Initialise with a path."""
             self.path = path
 
-    monkeypatch.setattr(themes, "QIcon", FakeQIcon)
+    monkeypatch.setattr(themes.QtGui, "QIcon", FakeQIcon)
 
     themes.icon(mock_window)
 
