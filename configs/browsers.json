@@ -37,6 +37,34 @@
                 "Signature": [
                     "Local State"
                 ]
+            },
+            {
+                "Type": "HOME",
+                "Path": "google-chrome-beta",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "HOME",
+                "Path": "google-chrome-unstable",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "com.google.Chrome/config/google-chrome",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "com.google.ChromeDev/config/google-chrome-unstable",
+                "Signature": [
+                    "Local State"
+                ]
             }
         ]
     },
@@ -115,6 +143,13 @@
             }
         ],
         "Linux": [
+            {
+                "Type": "FLATPAK",
+                "Path": "com.microsoft.Edge/config/microsoft-edge",
+                "Signature": [
+                    "Local State"
+                ]
+            },
             {
                 "Type": "HOME",
                 "Path": "microsoft-edge",
@@ -558,6 +593,57 @@
                 "Signature": [
                     "Local State"
                 ]
+            },
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "BraveSoftware/Brave-Browser-Beta/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "BraveSoftware/Brave-Browser-Nightly/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "BraveSoftware/Brave-Browser",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "HOME",
+                "Path": "BraveSoftware/Brave-Browser-Beta",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "HOME",
+                "Path": "BraveSoftware/Brave-Browser-Nightly",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "com.brave.Browser/config/BraveSoftware/Brave-Browser",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "SNAP",
+                "Path": "brave/current/.config/BraveSoftware/Brave-Browser",
+                "Signature": [
+                    "Local State"
+                ]
             }
         ]
     },
@@ -655,6 +741,29 @@
                 "Signature": [
                     "Local State",
                     "BrowserMetrics"
+                ]
+            }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "chromium",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "org.chromium.Chromium/config/chromium",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "SNAP",
+                "Path": "chromium/common/chromium",
+                "Signature": [
+                    "Local State"
                 ]
             }
         ]
@@ -1378,6 +1487,18 @@
                 "Path": "librewolf/Profiles",
                 "Signature": false
             }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "librewolf/librewolf",
+                "Signature": false
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "io.gitlab.librewolf-community/config/librewolf/librewolf",
+                "Signature": false
+            }
         ]
     },
     "LobbyBrowser": {
@@ -1821,6 +1942,50 @@
                 "Path": "Opera",
                 "Signature": false
             }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "opera",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "HOME",
+                "Path": "opera-beta",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "HOME",
+                "Path": "opera-developer",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "com.opera.Opera/config/opera",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "SNAP",
+                "Path": "opera/current/.config/opera",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "SNAP",
+                "Path": "opera-developer/current/.config/opera-developer",
+                "Signature": [
+                    "Local State"
+                ]
+            }
         ]
     },
     "Opera GX": {
@@ -1828,6 +1993,29 @@
             {
                 "Type": "APPDATA",
                 "Path": "Opera Software/Opera GX Stable",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "opera-gx",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "com.opera.opera-gx/config/opera-gx",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "SNAP",
+                "Path": "opera-gx/current/.config/opera-gx",
                 "Signature": [
                     "Local State"
                 ]
@@ -2572,6 +2760,43 @@
             {
                 "Type": "LOCALAPPDATA",
                 "Path": "Vivaldi/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Vivaldi Snapshot/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "vivaldi",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "HOME",
+                "Path": "vivaldi-snapshot",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "com.vivaldi.Vivaldi/config/vivaldi",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "SNAP",
+                "Path": "vivaldi/current/.config/vivaldi",
                 "Signature": [
                     "Local State"
                 ]

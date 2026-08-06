@@ -35,7 +35,29 @@ Atlas follows a simple process for data reliability:
 ### Requirements
 
 - Python 3.8 or higher
-- PyQt6 6.0+ (Linux officially supports Glibc 2.35+ with PyQt6; PyQt5 fallback supported on older Windows/Python)
+- PyQt6 6.0+ (PyQt5 remains the fallback for older Windows/Python)
+- Linux (glibc 2.31+); Ubuntu 20.04 LTS is the recommended build baseline.
+
+### Linux Builds
+
+Atlas supports Linux systems with glibc 2.31 or newer. Build Linux releases on
+Ubuntu 20.04 LTS where possible, as it provides a broad compatibility baseline
+for newer Linux distributions.
+
+Atlas deliberately runs Qt through XWayland/XCB, including in Wayland
+sessions. This gives the application more predictable Qt theme and window
+decoration behavior across the diverse desktop environments used from Ubuntu
+20.04 LTS onward.
+
+Before building, run the Linux setup script:
+
+```bash
+source scripts/setup_dev.sh
+```
+
+It checks the XCB/XWayland runtime libraries, explains their purpose, and asks
+before installing any missing dependencies. Setup stops if the libraries are
+not available, preventing a poor or non-starting Linux build.
 
 ### Installation from Source
 
@@ -112,7 +134,7 @@ The `main.spec` configuration explicitly excludes several modules to reduce the 
 ## Roadmap
 
 - **Windows 7 Support**: Native performance and feature parity to be maintained under the upcoming `win7` branch.
-- **Linux**: Porting backup tools to the Linux platform.
+- **Linux**: Maintain reliable XWayland compatibility across supported desktop environments.
 - **Research**: Expanding the list of supported historical browser engines.
 
 ## Getting Started

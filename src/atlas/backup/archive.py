@@ -14,7 +14,7 @@ import os
 import zipfile
 from datetime import datetime
 from pathlib import Path
-from typing import Callable, Iterable, Optional, Tuple, Union
+from typing import Callable, Dict, Iterable, Optional, Tuple, Union
 
 from atlas.backup.attribute import create_zip_info
 from atlas.backup.disk import relative_zip_path, safe_unlink
@@ -171,10 +171,57 @@ def _write_file_to_zip(
         raise
 
 
+def _unique_sources(sources: Iterable[Path]) -> list:
+    """Return existing directory sources once, preserving their order."""
+    unique_sources = []
+    seen_sources = set()
+
+    for source in sources:
+        resolved_source = source.resolve()
+        source_key = os.path.normcase(str(resolved_source))
+
+        if (
+            resolved_source.exists()
+            and resolved_source.is_dir()
+            and source_key not in seen_sources
+        ):
+            seen_sources.add(source_key)
+            unique_sources.append(resolved_source)
+
+    return unique_sources
+
+
+def _archive_root_names(sources: Iterable[Path]) -> Dict[Path, str]:
+    """Assign unique top-level archive names to source directories.
+
+    Keep each source directory's actual name where possible.  Only a source
+    whose name already exists in the archive receives a ``(1)``, ``(2)``,
+    and so on suffix.  This keeps arbitrary profile folder names intact while
+    preventing duplicate entries from separately discovered installations.
+    """
+    archive_root_names = {}
+    used_names = set()
+
+    for source in sources:
+        source_name = source.name
+        archive_name = source_name
+        suffix = 1
+
+        while archive_name.casefold() in used_names:
+            archive_name = "{}({})".format(source_name, suffix)
+            suffix += 1
+
+        archive_root_names[source] = archive_name
+        used_names.add(archive_name.casefold())
+
+    return archive_root_names
+
+
 def write_zip(
     files: Iterable[Tuple[Path, Path]],
     zip_path: Path,
     cancel_callback: Optional[Callable[[], bool]] = None,
+    archive_root_names: Optional[Dict[Path, str]] = None,
 ) -> None:
     """Write files to a ZIP archive safely.
 
@@ -187,6 +234,8 @@ def write_zip(
         zip_path (Path): Destination path for the ZIP archive.
         cancel_callback (Optional[Callable[[], bool]]): Function to
             check for cancellation.
+        archive_root_names (Optional[Dict[Path, str]]): Archive directory
+            name assigned to each source root.
 
     Raises:
         RuntimeError: If a file cannot be written safely to the archive.
@@ -209,6 +258,16 @@ def write_zip(
 
                 try:
                     rel_path = relative_zip_path(file_path, base_path)
+                    archive_root_name = (
+                        archive_root_names.get(base_path)
+                        if archive_root_names
+                        else None
+                    )
+                    if archive_root_name:
+                        _, relative_file_path = rel_path.split("/", 1)
+                        rel_path = "{}/{}".format(
+                            archive_root_name, relative_file_path
+                        )
                     zip_info = create_zip_info(file_path)
                     zip_info.filename = rel_path
 
@@ -276,7 +335,7 @@ def compress(  # noqa: C901
         LOGGER.error("Invalid source type. Must be path or list of paths.")
         return None
 
-    sources = [s.resolve() for s in sources if s.exists() and s.is_dir()]
+    sources = _unique_sources(sources)
     if not sources:
         LOGGER.warning("No valid source paths found. Halting.")
         raise FileNotFoundError("No valid source paths found.")
@@ -308,7 +367,12 @@ def compress(  # noqa: C901
         valid_files = itertools.chain(
             [(first_root, first_file)], valid_files_gen
         )
-        write_zip(valid_files, zip_path, cancel_callback)
+        write_zip(
+            valid_files,
+            zip_path,
+            cancel_callback,
+            _archive_root_names(sources),
+        )
 
         if cancel_callback and cancel_callback():
             LOGGER.info("Compression cancelled during writing.")

@@ -20,6 +20,25 @@ All validation steps occur before any disk-intensive or long-running operations 
 
 ---
 
+## Linux Desktop Compatibility
+
+Atlas supports Linux (glibc 2.31+). Ubuntu 20.04 LTS is the recommended Linux
+build baseline because its older userspace maximizes compatibility with newer
+Linux desktop systems.
+
+`compatibility/qt.py` configures Qt to use the XWayland/XCB platform backend
+unless the user explicitly provides `QT_QPA_PLATFORM`. This is intentional:
+XWayland provides more consistent Qt theming, window decorations, and window
+flag behavior across the supported Linux desktop environments.
+
+Before Python dependencies or PyInstaller are installed,
+`scripts/setup_dev.sh` verifies the XCB runtime libraries. If they are missing,
+it explains the compatibility requirement and asks for confirmation before
+installing them through the detected package manager. Declining or failing the
+installation stops setup to prevent a poor Linux build.
+
+---
+
 ## Trust Model
 
 Atlas follows a strict, defensive trust model:

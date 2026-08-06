@@ -13,10 +13,25 @@ Atlas supports over **250** different browser variants. It detects and backs up 
 ### 🖥️ Cross-Platform Compatibility
 Engineered for maximum portability, Atlas runs on diverse operating systems:
 *   **Windows**: 7 (see upcoming `win7` branch), 8, 10, 11.
-*   **Linux**: GLIBC 2.23 and newer.
+*   **Linux (glibc 2.31+)**: Build portable releases on Ubuntu 20.04 LTS for
+    the broadest practical compatibility with newer Linux desktop systems.
+
+### Linux Desktop Compatibility
+
+Atlas uses Qt's XWayland/XCB backend on Linux, including in Wayland sessions.
+This is intentional: it provides more consistent Qt theming, window
+decorations, and behavior across the desktop environments commonly used from
+Ubuntu 20.04 LTS onward.
+
+The Linux development setup checks for the required XCB libraries and asks
+before installing missing dependencies. It stops if the compatibility layer is
+unavailable, preventing a portable build that may not start on another system.
 
 ### 📦 Self-Contained Architecture
-Atlas is a self-contained application, requiring no external dependencies. It includes all necessary components within a single executable, ensuring ease of use and portability.
+Atlas packages its Python application and Qt resources into a portable
+executable. Linux build hosts must provide the XCB/XWayland libraries checked
+by `scripts/setup_dev.sh`; this keeps release builds compatible with Atlas's
+required desktop backend.
 
 ## Running Atlas
 
