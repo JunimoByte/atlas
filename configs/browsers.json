@@ -1676,6 +1676,23 @@
                 "Path": "Mullvad/MullvadBrowser/Profiles",
                 "Signature": false
             }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": ".local/share/mullvad-browser/Data",
+                "Signature": false
+            },
+            {
+                "Type": "HOME",
+                "Path": ".mullvad-browser-alpha/.mullvad/mullvadbrowser",
+                "Signature": false
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "net.mullvad.MullvadBrowser/.mullvad-browser/.mullvad/mullvadbrowser",
+                "Signature": false
+            }
         ]
     },
     "MultiZen Browser": {
@@ -2945,6 +2962,23 @@
             {
                 "Type": "LOCALAPPDATA",
                 "Path": "zen/Profiles",
+                "Signature": false
+            }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "zen",
+                "Signature": false
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "app.zen_browser.zen/.zen",
+                "Signature": false
+            },
+            {
+                "Type": "SNAP",
+                "Path": "zen-browser-snap/common/.zen",
                 "Signature": false
             }
         ]
