@@ -647,6 +647,26 @@
             }
         ]
     },
+    "Brave Origin": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "BraveSoftware/Brave-Origin/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "BraveSoftware/Brave-Origin",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
     "BriskBard": {
         "Windows": [
             {
@@ -1052,6 +1072,23 @@
                 "Path": "falkon/profiles",
                 "Signature": false
             }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": ".config/falkon/profiles",
+                "Signature": false
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "org.kde.falkon/config/falkon/profiles",
+                "Signature": false
+            },
+            {
+                "Type": "SNAP",
+                "Path": "falkon/current/.config/falkon/profiles",
+                "Signature": false
+            }
         ]
     },
     "Fast Internet Browser": {
@@ -1125,6 +1162,23 @@
             {
                 "Type": "APPDATA",
                 "Path": "Floorp/Profiles",
+                "Signature": false
+            }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": ".floorp",
+                "Signature": false
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "one.ablaze.floorp/.floorp",
+                "Signature": false
+            },
+            {
+                "Type": "SNAP",
+                "Path": "floorp/current/.floorp",
                 "Signature": false
             }
         ]
@@ -2341,6 +2395,13 @@
                 "Path": "Mozilla/SeaMonkey/Profiles",
                 "Signature": false
             }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": ".mozilla/seamonkey",
+                "Signature": false
+            }
         ]
     },
     "Seznam cz": {
@@ -2662,6 +2723,15 @@
                     "Local State"
                 ]
             }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "thorium",
+                "Signature": [
+                    "Local State"
+                ]
+            }
         ]
     },
     "TheWorld6": {
@@ -2724,6 +2794,22 @@
             {
                 "Type": "LOCALAPPDATA",
                 "Path": "ungoogled-chromium/user_data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "vivaldi",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "io.github.ungoogled_software.ungoogled_chromium/config/chromium",
                 "Signature": [
                     "Local State"
                 ]
@@ -2849,6 +2935,18 @@
                 "Path": "Waterfox/Profiles",
                 "Signature": false
             }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": ".waterfox",
+                "Signature": false
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "net.waterfox.waterfox/.waterfox",
+                "Signature": false
+            }
         ]
     },
     "WaveBrowser": {
@@ -2869,6 +2967,45 @@
                 "Path": "WaveboxApp/User Data",
                 "Signature": [
                     "Local State"
+                ]
+            }
+        ]
+    },
+    "GNOME Web": {
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": ".local/share/epiphany",
+                "Signature": [
+                    "ephy-history.db"
+                ]
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "org.gnome.Epiphany/data/epiphany",
+                "Signature": [
+                    "ephy-history.db"
+                ]
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "org.gnome.Epiphany.Devel/data/epiphany",
+                "Signature": [
+                    "ephy-history.db"
+                ]
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "org.gnome.Epiphany.Canary/data/epiphany",
+                "Signature": [
+                    "ephy-history.db"
+                ]
+            },
+            {
+                "Type": "SNAP",
+                "Path": "epiphany/current/.local/share/epiphany",
+                "Signature": [
+                    "ephy-history.db"
                 ]
             }
         ]
