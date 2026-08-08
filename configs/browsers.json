@@ -1361,6 +1361,15 @@
                     "Local State"
                 ]
             }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "net.imput.helium",
+                "Signature": [
+                    "Local State"
+                ]
+            }
         ]
     },
     "Hola Browser": {
@@ -1779,6 +1788,13 @@
             {
                 "Type": "APPDATA",
                 "Path": "Midori/Profiles",
+                "Signature": false
+            }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "mozilla/midori",
                 "Signature": false
             }
         ]
@@ -2928,6 +2944,22 @@
             {
                 "Type": "LOCALAPPDATA",
                 "Path": "Zoho/Ulaa/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "Zoho/Ulaa",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "com.ulaa.Ulaa/config/Zoho/Ulaa",
                 "Signature": [
                     "Local State"
                 ]

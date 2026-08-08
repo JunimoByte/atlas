@@ -88,6 +88,7 @@
         "databases",
         "QuotaManager",
         "QuotaManager-journal",
+        "QtWebEngine",
         "File System",
         "Uninst",
         "UnInst",
