@@ -463,6 +463,13 @@
                 "Path": "Basilisk-Dev/Basilisk/Profiles",
                 "Signature": false
             }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": ".basilisk-dev/basilisk",
+                "Signature": false
+            }
         ]
     },
     "Beacon Web Browser": {
@@ -1516,6 +1523,15 @@
             }
         ]
     },
+    "Ladybird": {
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "Ladybird/Profiles",
+                "Signature": false
+            }
+        ]
+    },
     "Lagrange": {
         "Windows": [
             {
@@ -1712,6 +1728,15 @@
                     "Local State"
                 ]
             }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "Min",
+                "Signature": [
+                    "Local State"
+                ]
+            }
         ]
     },
     "MiniBrowser": {
@@ -1794,6 +1819,17 @@
             {
                 "Type": "LOCALAPPDATA",
                 "Path": "Naver/Naver Whale/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Nav0": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Nav0",
                 "Signature": [
                     "Local State"
                 ]
@@ -2169,6 +2205,13 @@
                 "Path": "Moonchild Productions/Pale Moon/Profiles",
                 "Signature": false
             }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": ".moonchild productions/pale moon",
+                "Signature": false
+            }
         ]
     },
     "Peersky Browser": {
@@ -2282,6 +2325,18 @@
             {
                 "Type": "APPDATA",
                 "Path": "qutebrowser",
+                "Signature": false
+            }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "qutebrowser",
+                "Signature": false
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "org.qutebrowser.qutebrowser",
                 "Signature": false
             }
         ]
@@ -2800,13 +2855,6 @@
             }
         ],
         "Linux": [
-            {
-                "Type": "HOME",
-                "Path": "vivaldi",
-                "Signature": [
-                    "Local State"
-                ]
-            },
             {
                 "Type": "FLATPAK",
                 "Path": "io.github.ungoogled_software.ungoogled_chromium/config/chromium",
