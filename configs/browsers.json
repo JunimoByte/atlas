@@ -716,6 +716,22 @@
                     "Local State"
                 ]
             }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "catalyst",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "org.eu.getcatalyst.Catalyst/config/catalyst",
+                "Signature": [
+                    "Local State"
+                ]
+            }
         ]
     },
     "Catsxp Browser": {
@@ -1032,6 +1048,22 @@
                     "Local State"
                 ]
             }
+        ],
+        "Linux": [
+            {
+                "Type": "FLATPAK",
+                "Path": "org.ecosia.Browser/config/EcosiaBrowser",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "SNAP",
+                "Path": "ecosia/current/.config/EcosiaBrowser",
+                "Signature": [
+                    "Local State"
+                ]
+            }
         ]
     },
     "Epic Privacy Browser": {
@@ -1142,6 +1174,20 @@
             }
         ]
     },
+    "FireDragon": {
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "firedragon",
+                "Signature": false
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "org.garudalinux.firedragon/.firedragon",
+                "Signature": false
+            }
+        ]
+    },
     "Fifo Browser": {
         "Windows": [
             {
@@ -1207,6 +1253,24 @@
                 "Type": "APPDATA",
                 "Path": "Flock/Browser/Profiles",
                 "Signature": false
+            }
+        ]
+    },
+    "Geopard": {
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": ".local/share/geopard",
+                "Signature": [
+                    "bookmarks.gemini"
+                ]
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "com.ranfdev.Geopard/data/geopard",
+                "Signature": [
+                    "bookmarks.gemini"
+                ]
             }
         ]
     },
@@ -1873,6 +1937,18 @@
                     "Cookies"
                 ]
             }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "netsurf",
+                "Signature": false
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "org.netsurf_browser.NetSurf/config/netsurf",
+                "Signature": false
+            }
         ]
     },
     "Neo": {
@@ -1891,6 +1967,20 @@
             {
                 "Type": "APPDATA",
                 "Path": "Nocturne/Profiles",
+                "Signature": false
+            }
+        ]
+    },
+    "Nyxt": {
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "nyxt",
+                "Signature": false
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "engineer.atlas.Nyxt/data",
                 "Signature": false
             }
         ]
@@ -3136,6 +3226,36 @@
             {
                 "Type": "LOCALAPPDATA",
                 "Path": "Yandex/YandexBrowser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "yandex-browser",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "HOME",
+                "Path": "yandex-browser-beta",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "ru.yandex.Browser/config/yandex-browser",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "SNAP",
+                "Path": "yandex-browser/current/.config/yandex-browser",
                 "Signature": [
                     "Local State"
                 ]
