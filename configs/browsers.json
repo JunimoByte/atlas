@@ -853,6 +853,15 @@
                     "Local State"
                 ]
             }
+        ],
+        "Linux": [
+            {
+                "Type": "SNAP",
+                "Path": "colibri/current/.config/Colibri",
+                "Signature": [
+                    "Cookies"
+                ]
+            }
         ]
     },
     "Comet": {
@@ -1245,6 +1254,22 @@
                     "Preferences"
                 ]
             }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "Flow",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "com.flow_browser.flow/config/Flow",
+                "Signature": [
+                    "Local State"
+                ]
+            }
         ]
     },
     "Flock": {
@@ -1623,6 +1648,17 @@
             }
         ]
     },
+    "Links": {
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": ".links2",
+                "Signature": [
+                    "bookmarks.html"
+                ]
+            }
+        ]
+    },
     "LibreWolf": {
         "Windows": [
             {
@@ -1992,12 +2028,9 @@
             {
                 "Type": "HOME",
                 "Path": "nyxt",
-                "Signature": false
-            },
-            {
-                "Type": "FLATPAK",
-                "Path": "engineer.atlas.Nyxt/data",
-                "Signature": false
+                "Signature": [
+                    "nyxt.log"
+                ]
             }
         ]
     },

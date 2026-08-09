@@ -15,7 +15,9 @@
         ".EXE",
         ".dll",
         ".crdownload",
-        ".download"
+        ".download",
+        ".AppImage",
+        ".deb"
     ],
     "SKIP_FOLDERS": [
         "Cache",
@@ -24,7 +26,6 @@
         "GPUCache",
         "Code Cache",
         "Media Cache",
-        "IndexedDB",
         "Service Worker",
         "Thumbnails",
         "cache2",
