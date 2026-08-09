@@ -90,17 +90,23 @@
             {
                 "Type": "HOME",
                 "Path": ".mozilla/firefox",
-                "Signature": false
+                "Signature": [
+                    "profiles.ini"
+                ]
             },
             {
                 "Type": "FLATPAK",
                 "Path": "org.mozilla.firefox/.mozilla/firefox",
-                "Signature": false
+                "Signature": [
+                    "profiles.ini"
+                ]
             },
             {
                 "Type": "SNAP",
                 "Path": "firefox/common/.mozilla/firefox",
-                "Signature": false
+                "Signature": [
+                    "profiles.ini"
+                ]
             }
         ]
     },
@@ -468,7 +474,9 @@
             {
                 "Type": "HOME",
                 "Path": ".basilisk-dev/basilisk",
-                "Signature": false
+                "Signature": [
+                    "profiles.ini"
+                ]
             }
         ]
     },
@@ -1193,7 +1201,9 @@
             {
                 "Type": "FLATPAK",
                 "Path": "org.garudalinux.firedragon/.firedragon",
-                "Signature": false
+                "Signature": [
+                    "profiles.ini"
+                ]
             }
         ]
     },
@@ -1231,17 +1241,23 @@
             {
                 "Type": "HOME",
                 "Path": ".floorp",
-                "Signature": false
+                "Signature": [
+                    "profiles.ini"
+                ]
             },
             {
                 "Type": "FLATPAK",
                 "Path": "one.ablaze.floorp/.floorp",
-                "Signature": false
+                "Signature": [
+                    "profiles.ini"
+                ]
             },
             {
                 "Type": "SNAP",
                 "Path": "floorp/current/.floorp",
-                "Signature": false
+                "Signature": [
+                    "profiles.ini"
+                ]
             }
         ]
     },
@@ -1671,12 +1687,16 @@
             {
                 "Type": "HOME",
                 "Path": "librewolf/librewolf",
-                "Signature": false
+                "Signature": [
+                    "profiles.ini"
+                ]
             },
             {
                 "Type": "FLATPAK",
                 "Path": "io.gitlab.librewolf-community/config/librewolf/librewolf",
-                "Signature": false
+                "Signature": [
+                    "profiles.ini"
+                ]
             }
         ]
     },
@@ -1831,7 +1851,16 @@
             {
                 "Type": "HOME",
                 "Path": "mozilla/midori",
-                "Signature": false
+                "Signature": [
+                    "profiles.ini"
+                ]
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "org.midori_browser.Midori/config/midori",
+                "Signature": [
+                    "config"
+                ]
             }
         ]
     },
@@ -1876,17 +1905,23 @@
             {
                 "Type": "HOME",
                 "Path": ".local/share/mullvad-browser/Data",
-                "Signature": false
+                "Signature": [
+                    "profiles.ini"
+                ]
             },
             {
                 "Type": "HOME",
                 "Path": ".mullvad-browser-alpha/.mullvad/mullvadbrowser",
-                "Signature": false
+                "Signature": [
+                    "profiles.ini"
+                ]
             },
             {
                 "Type": "FLATPAK",
                 "Path": "net.mullvad.MullvadBrowser/.mullvad-browser/.mullvad/mullvadbrowser",
-                "Signature": false
+                "Signature": [
+                    "profiles.ini"
+                ]
             }
         ]
     },
@@ -2349,7 +2384,9 @@
             {
                 "Type": "HOME",
                 "Path": ".moonchild productions/pale moon",
-                "Signature": false
+                "Signature": [
+                    "profiles.ini"
+                ]
             }
         ]
     },
@@ -2594,7 +2631,9 @@
             {
                 "Type": "HOME",
                 "Path": ".mozilla/seamonkey",
-                "Signature": false
+                "Signature": [
+                    "profiles.ini"
+                ]
             }
         ]
     },
@@ -3143,12 +3182,16 @@
             {
                 "Type": "HOME",
                 "Path": ".waterfox",
-                "Signature": false
+                "Signature": [
+                    "profiles.ini"
+                ]
             },
             {
                 "Type": "FLATPAK",
                 "Path": "net.waterfox.waterfox/.waterfox",
-                "Signature": false
+                "Signature": [
+                    "profiles.ini"
+                ]
             }
         ]
     },
@@ -3339,17 +3382,23 @@
             {
                 "Type": "HOME",
                 "Path": "zen",
-                "Signature": false
+                "Signature": [
+                    "profiles.ini"
+                ]
             },
             {
                 "Type": "FLATPAK",
                 "Path": "app.zen_browser.zen/.zen",
-                "Signature": false
+                "Signature": [
+                    "profiles.ini"
+                ]
             },
             {
                 "Type": "SNAP",
                 "Path": "zen-browser-snap/common/.zen",
-                "Signature": false
+                "Signature": [
+                    "profiles.ini"
+                ]
             }
         ]
     },
