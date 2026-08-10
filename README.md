@@ -1,132 +1,103 @@
-# Atlas
+<div align="center">
+  <img src="assets/icons/Icon.svg" alt="Atlas icon" width="104" height="104">
+  <h1>Atlas</h1>
+  <p><strong>Reliable, offline browser-profile backups.</strong></p>
+  <p>
+    <a href="https://github.com/JunimoByte/atlas/actions/workflows/ci.yml">
+      <img src="https://github.com/JunimoByte/atlas/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI status">
+    </a>
+    <a href="https://www.python.org/">
+      <img src="https://img.shields.io/badge/python-3.8%2B-3776AB?logo=python&amp;logoColor=white" alt="Python 3.8 or later">
+    </a>
+    <a href="LICENSE">
+      <img src="https://img.shields.io/badge/license-AGPL--3.0--or--later-blue.svg" alt="License: AGPL-3.0-or-later">
+    </a>
+  </p>
+</div>
 
-Atlas is an application for backing up and moving browser profiles. It is designed for reliability, especially on legacy systems where cloud-based tools are unavailable.
+## Information
 
-Software moves fast and often leaves older hardware behind. Atlas was built to ensure your data stays yours, regardless of the machine you are using.
+Atlas creates portable ZIP backups of browser profiles while keeping the source data read-only.
 
 ## Features
 
-- **Wide Browser Support**: Supports over 250 browser variants across Chromium, Gecko, and legacy engines. Compatibility depends on the specific browser version and host OS.
-- **Intelligent Snapshots**: Filters non-essential data like caches and temporary files, drastically reducing storage footprint (often from 1GB+ down to ~100MB) while preserving all critical history and settings.
-- **High-Fidelity Preservation**: Engineered for extreme stability and data integrity, approaching forensic standards for read-only profile capture.
-- **Legacy Compatibility**: Native support for Windows 7, 8, 10, and 11.
-- **Deployment Flexibility**: Available as both a standalone portable executable and a standard installable Python package.
-- **Safety**: Strict read-only model. Atlas does not modify source profile data or touch sensitive system directories.
+- Supports 250+ Chromium, Gecko, and legacy browser variants, including Dev, Beta, and Nightly channels.
+- Excludes caches and temporary data, often reducing a 1 GB+ profile to about 100 MB while preserving settings, history, and bookmarks.
+- Uses a strictly read-only source model and atomically creates ZIP archives in a user-selected location.
+- Supports Windows 7 through 11, Linux (glibc 2.31+), a Windows portable executable, Linux AppImage, and Python-package installs.
 
-## How it Works
+## Requirements
 
-Atlas follows a simple process for data reliability:
+- Python 3.8+
+- PyQt6 6.0+ (PyQt5 is the fallback for older Windows/Python)
+- Linux builds: glibc 2.31+; Ubuntu 20.04 LTS is the preferred baseline
 
-1. **Check**: Verifies permissions and the system environment.
-2. **Scan**: Finds supported profiles automatically.
-3. **Estimate**: Calculates sizes and checks if your destination has enough space.
-4. **Backup**: Creates archives using safe, atomic operations.
+For Linux builds, first run:
 
-## Engineering Challenges
+```bash
+source scripts/setup_dev.sh
+```
 
-- **Browser Fragmentation**: Managing differences across Chromium, Gecko, and legacy engines, including variations in profile structure, paths, versions, and distribution channels (beta, nightly, portable).
-- **Legacy OS Constraints**: Accommodating limitations on Windows 7 and earlier, such as filesystem quirks and limited APIs.
-- **Data Integrity and Safety**: Implementing atomic archive writes and path sanitization to enforce the read-only model.
-- **Performance vs. Reliability Tradeoffs**: Balancing the processing of large profile sizes with memory considerations through a staged pipeline.
-- **Offline-First Design**: Operating with no network access, relying on local-only constraints that dictate the architecture.
+The setup script checks XCB/XWayland libraries for reliable Qt startup and asks before installing missing dependencies.
 
-## Development
-
-### Requirements
-
-- Python 3.8 or higher
-- PyQt6 6.0+ (Linux officially supports Glibc 2.35+ with PyQt6; PyQt5 fallback supported on older Windows/Python)
-
-### Installation from Source
-
-To install Atlas as a package from the source directory:
+## Install and run
 
 ```bash
 pip install .
-```
-
-For development with testing and build tools:
-
-```bash
-pip install -e ".[dev]"
-```
-
-> **Note:** The `pyproject.toml` file acts as the Single Source of Truth (SSOT) for all environment dependencies. Setup scripts like `setup_dev.bat` and `setup_dev.sh` hook directly into this configuration.
-
-### Running
-
-The application can be launched directly:
-
-```bash
-python -m atlas.main
-```
-
-Or via the installed command:
-
-```bash
 atlas
 ```
 
-### Testing
+For development:
 
-Tests are located in `src/atlas/tests`. Run them using pytest:
+```bash
+pip install -e ".[dev]"
+python -m atlas.main
+```
+
+## Test
 
 ```bash
 pytest
 ```
 
-For **headless execution** (such as in Docker or Linux CI environments without a display), you must bypass Qt aborts using the offscreen platform:
+For headless Linux or CI execution:
 
 ```bash
 QT_QPA_PLATFORM=offscreen pytest
 ```
 
-### Building
+## Build
 
-Atlas uses PyInstaller for creating standalone executables. Use the provided spec file:
+### Windows portable executable
 
 ```bash
 pyinstaller main.spec
 ```
 
-### Build Optimizations
+The output is `dist/Atlas-x86_64-Portable.exe` for a 64-bit Python build or
+`dist/Atlas-x86-Portable.exe` for a 32-bit build. The Inno Setup installer
+uses the matching file automatically and installs it without `-Portable`.
 
-The `main.spec` configuration explicitly excludes several modules to reduce the executable size and improve security. By removing network-capable libraries, Atlas ensures a lean, offline-first environment:
+### Linux AppImage
 
-- **Network Modules**: `QtNetwork`, `http`, `ssl`, `ftplib`, `smtplib`, etc.
-- **Web Engines**: `QtWebEngineWidgets`, `QtWebEngineCore`.
-- **Unused Large Frameworks**: `QtQuick`, `Qt3D`, `QtMultimedia`, `tkinter`.
+```bash
+bash scripts/build_appimage.sh
+```
+
+This creates `dist/Atlas-<architecture>.AppImage` from an onedir payload, avoiding PyInstaller one-file extraction at launch. If `appimagetool` is absent, the script asks before downloading it to `~/.local/bin`; declining or a failed download still leaves a ready-to-package AppDir at `dist/Atlas.AppDir`.
+
+Linux uses `assets/icons/Icon.svg` for the application and AppImage icon.
 
 ## Structure
 
-| Directory | Purpose |
-| :--- | :--- |
-| `src/atlas/` | Main application package |
-| `src/atlas/lib/` | Core utilities and OS integration |
-| `src/atlas/backup/` | Profile discovery and archiving logic |
-| `src/atlas/display/` | UI controllers and window management |
-| `src/atlas/ui/` | Static UI layouts |
-| `configs/` | Browser definitions and blacklists |
-| `assets/` | Icons and images |
-
-## Roadmap
-
-- **Windows 7 Support**: Native performance and feature parity to be maintained under the upcoming `win7` branch.
-- **Linux**: Porting backup tools to the Linux platform.
-- **Research**: Expanding the list of supported historical browser engines.
-
-## Getting Started
-
-Atlas is portable. No installation is required for end users.
-
-1. Download the latest release.
-2. Run `Atlas-Portable.exe`.
+| Location | Purpose |
+| --- | --- |
+| `src/atlas/` | Application code and tests |
+| `configs/` | Browser definitions and backup policy |
+| `assets/` | Application images and icons |
+| `scripts/` | Setup and build scripts |
+| `installer/` | Platform packaging metadata |
 
 ## License
 
-**GNU Affero General Public License v3.0 (AGPL-3.0)**.
-Copyright (c) 2026 Atlas.
-
----
-
-<sub>*A personal note: I spent 8 months building this app, installing and exploring over 250 browser variants along the way. It was the most challenging project I've taken on, but seeing it come to life made it worth it.*</sub>
+GNU Affero General Public License v3.0 or later. See [LICENSE](LICENSE).

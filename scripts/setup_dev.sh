@@ -22,6 +22,165 @@ PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VENV_PATH="$PROJECT_ROOT/venv"
 
 # ---------------------------------------------------------------------------
+# LINUX XCB / XWAYLAND DEPENDENCIES
+# ---------------------------------------------------------------------------
+
+XCB_LIBRARIES=(
+    "libxcb-cursor.so.0"
+    "libxcb-icccm.so.4"
+    "libxcb-image.so.0"
+    "libxcb-keysyms.so.1"
+    "libxcb-render-util.so.0"
+    "libxcb-xkb.so.1"
+    "libxkbcommon-x11.so.0"
+)
+
+
+has_xcb_libraries() {
+    # Return success when all required XCB libraries are available.
+    local library
+
+    if ! command -v ldconfig >/dev/null 2>&1; then
+        return 1
+    fi
+
+    for library in "${XCB_LIBRARIES[@]}"; do
+        if ! ldconfig -p 2>/dev/null | grep -Fq "$library"; then
+            return 1
+        fi
+    done
+
+    return 0
+}
+
+
+print_missing_xcb_libraries() {
+    # Print the XCB libraries unavailable on the current system.
+    local library
+
+    echo "Missing XCB/XWayland libraries:"
+    for library in "${XCB_LIBRARIES[@]}"; do
+        if ! ldconfig -p 2>/dev/null | grep -Fq "$library"; then
+            echo "  - $library"
+        fi
+    done
+}
+
+
+run_privileged() {
+    # Run a package command as root through sudo when necessary.
+    if [ "$(id -u)" -eq 0 ]; then
+        "$@"
+        return
+    fi
+
+    if command -v sudo >/dev/null 2>&1; then
+        sudo "$@"
+        return
+    fi
+
+    echo "ERROR: Root access or sudo is required to install XCB libraries."
+    return 1
+}
+
+
+install_xcb_libraries() {
+    # Install XCB/XWayland runtime libraries with the available manager.
+    local debian_packages=(
+        libxcb-cursor0
+        libxcb-icccm4
+        libxcb-image0
+        libxcb-keysyms1
+        libxcb-render-util0
+        libxcb-xkb1
+        libxkbcommon-x11-0
+    )
+    local general_packages=(
+        libxcb
+        libxkbcommon-x11
+        xcb-util-cursor
+        xcb-util-image
+        xcb-util-keysyms
+        xcb-util-renderutil
+        xcb-util-wm
+    )
+
+    if command -v apt-get >/dev/null 2>&1; then
+        run_privileged apt-get update
+        run_privileged apt-get install -y "${debian_packages[@]}"
+    elif command -v dnf >/dev/null 2>&1; then
+        run_privileged dnf install -y "${general_packages[@]}"
+    elif command -v yum >/dev/null 2>&1; then
+        run_privileged yum install -y "${general_packages[@]}"
+    elif command -v pacman >/dev/null 2>&1; then
+        run_privileged pacman -S --needed --noconfirm \
+            libxkbcommon "${general_packages[@]}"
+    elif command -v zypper >/dev/null 2>&1; then
+        run_privileged zypper --non-interactive install \
+            libxcb1 libxkbcommon-x11-0 \
+            xcb-util-cursor xcb-util-image xcb-util-keysyms \
+            xcb-util-renderutil xcb-util-wm
+    elif command -v apk >/dev/null 2>&1; then
+        run_privileged apk add libxkbcommon "${general_packages[@]}"
+    elif command -v xbps-install >/dev/null 2>&1; then
+        run_privileged xbps-install -y libxkbcommon "${general_packages[@]}"
+    elif command -v slackpkg >/dev/null 2>&1; then
+        run_privileged slackpkg -batch=on -default_answer=y install \
+            libxkbcommon "${general_packages[@]}"
+    else
+        echo "ERROR: No supported Linux package manager was detected."
+        echo "Install the missing XCB libraries manually, then rerun setup."
+        return 1
+    fi
+}
+
+
+ensure_linux_xcb_libraries() {
+    # Prompt for and verify Linux XCB/XWayland runtime dependencies.
+    local response
+
+    if [[ "$OSTYPE" != linux* ]]; then
+        return 0
+    fi
+
+    if has_xcb_libraries; then
+        echo "XCB/XWayland compatibility libraries are already installed."
+        return 0
+    fi
+
+    echo ""
+    echo "Atlas requires XCB/XWayland runtime libraries for reliable Qt startup."
+    echo "This includes libxcb-cursor and related XCB libraries."
+    echo "Skipping installation can result in a portable build that fails to"
+    echo "start on Linux systems."
+    printf "Install the required compatibility libraries now? [Y/n] "
+    read -r response
+
+    case "${response:-Y}" in
+        Y|y|YES|yes|Yes)
+            install_xcb_libraries
+            ;;
+        *)
+            echo "Setup stopped: required XCB/XWayland libraries were declined."
+            return 1
+            ;;
+    esac
+
+    if ! has_xcb_libraries; then
+        echo "ERROR: XCB/XWayland library installation did not complete."
+        print_missing_xcb_libraries
+        return 1
+    fi
+
+    echo "XCB/XWayland compatibility libraries installed successfully."
+}
+
+
+if ! ensure_linux_xcb_libraries; then
+    return 1 2>/dev/null || exit 1
+fi
+
+# ---------------------------------------------------------------------------
 # 1. Create venv if it doesn't exist
 # ---------------------------------------------------------------------------
 if [ -f "$VENV_PATH/bin/activate" ]; then

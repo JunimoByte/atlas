@@ -457,14 +457,15 @@ def backdrop(element) -> None:
 def icon(window) -> None:
     """Set the application window icon.
 
-    Load 'icons/Icon.ico' from resources and apply it to the window.
+    Use the SVG asset on Linux and the ICO asset on Windows.
 
     Args:
         window (QWidget): The window to set the icon for.
 
     """
     try:
-        icon_path = resource_path("icons/Icon.ico")
+        icon_filename = "icons/Icon.ico" if _is_windows() else "icons/Icon.svg"
+        icon_path = resource_path(icon_filename)
 
         if not os.path.exists(icon_path):
             LOGGER.warning("Icon file not found: %s", icon_path)

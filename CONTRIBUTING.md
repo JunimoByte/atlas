@@ -63,7 +63,9 @@ Atlas development follows:
 - **PEP 257** for docstrings
 - Modular architecture principles
 - Clear separation of UI and pipeline logic
-- Backward compatibility constraints (Windows 7 → Windows 11, glibc 2.23+)
+- Backward compatibility constraints (Windows 7 → Windows 11, Linux
+  (glibc 2.31+))
+- Linux desktop compatibility through the required XWayland/XCB backend
 
 These standards guide long-term maintainability.
 

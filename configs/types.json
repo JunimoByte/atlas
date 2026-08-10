@@ -32,9 +32,7 @@
     "Linux": {
         "HOME": [
             "~",
-            "~/.config",
-            "~/.local/share",
-            "~/.cache"
+            "~/.config"
         ],
         "SNAP": [
             "~/snap"

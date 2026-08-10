@@ -1,2 +1,3 @@
 # Force Unix line endings for shell scripts to prevent execution errors on Linux/macOS
 *.sh text eol=lf
+installer/appimage/AppRun text eol=lf

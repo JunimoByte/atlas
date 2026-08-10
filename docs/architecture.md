@@ -20,6 +20,37 @@ All validation steps occur before any disk-intensive or long-running operations 
 
 ---
 
+## Linux Desktop Compatibility
+
+Atlas supports Linux (glibc 2.31+). Ubuntu 20.04 LTS is the recommended Linux
+build baseline because its older userspace maximizes compatibility with newer
+Linux desktop systems.
+
+`compatibility/qt.py` configures Qt to use the XWayland/XCB platform backend
+unless the user explicitly provides `QT_QPA_PLATFORM`. This is intentional:
+XWayland provides more consistent Qt theming, window decorations, and window
+flag behavior across the supported Linux desktop environments.
+
+Before Python dependencies or PyInstaller are installed,
+`scripts/setup_dev.sh` verifies the XCB runtime libraries. If they are missing,
+it explains the compatibility requirement and asks for confirmation before
+installing them through the detected package manager. Declining or failing the
+installation stops setup to prevent a poor Linux build.
+
+`scripts/build_appimage.sh` turns the Linux onedir PyInstaller payload into
+an AppImage. Its payload is placed in `dist/Atlas.AppDir/usr/bin`, while the
+AppRun launcher, desktop entry, and icon are maintained under
+`installer/appimage/`. When `appimagetool` is missing, the build script asks
+before downloading it to the current user's local bin directory. A declined
+or failed download leaves a complete AppDir for manual packaging instead of
+blocking the build.
+
+`assets/icons/Icon.svg` is the Linux icon source of truth. It is used by the
+application window and installed as the AppDir root icon. Windows uses its
+native icon asset separately.
+
+---
+
 ## Trust Model
 
 Atlas follows a strict, defensive trust model:
@@ -171,7 +202,8 @@ Cross-platform theming and resource loading.
 - **`_is_windows_11_or_newer()`** — Checks build number (`>= 22000`) for Windows 11 detection.
 - **`resource_path(filename)`** — Resolves a path under `assets/` for both dev and frozen builds.
 - **`backdrop(element)`** — Loads `images/Backdrop.png` and sets it as a scaled `QPixmap` on the given label.
-- **`icon(window)`** — Loads `icons/Icon.ico` and sets it as the window icon.
+- **`icon(window)`** — Selects the platform-appropriate window icon and sets
+  it on the application window.
 
 #### `lib/directories.py`
 Cross-platform user directory resolution.

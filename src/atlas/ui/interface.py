@@ -140,7 +140,7 @@ class UiDialog:
             label = self._make_label(
                 parent,
                 base_font,
-                scale=1.0,
+                scale=1.1,
                 name=obj_name,
                 v_policy=QtWidgets.QSizePolicy.Policy.Expanding,
                 align=(
@@ -257,7 +257,7 @@ class UiDialog:
             tr(
                 "MainDialog",
                 '<span style="font-size:16pt;">Atlas</span> '
-                '<span style="font-size:11pt; vertical-align:super;">1.0'
+                '<span style="font-size:11pt; vertical-align:super;">1.1'
                 "</span>",
             )
         )
