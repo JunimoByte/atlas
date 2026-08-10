@@ -71,6 +71,10 @@ QT_QPA_PLATFORM=offscreen pytest
 pyinstaller main.spec
 ```
 
+The output is `dist/Atlas-x86_64-Portable.exe` for a 64-bit Python build or
+`dist/Atlas-x86-Portable.exe` for a 32-bit build. The Inno Setup installer
+uses the matching file automatically and installs it without `-Portable`.
+
 ### Linux AppImage
 
 ```bash

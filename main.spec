@@ -12,6 +12,7 @@ PyInstaller spec file for Atlas application.
 
 import importlib
 import pkgutil
+import struct
 import sys
 from typing import List
 
@@ -31,6 +32,13 @@ except ImportError:
     _excluded_qt = "PyQt6"
 
 print(f"main.spec: bundling {_active_qt}, excluding {_excluded_qt}")
+
+# PyInstaller builds for the Python interpreter's bitness. This works on
+# Windows 7 with Python 3.8 as well as current Windows releases.
+_target_arch = "x86_64" if struct.calcsize("P") == 8 else "x86"
+_portable_name = f"Atlas-{_target_arch}-Portable"
+
+print(f"main.spec: creating {_portable_name}.exe")
 
 # =============================================================================
 # RESOURCES & CONFIGS
@@ -198,7 +206,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='Atlas_Portable_x64',
+    name=_portable_name,
     debug=False,
     onefile=True,
     bootloader_ignore_signals=False,

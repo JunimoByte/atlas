@@ -154,6 +154,12 @@ still leaves the AppDir ready for manual packaging. Both specs omit web
 engines, network-capable Qt modules, and unrelated frameworks to preserve the
 offline-first runtime.
 
+The Windows spec names releases from the Python interpreter bitness:
+`Atlas-x86_64-Portable.exe` for 64-bit Python and
+`Atlas-x86-Portable.exe` for 32-bit Python. `installer/Atlas.iss` detects the
+available portable build and installs it as the corresponding
+`Atlas-<architecture>.exe`.
+
 `assets/icons/Icon.svg` is the Linux icon source. The application window and
 AppImage root both use that SVG directly. Windows uses its native icon asset
 separately.
