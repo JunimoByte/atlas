@@ -24,7 +24,7 @@ Atlas creates portable ZIP backups of browser profiles while keeping the source 
 - Supports 250+ Chromium, Gecko, and legacy browser variants, including Dev, Beta, and Nightly channels.
 - Excludes caches and temporary data, often reducing a 1 GB+ profile to about 100 MB while preserving settings, history, and bookmarks.
 - Uses a strictly read-only source model and atomically creates ZIP archives in a user-selected location.
-- Supports Windows 7 through 11, Linux (glibc 2.31+), a Windows portable executable, Linux AppImage, and Python-package installs.
+- Supports Windows 7 through 11, Linux (glibc 2.31+), Windows portable executables, Linux AppImage and Debian packages, and Python-package installs.
 
 ## Requirements
 
@@ -87,6 +87,24 @@ bash scripts/build_appimage.sh
 This creates `dist/Atlas-<architecture>.AppImage` from an onedir payload, avoiding PyInstaller one-file extraction at launch. If `appimagetool` is absent, the script asks before downloading it to `~/.local/bin`; declining or a failed download still leaves a ready-to-package AppDir at `dist/Atlas.AppDir`.
 
 Linux uses `assets/icons/Icon.svg` for the application and AppImage icon.
+
+### Debian/Ubuntu package
+
+```bash
+bash scripts/build_deb.sh
+```
+
+This creates a conventional Debian artifact such as
+`dist/atlas_1.0.0_amd64.deb`. It reuses the same Linux onedir payload as the
+AppImage, keeps Atlas under `/opt/atlas`, and adds only the normal launcher
+and desktop-entry integration files. `dpkg-deb` is required (it is normally
+provided by the `dpkg` package).
+
+Install a built package with:
+
+```bash
+sudo apt install ./dist/atlas_1.0.0_amd64.deb
+```
 
 ## Structure
 

@@ -154,6 +154,14 @@ still leaves the AppDir ready for manual packaging. Both specs omit web
 engines, network-capable Qt modules, and unrelated frameworks to preserve the
 offline-first runtime.
 
+`scripts/build_deb.sh` reuses that same Linux onedir payload to create a
+native Debian package. The packaged application remains isolated in
+`/opt/atlas`; the package adds only a launcher in `/usr/bin`, a desktop entry,
+and license metadata. It requires the standard `dpkg-deb` tool but does not
+install build or runtime dependencies system-wide. The Debian desktop entry
+uses the bundled SVG icon directly rather than adding a separate icon-theme
+asset tree.
+
 The Windows spec names releases from the Python interpreter bitness:
 `Atlas-x86_64-Portable.exe` for 64-bit Python and
 `Atlas-x86-Portable.exe` for 32-bit Python. `installer/Atlas.iss` detects the
@@ -179,6 +187,8 @@ separately.
 | `appimage.spec` | Linux onedir payload definition for AppImage builds. |
 | `installer/appimage/` | AppImage launcher and desktop entry. |
 | `scripts/build_appimage.sh` | Consent-based AppDir and AppImage build script. |
+| `installer/debian/` | Debian package control, launcher, and desktop metadata. |
+| `scripts/build_deb.sh` | Debian package build script using the Linux onedir payload. |
 
 ## Testing and Headless Use
 

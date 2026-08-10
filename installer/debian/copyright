@@ -1,0 +1,8 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Atlas
+Source: https://github.com/JunimoByte/atlas
+
+Files: *
+Copyright: 2026 Michael Dorman
+License: AGPL-3.0-or-later
+ The full license text is installed in /usr/share/doc/atlas/LICENSE.
