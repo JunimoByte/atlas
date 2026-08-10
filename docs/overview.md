@@ -33,6 +33,11 @@ executable. Linux build hosts must provide the XCB/XWayland libraries checked
 by `scripts/setup_dev.sh`; this keeps release builds compatible with Atlas's
 required desktop backend.
 
+For Linux distribution, `scripts/build_appimage.sh` builds an AppImage-ready
+onedir payload. It asks before downloading `appimagetool` when the tool is not
+already available. If the download is declined or unavailable, the script
+still prepares `dist/Atlas.AppDir` for manual packaging.
+
 ## Running Atlas
 
 **From Source:**

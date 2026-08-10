@@ -207,11 +207,17 @@ def test_backdrop_sets_pixmap(monkeypatch: pytest.MonkeyPatch) -> None:
     mock_element.setScaledContents.assert_called_once()
 
 
-def test_icon_sets_window_icon(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Verify that a window icon is set."""
+def test_icon_uses_svg_on_linux(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify that Linux uses the SVG window icon."""
     mock_window = MagicMock()
+    requested_paths = []
 
-    monkeypatch.setattr(themes, "resource_path", lambda x: "icon.ico")
+    monkeypatch.setattr(themes, "_is_windows", lambda: False)
+    monkeypatch.setattr(
+        themes,
+        "resource_path",
+        lambda path: requested_paths.append(path) or "icon.svg",
+    )
     monkeypatch.setattr(os.path, "exists", lambda x: True)
 
     class FakeQIcon:
@@ -225,6 +231,35 @@ def test_icon_sets_window_icon(monkeypatch: pytest.MonkeyPatch) -> None:
 
     themes.icon(mock_window)
 
+    assert requested_paths == ["icons/Icon.svg"]
+    mock_window.setWindowIcon.assert_called_once()
+
+
+def test_icon_uses_ico_on_windows(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify that Windows retains the ICO window icon."""
+    mock_window = MagicMock()
+    requested_paths = []
+
+    monkeypatch.setattr(themes, "_is_windows", lambda: True)
+    monkeypatch.setattr(
+        themes,
+        "resource_path",
+        lambda path: requested_paths.append(path) or "icon.ico",
+    )
+    monkeypatch.setattr(os.path, "exists", lambda x: True)
+
+    class FakeQIcon:
+        """Mock QIcon for theme testing."""
+
+        def __init__(self, path):
+            """Initialise with a path."""
+            self.path = path
+
+    monkeypatch.setattr(themes.QtGui, "QIcon", FakeQIcon)
+
+    themes.icon(mock_window)
+
+    assert requested_paths == ["icons/Icon.ico"]
     mock_window.setWindowIcon.assert_called_once()
 
 

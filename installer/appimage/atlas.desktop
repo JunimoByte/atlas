@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Atlas
+Comment=Creates ZIP backups of browser profiles
+Exec=atlas
+Icon=atlas
+Categories=Utility;Archiving;
+Terminal=false
+StartupNotify=true

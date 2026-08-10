@@ -144,9 +144,19 @@ light/dark styling, DWM title-bar styling where available, and live theme
 updates on supported Qt versions. Other platforms use Qt-provided theme
 information with safe fallbacks.
 
-`main.spec` creates the portable executable and explicitly omits web engines,
-network-capable Qt modules, and unrelated frameworks to preserve the
+`main.spec` creates the Windows-style portable executable. `appimage.spec`
+creates a Linux onedir payload in `dist/Atlas.AppDir/usr/bin`, keeping the
+application out of a PyInstaller one-file extraction step. The AppImage
+launcher and desktop metadata are kept under `installer/appimage/`, and
+`scripts/build_appimage.sh` assembles them into the AppDir. The script asks
+before downloading a missing `appimagetool`; a declined or failed download
+still leaves the AppDir ready for manual packaging. Both specs omit web
+engines, network-capable Qt modules, and unrelated frameworks to preserve the
 offline-first runtime.
+
+`assets/icons/Icon.svg` is the Linux icon source. The application window and
+AppImage root both use that SVG directly. Windows uses its native icon asset
+separately.
 
 ## Code Map
 
@@ -160,6 +170,9 @@ offline-first runtime.
 | `src/atlas/lib/` | Configuration, themes, permissions, folders, OS integration. |
 | `configs/` | Browser locations, path types, and blacklist policy. |
 | `main.spec` | PyInstaller packaging definition. |
+| `appimage.spec` | Linux onedir payload definition for AppImage builds. |
+| `installer/appimage/` | AppImage launcher and desktop entry. |
+| `scripts/build_appimage.sh` | Consent-based AppDir and AppImage build script. |
 
 ## Testing and Headless Use
 

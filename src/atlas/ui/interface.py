@@ -140,7 +140,7 @@ class UiDialog:
             label = self._make_label(
                 parent,
                 base_font,
-                scale=1.0,
+                scale=1.1,
                 name=obj_name,
                 v_policy=QtWidgets.QSizePolicy.Policy.Expanding,
                 align=(
