@@ -41,5 +41,10 @@ jobs:
       - name: Build Docker image
         run: docker build -t atlas-tests .
 
-      - name: Run tests in Docker
-        run: docker run --rm atlas-tests
+      - name: Verify offline Linux payload
+        run: >
+          docker run --rm --network none atlas-tests
+          python -m PyInstaller --noconfirm --clean appimage.spec
+
+      - name: Run tests with networking disabled
+        run: docker run --rm --network none atlas-tests

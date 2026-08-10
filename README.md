@@ -17,7 +17,7 @@
 
 ## Information
 
-Atlas creates portable ZIP backups of browser profiles while keeping the source data read-only.
+Atlas creates portable ZIP backups of browser profiles while not writing to any browser directory, ever.
 
 ## Features
 
@@ -25,6 +25,7 @@ Atlas creates portable ZIP backups of browser profiles while keeping the source 
 - Excludes caches and temporary data, often reducing a 1 GB+ profile to about 100 MB while preserving settings, history, and bookmarks.
 - Uses a strictly read-only source model and atomically creates ZIP archives in a user-selected location.
 - Supports Windows 7 through 11, Linux (glibc 2.31+), Windows portable executables, Linux AppImage and Debian packages, and Python-package installs.
+- CI builds the Linux payload and runs Atlas tests in a network-disabled container; startup networking attempts fail the build.
 
 ## Requirements
 

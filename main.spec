@@ -13,7 +13,6 @@ PyInstaller spec file for Atlas application.
 import importlib
 import pkgutil
 import struct
-import sys
 from typing import List
 
 from PyInstaller.building.build_main import EXE, PYZ, Analysis
@@ -92,7 +91,10 @@ def collect_submodules(package_name: str) -> List[str]:
         ):
             hidden.append(modname)
     except Exception as error:
-        print(f"Warning: failed to collect submodules for {package_name}: {error}")
+        print(
+            f"Warning: failed to collect submodules for {package_name}: "
+            f"{error}"
+        )
     return hidden
 
 
@@ -107,74 +109,80 @@ hiddenimports = (
 # EXCLUDES
 # =============================================================================
 
-excludes_list = [
-    # Exclude whichever Qt binding is not being used
-    _excluded_qt,
-
-    # Unused PyQt6 submodules
-    'PyQt6.QtWebEngineWidgets',
-    'PyQt6.QtWebEngineCore',
-    'PyQt6.QtMultimedia',
-    'PyQt6.QtNetwork',
-    'PyQt6.QtSql',
-    'PyQt6.QtTest',
-    'PyQt6.QtTextToSpeech',
-    'PyQt6.QtWebSockets',
-    'PyQt6.QtOpenGL',
-    'PyQt6.QtSerialPort',
-    'PyQt6.QtSensors',
-    'PyQt6.QtNfc',
-    'PyQt6.QtQuick',
-    'PyQt6.QtQml',
-    'PyQt6.Qt3DCore',
-    'PyQt6.Qt3DRender',
-    'PyQt6.Qt3DInput',
-    'PyQt6.Qt3DLogic',
-    'PyQt6.Qt3DExtras',
-    'PyQt6.QtBluetooth',
-    'PyQt6.QtPositioning',
-    'PyQt6.QtPrintSupport',
-    'PyQt6.QtQuickWidgets',
-    'PyQt6.QtRemoteObjects',
-    'PyQt6.QtSerialBus',
-    'PyQt6.QtWebChannel',
-
-    # Unused standard library modules
-    'tkinter',
-    'unittest',
-    'pytest',
-    'doctest',
-    'distutils',
-    'setuptools',
-    'email',
-    'sqlite3',
-    'concurrent',
-    'http',
-    'xml',
-    'html',
-    'pydoc',
-    'ssl',
-    'uuid',
-    'pdb',
-    'optparse',
-    'getopt',
-    'fractions',
-    'decimal',
-    'statistics',
-    'hashlib',
-    'hmac',
-    'secrets',
-    'ftplib',
-    'imaplib',
-    'poplib',
-    'smtplib',
-    'telnetlib',
-    'nntplib',
-    'cgi',
-    'cgitb',
-    'wsgiref',
-    'mimetypes',
+_unused_qt_modules = [
+    'QtWebEngineWidgets', 'QtWebEngineCore', 'QtWebKit', 'QtWebKitWidgets',
+    'QtMultimedia', 'QtNetwork', 'QtNetworkAuth', 'QtSql', 'QtTest',
+    'QtTextToSpeech', 'QtWebSockets', 'QtOpenGL', 'QtSerialPort',
+    'QtSensors', 'QtNfc', 'QtQuick', 'QtQml', 'Qt3DCore', 'Qt3DRender',
+    'Qt3DInput', 'Qt3DLogic', 'Qt3DExtras', 'QtBluetooth', 'QtPositioning',
+    'QtPrintSupport', 'QtQuickWidgets', 'QtRemoteObjects', 'QtSerialBus',
+    'QtWebChannel',
 ]
+
+_offline_module_prefixes = (
+    'PyQt5.QtNetwork', 'PyQt5.QtNetworkAuth', 'PyQt5.QtWebEngine',
+    'PyQt5.QtWebKit', 'PyQt5.QtWebSockets', 'PyQt5.QtBluetooth',
+    'PyQt5.QtRemoteObjects', 'PyQt5.QtWebChannel', 'PyQt6.QtNetwork',
+    'PyQt6.QtNetworkAuth', 'PyQt6.QtWebEngine', 'PyQt6.QtWebSockets',
+    'PyQt6.QtBluetooth', 'PyQt6.QtRemoteObjects', 'PyQt6.QtWebChannel',
+    'socket', 'ssl', 'urllib', 'http', 'ftplib', 'imaplib', 'poplib',
+    'smtplib', 'telnetlib', 'nntplib', 'wsgiref',
+)
+
+_offline_binary_markers = (
+    'QtWebEngine', 'QtWebKit', 'QtWebSockets', 'Qt5Bluetooth',
+    'Qt6Bluetooth', 'Qt5RemoteObjects', 'Qt6RemoteObjects', 'Qt5WebChannel',
+    'Qt6WebChannel',
+)
+
+_standard_library_excludes = [
+    'tkinter', 'unittest', 'pytest', 'doctest', 'distutils', 'setuptools',
+    'email', 'sqlite3', 'concurrent', 'http', 'xml', 'html', 'pydoc',
+    'socket', 'ssl', 'urllib', 'uuid', 'pdb', 'optparse', 'getopt',
+    'fractions', 'decimal', 'statistics', 'hashlib', 'hmac', 'secrets',
+    'ftplib', 'imaplib', 'poplib', 'smtplib', 'telnetlib', 'nntplib', 'cgi',
+    'cgitb', 'wsgiref', 'mimetypes',
+]
+
+excludes_list = (
+    [_excluded_qt]
+    + [
+        f'{binding}.{module}'
+        for binding in ('PyQt5', 'PyQt6')
+        for module in _unused_qt_modules
+    ]
+    + _standard_library_excludes
+)
+
+
+def enforce_offline_payload(analysis: Analysis) -> None:
+    """Fail the build if a blocked network-capable component is collected."""
+    # PyInstaller's graph contains excluded modules, so inspect only entries
+    # that will be placed in the shipped Python/extension payload.
+    payload_paths = [entry[0] for entry in analysis.pure + analysis.binaries]
+
+    def is_blocked_module(path: str) -> bool:
+        normalized_path = path.replace('\\', '.').replace('/', '.')
+        return any(
+            normalized_path == prefix
+            or normalized_path.startswith(prefix + '.')
+            for prefix in _offline_module_prefixes
+        )
+
+    blocked_modules = sorted(
+        path for path in payload_paths if is_blocked_module(path)
+    )
+    blocked_payload = sorted(
+        path for path in payload_paths
+        if any(marker.lower() in path.lower()
+               for marker in _offline_binary_markers)
+    )
+    if blocked_modules or blocked_payload:
+        blocked = blocked_modules + blocked_payload
+        raise SystemExit(
+            'Offline packaging policy blocked: ' + ', '.join(blocked)
+        )
+
 
 # =============================================================================
 # ANALYSIS
@@ -193,6 +201,8 @@ a = Analysis(
     noarchive=False,
     optimize=0,
 )
+
+enforce_offline_payload(a)
 
 pyz = PYZ(a.pure)
 
