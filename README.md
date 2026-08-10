@@ -6,6 +6,9 @@
     <a href="https://github.com/JunimoByte/atlas/actions/workflows/ci.yml">
       <img src="https://github.com/JunimoByte/atlas/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI status">
     </a>
+    <a href="https://www.python.org/">
+      <img src="https://img.shields.io/badge/python-3.8%2B-3776AB?logo=python&amp;logoColor=white" alt="Python 3.8 or later">
+    </a>
     <a href="LICENSE">
       <img src="https://img.shields.io/badge/license-AGPL--3.0--or--later-blue.svg" alt="License: AGPL-3.0-or-later">
     </a>
