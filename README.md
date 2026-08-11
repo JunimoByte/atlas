@@ -96,7 +96,7 @@ bash scripts/build_deb.sh
 ```
 
 This creates a conventional Debian artifact such as
-`dist/atlas_1.0.0_amd64.deb`. It reuses the same Linux onedir payload as the
+`dist/atlas_1.x_amd64.deb`. It reuses the same Linux onedir payload as the
 AppImage, keeps Atlas under `/opt/atlas`, and adds only the normal launcher
 and desktop-entry integration files. `dpkg-deb` is required (it is normally
 provided by the `dpkg` package).
@@ -104,7 +104,7 @@ provided by the `dpkg` package).
 Install a built package with:
 
 ```bash
-sudo apt install ./dist/atlas_1.0.0_amd64.deb
+sudo apt install ./dist/atlas_1.x_amd64.deb
 ```
 
 ## Structure
