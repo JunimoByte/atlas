@@ -14,3 +14,4 @@ For more information on ADRs, see [adr.github.io](https://adr.github.io/).
 6. [Package Structuring: atlas Package](0006-package-structuring.md)
 7. [Import Strategy: Absolute Imports with atlas Prefix](0007-import-strategy.md)
 8. [Linux AppImage Packaging](0008-linux-appimage-packaging.md)
+9. [Debian Package Distribution](0009-debian-package-distribution.md)

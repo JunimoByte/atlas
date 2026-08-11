@@ -276,6 +276,35 @@
             }
         ]
     },
+    "Adaware Safe Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Adaware/Adaware Safe Browser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "AdawareProtect/IncognitoBrowser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Atom Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Mail.Ru/Atom/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
     "Agregore Browser": {
         "Windows": [
             {
@@ -400,7 +429,7 @@
             }
         ]
     },
-    "AVG Browser": {
+    "AVG Secure Browser": {
         "Windows": [
             {
                 "Type": "LOCALAPPDATA",
@@ -693,6 +722,26 @@
             }
         ]
     },
+    "Borneo Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Borneo",
+                "Signature": false
+            }
+        ]
+    },
+    "Bushido Broswer": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "app.bushido-browser.desktop/EBWebView",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
     "Carbon": {
         "Windows": [
             {
@@ -963,6 +1012,28 @@
             }
         ]
     },
+    "Core Browser": {
+        "Windows": [
+            {
+                "Type": "USERPROFILE",
+                "Path": ".core",
+                "Signature": [
+                    "Cookies"
+                ]
+            }
+        ]
+    },
+    "Chedot Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Chedot/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
     "Cyberfox": {
         "Windows": [
             {
@@ -999,6 +1070,17 @@
             {
                 "Type": "LOCALAPPDATA",
                 "Path": "Decentr/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Dissenter": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "GabAI/Dissenter/User Data",
                 "Signature": [
                     "Local State"
                 ]
@@ -1384,6 +1466,15 @@
             }
         ]
     },
+    "Glide": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Glide/glide",
+                "Signature": false
+            }
+        ]
+    },
     "GT Web Browser": {
         "Windows": [
             {
@@ -1420,6 +1511,17 @@
                 "Path": "Hola/chromium_profile",
                 "Signature": [
                     "Local State"
+                ]
+            }
+        ]
+    },
+    "Horse Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Horse Browser",
+                "Signature": [
+                    "Preferences"
                 ]
             }
         ]
@@ -1584,6 +1686,17 @@
                 "Path": "Kinza/User Data",
                 "Signature": [
                     "Local State"
+                ]
+            }
+        ]
+    },
+    "Kingpin Private Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "kingpinbrowser",
+                "Signature": [
+                    "Preferences"
                 ]
             }
         ]
@@ -2085,6 +2198,17 @@
                 "Path": "SSuite Office",
                 "Signature": [
                     "Settings"
+                ]
+            }
+        ]
+    },
+    "Speed Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "speed browser/User Data",
+                "Signature": [
+                    "Local State"
                 ]
             }
         ]

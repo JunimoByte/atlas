@@ -154,6 +154,30 @@ still leaves the AppDir ready for manual packaging. Both specs omit web
 engines, network-capable Qt modules, and unrelated frameworks to preserve the
 offline-first runtime.
 
+`scripts/build_deb.sh` reuses that same Linux onedir payload to create a
+native Debian package. The packaged application remains isolated in
+`/opt/atlas`; the package adds only a launcher in `/usr/bin`, a desktop entry,
+and license metadata. It requires the standard `dpkg-deb` tool but does not
+install build or runtime dependencies system-wide. The Debian desktop entry
+uses the bundled SVG icon directly rather than adding a separate icon-theme
+asset tree.
+
+Both PyInstaller specs enforce the offline packaging policy for PyQt5 and
+PyQt6 equally. They explicitly exclude Qt networking, web-engine, WebSocket,
+Bluetooth, remote-object, and related standard-library networking modules.
+After analysis, each spec rejects a build if its collected payload includes a
+blocked module or optional Qt feature binary. Qt itself may
+carry the shared QtNetwork runtime library transitively; the check instead
+verifies that Atlas does not ship its Python network API or optional network
+features. It is not a replacement for an operating-system firewall.
+
+GitHub Actions builds the Linux payload and runs the test container with
+Docker networking disabled. A startup test also replaces Python socket
+creation, DNS resolution, and connection helpers with failures, then exercises
+Atlas's normal startup path. Together, these checks fail CI if the package
+collects a blocked component, the application tries to use Python network APIs
+at startup, or the tested runtime requires network connectivity.
+
 The Windows spec names releases from the Python interpreter bitness:
 `Atlas-x86_64-Portable.exe` for 64-bit Python and
 `Atlas-x86-Portable.exe` for 32-bit Python. `installer/Atlas.iss` detects the
@@ -179,6 +203,8 @@ separately.
 | `appimage.spec` | Linux onedir payload definition for AppImage builds. |
 | `installer/appimage/` | AppImage launcher and desktop entry. |
 | `scripts/build_appimage.sh` | Consent-based AppDir and AppImage build script. |
+| `installer/debian/` | Debian package control, launcher, and desktop metadata. |
+| `scripts/build_deb.sh` | Debian package build script using the Linux onedir payload. |
 
 ## Testing and Headless Use
 

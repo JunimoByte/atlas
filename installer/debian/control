@@ -1,0 +1,11 @@
+Package: atlas
+Version: @VERSION@
+Section: utils
+Priority: optional
+Architecture: @ARCHITECTURE@
+Maintainer: Michael Dorman <TheToastedBun@proton.me>
+Homepage: https://github.com/JunimoByte/atlas
+Description: Reliable, offline browser-profile backups
+ Atlas creates portable ZIP backups of browser profiles. It reads source
+ profiles without modifying them and writes archives to a user-selected
+ location.
