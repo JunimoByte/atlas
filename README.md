@@ -21,7 +21,7 @@ Atlas creates portable ZIP backups of browser profiles while not writing to any 
 
 ## Features
 
-- Supports 250+ Chromium, Gecko, and legacy browser variants, including Dev, Beta, and Nightly channels.
+- Supports 250+ Chromium, Gecko, and legacy browser variants.
 - Excludes caches and temporary data, often reducing a 1 GB+ profile to about 100 MB while preserving settings, history, and bookmarks.
 - Uses a strictly read-only source model and atomically creates ZIP archives in a user-selected location.
 - Supports Windows 7 through 11, Linux (glibc 2.31+), Windows portable executables, Linux AppImage and Debian packages, and Python-package installs.
@@ -30,7 +30,7 @@ Atlas creates portable ZIP backups of browser profiles while not writing to any 
 ## Requirements
 
 - Python 3.8+
-- PyQt6 6.0+ (PyQt5 is the fallback for older Windows/Python)
+- PyQt6 6.0+ (PyQt5 is the fallback for Windows 7)
 - Linux builds: glibc 2.31+; Ubuntu 20.04 LTS is the preferred baseline
 
 For Linux builds, first run:
