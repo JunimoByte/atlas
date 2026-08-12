@@ -15,19 +15,18 @@ available, with PyQt5 selected as a fallback. Ubuntu 20.04 LTS is the
 recommended Linux build baseline because it provides a broad compatibility
 foundation for newer Linux desktop systems.
 
-Linux configuration is performed before the Qt binding is imported. Atlas
-uses the XWayland/XCB backend unless the user has set `QT_QPA_PLATFORM`.
-XWayland is intentionally used even in Wayland sessions for more predictable
-Qt theming, window decorations, and window-flag behavior across supported
-Linux desktops. Frozen Linux builds also suppress incompatible system GIO
-modules and the ATK bridge warning. The UI accommodates tiling window managers
-by using a normal resizable window; on other desktops it uses a fixed-size
-dialog.
+Linux configuration is performed before the Qt binding is imported. Atlas uses
+XWayland/XCB for stable decorations and window flags, including on tiling
+window managers. Users may explicitly select another backend with
+`QT_QPA_PLATFORM`. Atlas does not load host-system Qt theme plugins into its
+portable runtime, because their Qt ABI may not match the bundled Ubuntu 20.04
+runtime. Frozen Linux builds also suppress incompatible system GIO modules and
+the ATK bridge warning. The UI accommodates tiling window managers by using a
+normal resizable window; on other desktops it uses a fixed-size dialog.
 
-`scripts/setup_dev.sh` checks the XCB runtime libraries before creating a
-development environment. When libraries are missing, it explains the build
-compatibility requirement and asks before installing them through the detected
-package manager. Setup stops if they cannot be verified.
+`scripts/setup_dev.sh` checks the XCB runtime libraries retained for X11
+fallback compatibility. Atlas selects them unless the user chooses a different
+backend with `QT_QPA_PLATFORM`.
 
 ## Startup and Application Flow
 

@@ -2,8 +2,10 @@
 
 Theme detection and application for Atlas.
 
-On Windows: reads the registry and applies stylesheets + DWM
-titlebar colouring for light and dark modes.
+On modern PyQt6/Qt builds on Windows, Qt follows the system colour
+scheme through ``QStyleHints`` and supplies the platform palette. Older
+Qt builds, including PyQt5, retain the stylesheet fallback. Windows 11
+also receives a system-drawn Mica title-bar backdrop where supported.
 On all other platforms: theme detection is delegated to Qt style
 hints and the system palette; no stylesheets are applied, so the
 native DE theme is used as-is.
@@ -16,14 +18,69 @@ native DE theme is used as-is.
 import logging
 import os
 import sys
+from typing import Optional
 
-from atlas.compatibility.qt import QtCore, QtGui, QtWidgets
+from atlas.compatibility.qt import (
+    QT_API,
+    QtCore,
+    QtGui,
+    QtWidgets,
+    _is_tiling_window_manager,
+)
 
 # =============================================================================
 # LOGGING
 # =============================================================================
 
 LOGGER = logging.getLogger(__name__)
+
+# Windows version and DWM constants.  Windows keeps the major version at 10
+# for Windows 11 and later, so feature gates must use the build number.
+_WINDOWS_11_BUILD = 22000
+_WINDOWS_MICA_BUILD = 22621
+_DWMWA_USE_IMMERSIVE_DARK_MODE = (20, 19)
+_DWMWA_SYSTEMBACKDROP_TYPE = 38
+_DWMSBT_MAINWINDOW = 2
+
+_WINDOWS_LIGHT_STYLE = """
+    QWidget#MainDialog {
+        color: #000000;
+        background-color: #ffffff;
+    }
+"""
+
+_WINDOWS_DARK_STYLE = """
+    QWidget#MainDialog, QMessageBox {
+        background-color: #1e1e1e;
+    }
+    QLabel {
+        color: white;
+    }
+"""
+
+_WINDOWS_DARK_BUTTON_STYLE = """
+    QPushButton {
+        background-color: #333;
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 2px;
+        min-width: 68px;
+        min-height: 15px;
+    }
+    QPushButton:hover { background-color: #444; }
+    QPushButton:pressed { background-color: #222; }
+    QPushButton:focus { outline: none; border: 1px solid #888; }
+"""
+
+_WINDOWS_10_PROGRESS_STYLE = """
+    QProgressBar {
+        border: 1px solid #555;
+        background-color: #2b2b2b;
+        text-align: center;
+        color: white;
+        height: 12px;
+    }
+"""
 
 # =============================================================================
 # MAIN FUNCTIONS
@@ -59,7 +116,9 @@ def initialize(window) -> None:
         hints = QtGui.QGuiApplication.styleHints()
         if hints and hasattr(hints, "colorSchemeChanged"):
             hints.colorSchemeChanged.connect(
-                lambda: QtCore.QTimer.singleShot(0, lambda: apply(window))
+                lambda *_: QtCore.QTimer.singleShot(
+                    0, lambda: apply(window)
+                )
             )
         else:
             LOGGER.debug(
@@ -111,19 +170,52 @@ def _is_windows() -> bool:
 
 
 def _is_windows_11_or_newer() -> bool:
-    """Return True if running on Windows 11 or newer.
+    """Return whether the Windows build is Windows 11 or later."""
+    return (_windows_build() or 0) >= _WINDOWS_11_BUILD
 
-    Returns:
-        bool: True if on Windows 11 or newer, False otherwise.
 
+def _windows_build() -> Optional[int]:
+    """Return the Windows build number, or ``None`` when unavailable.
+
+    Build-number gates protect old Windows 10 and initial Windows 11 builds
+    from DWM attributes they do not implement.
     """
     if not _is_windows():
-        return False
+        return None
     try:
-        ver = sys.getwindowsversion()
-        return int(ver.major) >= 10 and int(ver.build) >= 22000
+        return int(sys.getwindowsversion().build)
+    except (AttributeError, TypeError, ValueError):
+        return None
+
+
+def _supports_native_windows_theming() -> bool:
+    """Return whether this Qt runtime can follow the Windows colour scheme.
+
+    ``QStyleHints.setColorScheme`` was added in Qt 6.8.  Checking the
+    member, rather than a version string, keeps this safe for PyQt6 wheels
+    built against an older Qt release and leaves PyQt5 on the stylesheet
+    fallback.
+    """
+    # Qt's Windows platform palette can lag or disagree with the user's
+    # AppsUseLightTheme setting on Windows 10. Retain the proven registry +
+    # stylesheet path there; native palette following is a Windows 11 feature.
+    if not _is_windows_11_or_newer() or QT_API != "PyQt6":
+        return False
+
+    try:
+        hints = QtGui.QGuiApplication.styleHints()
+        return bool(
+            hints
+            and hasattr(hints, "setColorScheme")
+            and hasattr(QtCore.Qt, "ColorScheme")
+        )
     except Exception:
         return False
+
+
+def _supports_windows_mica() -> bool:
+    """Return whether DWM's documented system-backdrop API is available."""
+    return (_windows_build() or 0) >= _WINDOWS_MICA_BUILD
 
 
 # =============================================================================
@@ -234,18 +326,82 @@ def _get_theme() -> str:
 # =============================================================================
 
 
+def _set_dwm_int_attribute(window, attribute: int, value: int) -> None:
+    """Set an integer DWM attribute, ignoring unsupported OS attributes."""
+    try:
+        from ctypes import byref, c_int, c_void_p, sizeof, windll
+
+        dwm_value = c_int(value)
+        result = windll.dwmapi.DwmSetWindowAttribute(
+            c_void_p(int(window.winId())),
+            c_int(attribute),
+            byref(dwm_value),
+            sizeof(dwm_value),
+        )
+        if result not in (0, None):
+            LOGGER.debug(
+                "DWM rejected attribute %d (HRESULT %#x)",
+                attribute,
+                int(result),
+            )
+    except Exception as error:
+        LOGGER.debug("DWM attribute %d unavailable: %s", attribute, error)
+
+
+def _set_windows_chrome(window, dark: bool) -> None:
+    """Apply title-bar colour and Mica only when their OS APIs exist."""
+    # Attribute 20 is current; attribute 19 covers early Windows 10 builds.
+    # Unsupported attributes return an HRESULT, so attempting both is safe.
+    for attribute in _DWMWA_USE_IMMERSIVE_DARK_MODE:
+        _set_dwm_int_attribute(window, attribute, int(dark))
+
+    if _supports_windows_mica():
+        _set_dwm_int_attribute(
+            window, _DWMWA_SYSTEMBACKDROP_TYPE, _DWMSBT_MAINWINDOW
+        )
+
+
+def _apply_native_windows_theme(window, theme: str) -> None:
+    """Let Qt 6.8+ follow Windows instead of imposing application colours."""
+    hints = QtGui.QGuiApplication.styleHints()
+    # Unknown removes any explicit application override and follows Windows.
+    hints.setColorScheme(QtCore.Qt.ColorScheme.Unknown)
+    # This module owns the legacy stylesheet, so remove it before Qt applies
+    # its native palette.  This is also needed after a runtime binding/theme
+    # transition in a long-lived process.
+    window.setStyleSheet("")
+    _set_windows_chrome(window, theme == "Dark")
+
+
+def _legacy_windows_style(theme: str) -> str:
+    """Return Atlas's compatible Windows 10/PyQt5 stylesheet."""
+    if theme == "Light":
+        return _WINDOWS_LIGHT_STYLE
+
+    style = _WINDOWS_DARK_STYLE + _WINDOWS_DARK_BUTTON_STYLE
+    if _is_windows_11_or_newer():
+        return style + "QPushButton { border-radius: 4px; }"
+    return style + _WINDOWS_10_PROGRESS_STYLE
+
+
+def _apply_windows_theme(window, theme: str) -> None:
+    """Apply native Windows 11 theme support or the legacy fallback."""
+    dark = theme == "Dark"
+    if _supports_native_windows_theming():
+        _apply_native_windows_theme(window, theme)
+        return
+
+    _set_windows_chrome(window, dark)
+    window.setStyleSheet(_legacy_windows_style(theme))
+
+
 def _apply_light(window) -> None:
     """Apply light theme to the window."""
     if not _is_windows():
         return
 
     try:
-        window.setStyleSheet("""
-            QWidget#MainDialog {
-                color: #000000;
-                background-color: #ffffff;
-            }
-            """)
+        _apply_windows_theme(window, "Light")
     except Exception as error:
         LOGGER.error("Failed to apply light theme: %s", error)
 
@@ -256,64 +412,7 @@ def _apply_dark(window) -> None:
         return
 
     try:
-        try:
-            from ctypes import byref, c_int, c_void_p, sizeof, windll
-
-            hwnd = int(window.winId())
-            for attr in (20, 19):
-                windll.dwmapi.DwmSetWindowAttribute(
-                    c_void_p(hwnd),
-                    c_int(attr),
-                    byref(c_int(1)),
-                    sizeof(c_int),
-                )
-        except Exception as dwm_error:
-            LOGGER.debug("DWM dark titlebar failed: %s", dwm_error)
-
-        # Base style sheet
-        style = """
-            QWidget#MainDialog {
-                background-color: #1e1e1e;
-            }
-            QMessageBox {
-                background-color: #1e1e1e;
-            }
-            QLabel {
-                color: white;
-            }
-        """
-
-        # Buttons and progress bars
-        button_style = """
-            QPushButton {
-                background-color: #333;
-                color: white;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                padding: 2px;
-                min-width: 68px;
-                min-height: 15px;
-            }
-            QPushButton:hover { background-color: #444; }
-            QPushButton:pressed { background-color: #222; }
-            QPushButton:focus { outline: none; border: 1px solid #888; }
-        """
-
-        # OS-specific adjustments
-        if _is_windows_11_or_newer():
-            style += button_style + "QPushButton { border-radius: 4px; }"
-        else:
-            style += """
-                QProgressBar {
-                    border: 1px solid #555;
-                    background-color: #2b2b2b;
-                    text-align: center;
-                    color: white;
-                    height: 12px;
-                }
-            """ + button_style
-
-        window.setStyleSheet(style)
-
+        _apply_windows_theme(window, "Dark")
     except Exception:
         LOGGER.error("Failed to apply dark theme", exc_info=True)
 
@@ -371,58 +470,12 @@ def resource_path(filename: str) -> str:
 
 
 def _is_tiling_wm() -> bool:
-    """Check if the current Linux environment is a tiling window manager.
+    """Return whether the desktop is a tiling WM.
 
-    Tiling WMs typically force windows to maximize or tile dynamically,
-    which ruins the appearance of fixed-size backdrop images.
-
-    Returns:
-        bool: True if a known tiling WM is detected, False otherwise.
+    This compatibility alias keeps existing UI imports stable while sharing
+    the session detection that selects the Linux Qt platform backend.
     """
-    import sys
-    if not sys.platform.startswith("linux"):
-        return False
-
-    tiling_wms = {
-        "awesome",
-        "qtile",
-        "leftwm",
-        "spectrwm",
-        "ratpoison",
-        "stumpwm",
-        "exwm",
-        "lspwm",
-        "niri",
-        "amethyst",
-        "worm",
-        "berry",
-        "notched",
-        "wingo",
-        "cage",
-        "i3",
-        "sway",
-        "bspwm",
-        "dwm",
-        "dwl",
-        "river",
-        "herbstluftwm",
-        "hyprland",
-        "xmonad",
-    }
-
-    if "SWAYSOCK" in os.environ:
-        return True
-
-    for env_var in (
-        "XDG_CURRENT_DESKTOP",
-        "XDG_SESSION_DESKTOP",
-        "DESKTOP_SESSION",
-    ):
-        value = os.environ.get(env_var, "").lower()
-        if any(wm in value for wm in tiling_wms):
-            return True
-
-    return False
+    return _is_tiling_window_manager()
 
 
 def backdrop(element) -> None:
