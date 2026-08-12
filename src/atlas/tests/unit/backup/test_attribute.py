@@ -46,13 +46,15 @@ def test_safe_zipinfo_date_year_clamped_to_1980(
 ) -> None:
     """Verify that safe_zipinfo_date clamps years to 1980 or later."""
     from datetime import datetime
+
     monkeypatch.setattr(
         attribute,
         "datetime",
         type(
-            "dt", (),
-            {"fromtimestamp": staticmethod(lambda _: datetime(1970, 1, 1))}
-        )
+            "dt",
+            (),
+            {"fromtimestamp": staticmethod(lambda _: datetime(1970, 1, 1))},
+        ),
     )
     result = attribute.safe_zipinfo_date(sample_file)
     assert result[0] == 1980
@@ -70,7 +72,7 @@ def test_safe_zipinfo_date_missing_file() -> None:
 
 
 def test_get_windows_version_returns_none_on_non_windows(
-    monkeypatch: pytest.MonkeyPatch
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Verify that None is returned when not on Windows."""
     fake_os = type("OS", (), {"name": "posix"})
@@ -79,7 +81,7 @@ def test_get_windows_version_returns_none_on_non_windows(
 
 
 def test_get_windows_version_returns_tuple_on_windows(
-    monkeypatch: pytest.MonkeyPatch
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Verify that a (major, minor) tuple is returned on Windows."""
     fake_os = type("OS", (), {"name": "nt"})
@@ -105,15 +107,15 @@ def test_set_file_permissions_returns_int() -> None:
 @pytest.mark.parametrize(
     "win_version, mode, expected",
     [
-        ((5, 1), 0o755, 0o600 << 16),   # Old Windows → fixed 0o600
+        ((5, 1), 0o755, 0o600 << 16),  # Old Windows → fixed 0o600
         ((10, 0), 0o644, 0o644 << 16),  # Modern Windows → actual mode
-    ]
+    ],
 )
 def test_set_file_permissions_by_os_version(
     monkeypatch: pytest.MonkeyPatch,
     win_version: tuple,
     mode: int,
-    expected: int
+    expected: int,
 ) -> None:
     """Verify correct mode selection based on OS version."""
     monkeypatch.setattr(attribute, "get_windows_version", lambda: win_version)

@@ -90,11 +90,14 @@ def test_scan_files_respects_blacklist(
     source = tmp_path / "source"
     source.mkdir()
 
-    create_files(source, [
-        "valid.txt",
-        "skip.log",
-        "__pycache__/ignored.pyc",
-    ])
+    create_files(
+        source,
+        [
+            "valid.txt",
+            "skip.log",
+            "__pycache__/ignored.pyc",
+        ],
+    )
 
     results = list(archive.scan_files([source]))
     names = [f.name for _, f in results]
@@ -126,6 +129,52 @@ def test_compress_creates_zip(
         assert len(zf.namelist()) == 2
 
 
+def test_compress_renames_only_colliding_source_directories(
+    tmp_path: Path, temp_output_dir: Path, mock_blacklist: None
+) -> None:
+    """Keep source names unless another source uses the same archive root."""
+    first_profile = tmp_path / "first" / "profile-data"
+    second_profile = tmp_path / "second" / "profile-data"
+    distinct_source = tmp_path / "third" / "cache-data"
+
+    for source, content in (
+        (first_profile, "first"),
+        (second_profile, "second"),
+        (distinct_source, "cache"),
+    ):
+        source.mkdir(parents=True)
+        (source / "Local State").write_text(content)
+
+    result = archive.compress(
+        [first_profile, second_profile, distinct_source], "test.zip"
+    )
+
+    assert result is not None
+    with zipfile.ZipFile(result, "r") as zf:
+        assert sorted(zf.namelist()) == [
+            "cache-data/Local State",
+            "profile-data(1)/Local State",
+            "profile-data/Local State",
+        ]
+        assert zf.read("profile-data/Local State") == b"first"
+        assert zf.read("profile-data(1)/Local State") == b"second"
+
+
+def test_compress_deduplicates_identical_source_paths(
+    tmp_path: Path, temp_output_dir: Path, mock_blacklist: None
+) -> None:
+    """Do not archive the same discovered source twice."""
+    source = tmp_path / "profile-data"
+    source.mkdir()
+    (source / "Local State").write_text("profile")
+
+    result = archive.compress([source, source], "test.zip")
+
+    assert result is not None
+    with zipfile.ZipFile(result, "r") as zf:
+        assert zf.namelist() == ["profile-data/Local State"]
+
+
 def test_compress_rejects_invalid_input(temp_output_dir: Path) -> None:
     """Compress should return None when given a non-Path source argument."""
     result = archive.compress(12345, "test.zip")
@@ -133,7 +182,7 @@ def test_compress_rejects_invalid_input(temp_output_dir: Path) -> None:
 
 
 def test_resolve_output_zip_path_stays_within_output_dir(
-    temp_output_dir: Path
+    temp_output_dir: Path,
 ) -> None:
     """Resolve a normal ZIP path inside the configured output directory."""
     result = archive._resolve_output_zip_path("test.zip")
@@ -141,7 +190,7 @@ def test_resolve_output_zip_path_stays_within_output_dir(
 
 
 def test_resolve_output_zip_path_rejects_parent_traversal(
-    temp_output_dir: Path
+    temp_output_dir: Path,
 ) -> None:
     """Reject ZIP paths that escape the configured output directory."""
     with pytest.raises(ValueError):

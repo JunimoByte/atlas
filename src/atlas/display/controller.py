@@ -13,9 +13,8 @@ import time
 from enum import Enum, auto
 from typing import Optional
 
-from PyQt6.QtCore import QObject, QThread, QTimer
-
-from atlas.backup import worker as Backup
+from atlas.backup import worker as Backup  # noqa: N812
+from atlas.compatibility.qt import QtCore
 from atlas.display.signals import Signals
 
 # =============================================================================
@@ -58,23 +57,23 @@ class ControllerState(Enum):
 
 
 VALID_TRANSITIONS = {
-    ControllerState.IDLE:       {ControllerState.RUNNING},
-    ControllerState.RUNNING:    {
+    ControllerState.IDLE: {ControllerState.RUNNING},
+    ControllerState.RUNNING: {
         ControllerState.SUCCESS,
         ControllerState.EMPTY,
         ControllerState.BLOCKED,
         ControllerState.CANCELLING,
         ControllerState.FAILED,
     },
-    ControllerState.SUCCESS:    {ControllerState.IDLE},
-    ControllerState.EMPTY:      {ControllerState.IDLE},
-    ControllerState.BLOCKED:    {ControllerState.IDLE},
+    ControllerState.SUCCESS: {ControllerState.IDLE},
+    ControllerState.EMPTY: {ControllerState.IDLE},
+    ControllerState.BLOCKED: {ControllerState.IDLE},
     ControllerState.CANCELLING: {ControllerState.IDLE, ControllerState.FAILED},
-    ControllerState.FAILED:     {ControllerState.IDLE},
+    ControllerState.FAILED: {ControllerState.IDLE},
 }
 
 
-class Controller(QObject):
+class Controller(QtCore.QObject):
     """Control the backup workflow and manage the worker thread.
 
     Responsibilities:
@@ -84,15 +83,19 @@ class Controller(QObject):
     - Maintain an airtight finite state machine
     """
 
-    def __init__(self, signals: Signals) -> None:
+    def __init__(
+        self,
+        signals: Signals,
+        parent: Optional[QtCore.QObject] = None,
+    ) -> None:
         """Initialize the Controller."""
-        super().__init__()
+        super().__init__(parent)
         self.signals = signals
 
         self.worker: Optional[Backup.Worker] = None
-        self._worker_thread: Optional[QThread] = None
+        self._worker_thread: Optional[QtCore.QThread] = None
 
-        self.elapsed_timer = QTimer(self)
+        self.elapsed_timer = QtCore.QTimer(self)
         self.elapsed_timer.timeout.connect(self._tick)
         self.elapsed_start_time: float = 0.0
 
@@ -116,9 +119,7 @@ class Controller(QObject):
             return False
 
         LOGGER.debug(
-            "State transition: %s -> %s",
-            self.state.name,
-            new_state.name
+            "State transition: %s -> %s", self.state.name, new_state.name
         )
         self.state = new_state
         return True
@@ -126,7 +127,10 @@ class Controller(QObject):
     def _force_state(
         self, new_state: ControllerState, reason: str = ""
     ) -> None:
-        """Bypass FSM for shutdown/recovery paths where safety > correctness.
+        """Bypass FSM validation for shutdown and recovery paths.
+
+        Used where safety takes priority over strict correctness,
+        such as forced shutdowns or error recovery.
         """
         LOGGER.warning(
             "FORCED state transition: %s -> %s (%s)",
@@ -194,7 +198,7 @@ class Controller(QObject):
             self._request_worker_shutdown(wait=True)
 
         self.worker = Backup.Worker()
-        self._worker_thread = QThread()
+        self._worker_thread = QtCore.QThread(self)
         self.worker.moveToThread(self._worker_thread)
 
         # Let QObject parent/child system handle signal disconnection natively

@@ -1,6 +1,6 @@
 # 5. Project Structure: src/atlas Layout
 Date: 2026-02-18
-Last updated: 2026-03-16
+Last updated: 2026-08-09
 
 ## Context
 Early development had modules at the root level (`backup/`, `display/`,
@@ -25,6 +25,9 @@ assets/           # icons and images
 configs/          # runtime configuration files
 docs/             # documentation and ADRs
 scripts/          # developer setup scripts
+installer/        # platform packaging metadata
+main.spec          # Windows PyInstaller definition
+appimage.spec      # Linux AppImage PyInstaller definition
 pyproject.toml    # build and dependency metadata
 ```
 
@@ -43,3 +46,6 @@ bundle. There is no root-level `run.py` launcher.
 - **Asset Organisation**: `assets/` is kept at the root, separate from
   source, and resolved at runtime via a `resource_path` helper that
   handles both development and PyInstaller bundled paths.
+- **Packaging Organisation**: AppImage-specific launcher and desktop metadata
+  live under `installer/appimage/`, keeping packaging support out of the
+  project root.

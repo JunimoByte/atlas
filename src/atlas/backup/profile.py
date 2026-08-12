@@ -46,11 +46,24 @@ _PATH_CACHE: Dict = {}
 
 
 @lru_cache(maxsize=256)
-def _expand_path_by_type(path_type: str, path: str) -> List[Path]:
-    """Expand paths using type bases and handle wildcards."""
-    bases = PATH_TYPES.get(path_type.upper(), [])
+def _expand_path_by_type(
+    path_type: str, path: str, os_name: str
+) -> List[Path]:
+    """Expand paths using OS-specific type bases and handle wildcards.
+
+    Args:
+        path_type: The path type key (e.g. 'APPDATA', 'HOME').
+        path: The relative path to expand beneath each base.
+        os_name: The capitalised OS name (e.g. 'Windows', 'Linux').
+
+    Returns:
+        A deduplicated list of resolved candidate Paths.
+
+    """
+    os_types = PATH_TYPES.get(os_name, {})
+    bases = os_types.get(path_type.upper(), [])
     expanded: List[Path] = []
-    seen: Set[str] = set()  # Track normalized absolute paths
+    seen: Set[str] = set()  # Track normalised absolute paths
 
     for base in bases:
         base_path = Path(os.path.expandvars(os.path.expanduser(base)))
@@ -74,7 +87,7 @@ def _validate_profile_path(
     # Normalize path to lowercase for Windows case-insensitivity
     cache_key = (
         str(path).lower(),
-        tuple(signature) if isinstance(signature, list) else signature
+        tuple(signature) if isinstance(signature, list) else signature,
     )
     if cache_key in _PATH_CACHE:
         return _PATH_CACHE[cache_key]
@@ -138,7 +151,7 @@ def _expand_wildcard(base: Path, rel_path: Path) -> List[Path]:
 def find_profile(
     browser_name: str,
     operating_system: str,
-    browsers_data: Optional[Dict[str, Any]] = None
+    browsers_data: Optional[Dict[str, Any]] = None,
 ) -> List[str]:
     """Locate all valid profile directories for a browser on a given OS.
 
@@ -168,7 +181,8 @@ def find_profile(
         return []
 
     browser_data = browsers_data[browser_name]
-    os_entries = browser_data.get(operating_system.capitalize(), [])
+    os_key = operating_system.capitalize()
+    os_entries = browser_data.get(os_key, [])
 
     valid_profiles: List[str] = []
     seen_paths: Set[str] = set()
@@ -182,7 +196,7 @@ def find_profile(
             LOGGER.error("Incomplete data for %s: %s", browser_name, entry)
             continue
 
-        candidate_paths = _expand_path_by_type(path_type, raw_path)
+        candidate_paths = _expand_path_by_type(path_type, raw_path, os_key)
 
         for location in candidate_paths:
             result = _validate_profile_path(location, signature_file)
@@ -196,8 +210,7 @@ def find_profile(
 
 
 def get_browser_name_from_path(
-    path_str: str,
-    browsers_data: Optional[Dict[str, Any]] = None
+    path_str: str, browsers_data: Optional[Dict[str, Any]] = None
 ) -> str:
     """Return the browser name for a given profile path.
 
@@ -220,7 +233,7 @@ def get_browser_name_from_path(
     path_lower = str(Path(path_str)).lower()
 
     for name, systems in browsers_data.items():
-        for _, entries in systems.items():
+        for os_name, entries in systems.items():
             for entry in entries:
                 raw_path = entry.get("Path")
                 path_type = entry.get("Type")
@@ -229,7 +242,9 @@ def get_browser_name_from_path(
                 if not raw_path or not path_type:
                     continue
 
-                candidate_paths = _expand_path_by_type(path_type, raw_path)
+                candidate_paths = _expand_path_by_type(
+                    path_type, raw_path, os_name
+                )
 
                 for location in candidate_paths:
                     resolved = _validate_profile_path(location, signature)

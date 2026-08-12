@@ -28,9 +28,11 @@ def clean_blacklists(monkeypatch: pytest.MonkeyPatch) -> None:
         backup_filter, "SKIP_FOLDERS", {"__pycache__", "skip_me"}
     )
     monkeypatch.setattr(backup_filter, "SKIP_FILE_EXTENSION", {".log", ".tmp"})
-    monkeypatch.setattr(backup_filter, "SKIP_FILE_WITH_EXTENSION", {
-        ".db": {"Cookies", "History"}
-    })
+    monkeypatch.setattr(
+        backup_filter,
+        "SKIP_FILE_WITH_EXTENSION",
+        {".db": {"Cookies", "History"}},
+    )
 
 
 def make_file(path: Path, content: str = "data") -> Path:
@@ -89,12 +91,14 @@ def test_scan_files_excludes_named_file_with_extension(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Verify that specific name + extension pairs are skipped."""
-    monkeypatch.setattr(backup_filter, "SKIP_FILE_WITH_EXTENSION", {
-        ".db": {"Cookies.db", "History.db"}
-    })
-    make_file(tmp_path / "Cookies.db")   # full name in blacklist → skip
+    monkeypatch.setattr(
+        backup_filter,
+        "SKIP_FILE_WITH_EXTENSION",
+        {".db": {"Cookies.db", "History.db"}},
+    )
+    make_file(tmp_path / "Cookies.db")  # full name in blacklist → skip
     make_file(tmp_path / "Cookies.txt")  # different extension → keep
-    make_file(tmp_path / "Other.db")     # .db ext but name not in set → keep
+    make_file(tmp_path / "Other.db")  # .db ext but name not in set → keep
 
     results = list(scan_files([tmp_path]))
     names = [f.name for _, f in results]

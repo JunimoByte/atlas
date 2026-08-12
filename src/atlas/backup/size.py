@@ -81,17 +81,16 @@ def format_size(bytes_size: Union[int, float]) -> str:
             if bytes_size < 1024 or i == len(units) - 1:
                 if bytes_size.is_integer():
                     return "{} {}".format(int(bytes_size), unit)
-                return (
-                    "{:.2f}".format(bytes_size).rstrip("0").rstrip(".")
-                    + " {}".format(unit)
-                )
+                return "{:.2f}".format(bytes_size).rstrip("0").rstrip(
+                    "."
+                ) + " {}".format(unit)
             bytes_size /= 1024
     except (ValueError, TypeError):
         return "Unknown size"
     return "Unknown size"
 
 
-def get_directory_size(path_str: Union[str, Path]) -> int:
+def get_directory_size(path_str: Union[str, Path]) -> int:  # noqa: C901
     """Recursively compute the total size of a directory.
 
     Uses ``os.scandir`` with a manual stack for performance. On Windows,
@@ -138,7 +137,9 @@ def get_directory_size(path_str: Union[str, Path]) -> int:
                         elif entry.is_file(follow_symlinks=False):
                             total += entry.stat(follow_symlinks=False).st_size
                     except (
-                        PermissionError, FileNotFoundError, OSError
+                        PermissionError,
+                        FileNotFoundError,
+                        OSError,
                     ) as error:
                         LOGGER.debug(
                             "Error accessing %s: %s", entry.path, error
@@ -151,8 +152,7 @@ def get_directory_size(path_str: Union[str, Path]) -> int:
 
 
 def check_disk_space(
-    estimated_size_bytes: int,
-    output_path: Union[str, Path, None] = None
+    estimated_size_bytes: int, output_path: Union[str, Path, None] = None
 ) -> Tuple[bool, str]:
     """Check if there's sufficient disk space for the backup.
 
@@ -195,9 +195,7 @@ def create_output_dir(output_path: Union[str, Path, None] = None) -> Path:
 
     """
     output_dir = (
-        Path(output_path).resolve()
-        if output_path
-        else get_zip_output_dir()
+        Path(output_path).resolve() if output_path else get_zip_output_dir()
     )
     try:
         output_dir.mkdir(parents=True, exist_ok=True)

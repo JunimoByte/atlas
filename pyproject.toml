@@ -1,16 +1,12 @@
 [project]
 name = "atlas"
-version = "1.0.0"
+version = "1.1"
 description = "Atlas is a browser profile backup application."
 requires-python = ">=3.8"
 authors = [{ name = "Michael Dorman" }]
 license = { text = "AGPL-3.0-or-later" }
 readme = "README.md"
 keywords = ["backup", "browser", "profiles"]
-
-dependencies = [
-    "PyQt6>=6.5"
-]
 
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -19,14 +15,21 @@ classifiers = [
 
 [project.optional-dependencies]
 gui = [
-    "pyinstaller>=6.0"
+    "pyinstaller>=6.0",
 ]
 
+# Pure linting/testing tools -- no Qt (installed separately by setup scripts)
+# PEP 508 environment markers let pip pick the right version automatically:
+#   Python 3.8 (Windows 7) gets the last compatible releases.
+#   Python 3.9+ (Windows 10/11) gets the latest available release.
 dev = [
-    "pytest>=8.0",
-    "ruff>=0.6.0",
-    "black>=24.0.0",
-    "flake8>=7.0.0"
+    "pytest>=7.0",
+    "pytest-qt>=4.0",
+    "black>=23.0.0",
+    "flake8>=5.0.0,<7.0.0; python_version < '3.9'",
+    "flake8>=7.0.0; python_version >= '3.9'",
+    "ruff>=0.1.0,<0.5.0; python_version < '3.9'",
+    "ruff>=0.5.0; python_version >= '3.9'",
 ]
 
 [project.scripts]
@@ -38,3 +41,33 @@ pythonpath = ["src"]
 
 [tool.setuptools.package-data]
 atlas = ["configs/*.json", "configs/*.yaml", "configs/*.yml"]
+
+[tool.ruff]
+target-version = "py38"
+line-length = 79
+src = ["src"]
+exclude = [
+    ".git",
+    ".pytest_cache",
+    ".ruff_cache",
+    "venv",
+    "build",
+    "dist",
+]
+
+[tool.ruff.lint]
+select = ["E", "W", "D", "F", "I", "N", "C90"]
+ignore = [
+    "D203", # 1 blank line required before class docstring (conflicts with D211)
+    "D213", # Multi-line docstring summary should start at the second line (conflicts with D212)
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
+
+[tool.black]
+line-length = 79
+target-version = ["py38"]

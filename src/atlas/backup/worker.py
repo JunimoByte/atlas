@@ -11,9 +11,8 @@ Wraps the Qt-free Pipeline with PyQt signals for UI integration.
 import logging
 from typing import Optional
 
-from PyQt6.QtCore import QObject, pyqtSignal
-
 from atlas.backup.pipeline import Pipeline, PipelineResult
+from atlas.compatibility.qt import QtCore
 
 # =============================================================================
 # LOGGING
@@ -26,7 +25,7 @@ LOGGER = logging.getLogger(__name__)
 # =============================================================================
 
 
-class Worker(QObject):
+class Worker(QtCore.QObject):
     """Qt adapter that runs the backup pipeline on a background thread.
 
     Wires pyqtSignals as plain-Python callbacks into the Qt-free
@@ -34,18 +33,18 @@ class Worker(QObject):
     headless callers use atlas.backup.runner directly.
     """
 
-    progress = pyqtSignal(int, int)
-    done = pyqtSignal()
-    estimated_size = pyqtSignal(str)
-    scanned_entries = pyqtSignal(str)
-    disk_space_error = pyqtSignal(str, str)
-    no_browsers_found = pyqtSignal()
-    cancelled = pyqtSignal()
-    failed = pyqtSignal(str)
+    progress = QtCore.pyqtSignal(int, int)
+    done = QtCore.pyqtSignal()
+    estimated_size = QtCore.pyqtSignal(str)
+    scanned_entries = QtCore.pyqtSignal(str)
+    disk_space_error = QtCore.pyqtSignal(str, str)
+    no_browsers_found = QtCore.pyqtSignal()
+    cancelled = QtCore.pyqtSignal()
+    failed = QtCore.pyqtSignal(str)
 
-    def __init__(self) -> None:
+    def __init__(self, parent: Optional[QtCore.QObject] = None) -> None:
         """Initialize the Worker."""
-        super().__init__()
+        super().__init__(parent)
         self._pipeline: Optional[Pipeline] = None
 
     # =========================================================================
@@ -68,7 +67,7 @@ class Worker(QObject):
 
         Constructs a Pipeline with signal-driven callbacks, stores it
         for cancellation access, and translates the final result into
-        the appropriate pyqtSignal emission.
+        the appropriate QtCore.pyqtSignal emission.
         """
         LOGGER.info("Worker started")
         try:

@@ -1,0 +1,6 @@
+#!/bin/sh
+# AppImage entry point. APPDIR is supplied by the AppImage runtime; the
+# fallback makes this launcher usable when testing the unpacked AppDir.
+APPDIR="${APPDIR:-$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)}"
+
+exec "$APPDIR/usr/bin/atlas" "$@"

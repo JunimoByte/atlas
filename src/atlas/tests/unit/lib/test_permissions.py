@@ -94,7 +94,7 @@ def test_is_elevated_windows_admin(mock_windows_admin: MagicMock) -> None:
 
 
 def test_is_elevated_windows_nonadmin(
-    mock_windows_nonadmin: MagicMock
+    mock_windows_nonadmin: MagicMock,
 ) -> None:
     """Verify detection of non-elevated privileges on Windows (non-admin)."""
     assert permissions.is_elevated() is False
@@ -107,7 +107,7 @@ def test_is_elevated_fails_safely(monkeypatch: pytest.MonkeyPatch) -> None:
     setattr(
         permissions.os,
         "geteuid",
-        lambda: (_ for _ in ()).throw(Exception("fail"))
+        lambda: (_ for _ in ()).throw(Exception("fail")),
     )
     monkeypatch.setattr(platform, "system", lambda: "Linux")
     assert permissions.is_elevated() is False
@@ -130,9 +130,11 @@ def test_show_elevated_permissions_dialog_fallback(
     monkeypatch: pytest.MonkeyPatch, mock_exit: MagicMock
 ) -> None:
     """Verify the fallback to logging and exit if the dialog fails."""
+
     def raise_import_error(*args, **kwargs):
         """Raise ImportError always."""
         raise ImportError("fail")
+
     monkeypatch.setattr(permissions, "show_warning", raise_import_error)
 
     permissions.show_elevated_permissions_dialog()
