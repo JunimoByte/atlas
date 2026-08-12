@@ -53,6 +53,11 @@ _TILING_WINDOW_MANAGERS = {
     "worm",
     "xmonad",
 }
+_LINUX_SESSION_VARIABLES = (
+    "XDG_CURRENT_DESKTOP",
+    "XDG_SESSION_DESKTOP",
+    "DESKTOP_SESSION",
+)
 
 # =============================================================================
 # LINUX ENVIRONMENT CONFIGURATION
@@ -99,15 +104,11 @@ def _is_tiling_window_manager() -> bool:
     if "SWAYSOCK" in os.environ:
         return True
 
-    return any(
-        manager in os.environ.get(variable, "").lower()
-        for variable in (
-            "XDG_CURRENT_DESKTOP",
-            "XDG_SESSION_DESKTOP",
-            "DESKTOP_SESSION",
-        )
-        for manager in _TILING_WINDOW_MANAGERS
+    session_name = " ".join(
+        os.environ.get(variable, "").lower()
+        for variable in _LINUX_SESSION_VARIABLES
     )
+    return any(manager in session_name for manager in _TILING_WINDOW_MANAGERS)
 
 
 def _configure_linux_environment() -> None:
@@ -132,7 +133,7 @@ _configure_linux_environment()
 # QT BINDING RESOLUTION
 # =============================================================================
 
-QT_API = None
+QT_API: str
 """Name of the active Qt binding ('PyQt6' or 'PyQt5')."""
 
 try:
@@ -146,9 +147,9 @@ except ImportError:
         from PyQt5 import QtCore, QtGui, QtWidgets  # noqa: F401
 
         QT_API = "PyQt5"
-    except ImportError:
+    except ImportError as error:
         raise ImportError(
             "Atlas requires PyQt6 or PyQt5. Neither package was found."
-        )
+        ) from error
 
 LOGGER.debug("Qt binding resolved: %s", QT_API)
