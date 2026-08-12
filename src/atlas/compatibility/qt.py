@@ -27,6 +27,38 @@ import sys
 
 LOGGER = logging.getLogger(__name__)
 
+_TILING_WINDOW_MANAGERS = {
+    "amethyst",
+    "awesome",
+    "berry",
+    "bspwm",
+    "cage",
+    "dwl",
+    "dwm",
+    "exwm",
+    "herbstluftwm",
+    "hyprland",
+    "i3",
+    "leftwm",
+    "lspwm",
+    "niri",
+    "notched",
+    "qtile",
+    "ratpoison",
+    "river",
+    "spectrwm",
+    "stumpwm",
+    "sway",
+    "wingo",
+    "worm",
+    "xmonad",
+}
+_LINUX_SESSION_VARIABLES = (
+    "XDG_CURRENT_DESKTOP",
+    "XDG_SESSION_DESKTOP",
+    "DESKTOP_SESSION",
+)
+
 # =============================================================================
 # LINUX ENVIRONMENT CONFIGURATION
 # =============================================================================
@@ -65,29 +97,33 @@ def _configure_frozen_linux_environment() -> None:
         )
 
 
-def _configure_linux_environment() -> None:
-    """Configure the Qt platform backend for Linux.
-
-    Forces Qt to use the xcb (X11/XWayland) backend on Linux so that
-    GNOME's Wayland compositor (Mutter) does not override window flags
-    with its own Client-Side Decorations. XWayland is available on all
-    Ubuntu 22.04 LTS+ and equivalent systems, making this safe.
-
-    The variable is only set if the user has not already defined it,
-    so explicit overrides from the shell are always respected.
-
-    """
+def _is_tiling_window_manager() -> bool:
+    """Return whether the current Linux session is a known tiling WM."""
     if not sys.platform.startswith("linux"):
+        return False
+    if "SWAYSOCK" in os.environ:
+        return True
+
+    session_name = " ".join(
+        os.environ.get(variable, "").lower()
+        for variable in _LINUX_SESSION_VARIABLES
+    )
+    return any(manager in session_name for manager in _TILING_WINDOW_MANAGERS)
+
+
+def _configure_linux_environment() -> None:
+    """Use XCB unless the user explicitly selects another Qt backend.
+
+    This retains working X11/XWayland support for every desktop, including
+    tiling window managers. ``QT_QPA_PLATFORM`` always takes precedence.
+    """
+    if not sys.platform.startswith("linux") or os.environ.get(
+        "QT_QPA_PLATFORM"
+    ):
         return
 
-    try:
-        if not os.environ.get("QT_QPA_PLATFORM"):
-            os.environ["QT_QPA_PLATFORM"] = "xcb"
-            LOGGER.debug("QT_QPA_PLATFORM forced to 'xcb' for Linux.")
-    except Exception:
-        LOGGER.error(
-            "Failed to configure Linux environment", exc_info=True
-        )
+    os.environ["QT_QPA_PLATFORM"] = "xcb"
+    LOGGER.debug("QT_QPA_PLATFORM set to 'xcb' for Linux.")
 
 
 _configure_frozen_linux_environment()
@@ -97,7 +133,7 @@ _configure_linux_environment()
 # QT BINDING RESOLUTION
 # =============================================================================
 
-QT_API = None
+QT_API: str
 """Name of the active Qt binding ('PyQt6' or 'PyQt5')."""
 
 try:
@@ -111,9 +147,9 @@ except ImportError:
         from PyQt5 import QtCore, QtGui, QtWidgets  # noqa: F401
 
         QT_API = "PyQt5"
-    except ImportError:
+    except ImportError as error:
         raise ImportError(
             "Atlas requires PyQt6 or PyQt5. Neither package was found."
-        )
+        ) from error
 
 LOGGER.debug("Qt binding resolved: %s", QT_API)

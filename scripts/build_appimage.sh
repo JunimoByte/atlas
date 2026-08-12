@@ -125,6 +125,9 @@ python -m PyInstaller --noconfirm --clean appimage.spec
 # appimagetool discovers these conventional files at the AppDir root.
 install -Dm755 "$metadata_dir/AppRun" "$appdir/AppRun"
 install -Dm644 "$metadata_dir/atlas.desktop" "$appdir/atlas.desktop"
+# .desktop files are specified as LF-delimited. Normalize this copy so an
+# accidental CRLF checkout cannot make appimagetool reject the AppDir.
+sed -i 's/\r$//' "$appdir/atlas.desktop"
 # The root icon matches Icon=atlas and is deliberately vector-first. This is
 # the icon AppImage desktop integration and .DirIcon should prefer.
 install -Dm644 "$icon_source" "$appdir/atlas.svg"

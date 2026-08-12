@@ -49,9 +49,9 @@ datas = [
 ]
 
 if _active_qt == "PyQt6":
-    # Keep the platform and image plugins Atlas needs when it forces the XCB
-    # backend on Linux. Missing optional directories vary by PyQt6 release,
-    # hence the deliberately non-fatal collection attempts.
+    # Keep the platform and image plugins needed by both the regular-desktop
+    # XCB path and native Wayland tiling-WM path. Missing optional directories
+    # vary by PyQt6 release, hence the deliberately non-fatal attempts.
     qt_plugin_subdirs = [
         "Qt6/plugins/styles",
         "Qt6/plugins/platformthemes",
@@ -121,7 +121,7 @@ _offline_module_prefixes = (
     "PyQt5.QtRemoteObjects", "PyQt5.QtWebChannel", "PyQt6.QtNetwork",
     "PyQt6.QtNetworkAuth", "PyQt6.QtWebEngine", "PyQt6.QtWebSockets",
     "PyQt6.QtBluetooth", "PyQt6.QtRemoteObjects", "PyQt6.QtWebChannel",
-    "socket", "ssl", "urllib", "http", "ftplib", "imaplib", "poplib",
+    "socket", "ssl", "http", "ftplib", "imaplib", "poplib",
     "smtplib", "telnetlib", "nntplib", "wsgiref",
 )
 
@@ -134,7 +134,10 @@ _offline_binary_markers = (
 _standard_library_excludes = [
     "tkinter", "unittest", "pytest", "doctest", "distutils", "setuptools",
     "email", "sqlite3", "concurrent", "http", "xml", "html", "pydoc",
-    "socket", "ssl", "urllib", "uuid", "pdb", "optparse", "getopt",
+    # pathlib may require urllib parsing support. urllib.request remains in
+    # the explicit excludes below, but is not enforced here because some
+    # PyInstaller/Python combinations retain it in their analysis graph.
+    "socket", "ssl", "uuid", "pdb", "optparse", "getopt",
     "fractions", "decimal", "statistics", "hashlib", "hmac", "secrets",
     "ftplib", "imaplib", "poplib", "smtplib", "telnetlib", "nntplib", "cgi",
     "cgitb", "wsgiref", "mimetypes",
