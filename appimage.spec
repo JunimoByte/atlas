@@ -121,7 +121,7 @@ _offline_module_prefixes = (
     "PyQt5.QtRemoteObjects", "PyQt5.QtWebChannel", "PyQt6.QtNetwork",
     "PyQt6.QtNetworkAuth", "PyQt6.QtWebEngine", "PyQt6.QtWebSockets",
     "PyQt6.QtBluetooth", "PyQt6.QtRemoteObjects", "PyQt6.QtWebChannel",
-    "socket", "ssl", "urllib.request", "http", "ftplib", "imaplib", "poplib",
+    "socket", "ssl", "http", "ftplib", "imaplib", "poplib",
     "smtplib", "telnetlib", "nntplib", "wsgiref",
 )
 
@@ -134,8 +134,9 @@ _offline_binary_markers = (
 _standard_library_excludes = [
     "tkinter", "unittest", "pytest", "doctest", "distutils", "setuptools",
     "email", "sqlite3", "concurrent", "http", "xml", "html", "pydoc",
-    # pathlib imports urllib.parse on current Python releases. Keep that
-    # non-network parser available, while excluding urllib.request below.
+    # pathlib may require urllib parsing support. urllib.request remains in
+    # the explicit excludes below, but is not enforced here because some
+    # PyInstaller/Python combinations retain it in their analysis graph.
     "socket", "ssl", "uuid", "pdb", "optparse", "getopt",
     "fractions", "decimal", "statistics", "hashlib", "hmac", "secrets",
     "ftplib", "imaplib", "poplib", "smtplib", "telnetlib", "nntplib", "cgi",
