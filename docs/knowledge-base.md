@@ -183,6 +183,10 @@ The Windows spec names releases from the Python interpreter bitness:
 available portable build and installs it as the corresponding
 `Atlas-<architecture>.exe`.
 
+The Debian build uses the matching release-artifact convention, such as
+`Atlas-x86_64.deb`. Its internal Debian package metadata still uses the
+required Debian architecture identifiers, such as `amd64`.
+
 `assets/icons/Icon.svg` is the Linux icon source. The application window and
 AppImage root both use that SVG directly. Windows uses its native icon asset
 separately.

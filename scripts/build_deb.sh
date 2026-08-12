@@ -33,6 +33,20 @@ debian_architecture() {
 }
 
 
+artifact_architecture() {
+    case "$1" in
+        amd64) printf '%s\n' "x86_64" ;;
+        i386) printf '%s\n' "x86" ;;
+        arm64) printf '%s\n' "arm64" ;;
+        armhf) printf '%s\n' "armhf" ;;
+        *)
+            echo "Unsupported release artifact architecture: $1" >&2
+            return 1
+            ;;
+    esac
+}
+
+
 project_version() {
     local pyproject="$project_root/pyproject.toml"
     local line
@@ -83,8 +97,9 @@ if [[ ! -f "$icon_source" ]]; then
 fi
 
 architecture="$(debian_architecture)"
+artifact_architecture="$(artifact_architecture "$architecture")"
 version="$(project_version)"
-output="${1:-$project_root/dist/${package_name}_${version}_${architecture}.deb}"
+output="${1:-$project_root/dist/Atlas-${artifact_architecture}.deb}"
 package_root="$project_root/build/deb/${package_name}_${version}_${architecture}"
 payload="$appdir/usr/bin/atlas"
 output_dir="$(dirname "$output")"

@@ -26,7 +26,8 @@ or icon-theme directory tree.
 - Installing or removing the package affects only Atlas-owned files.
 - `dpkg-deb` is required only on the build machine; Atlas has no system
   Python or Qt runtime dependency.
-- Debian package filenames follow the conventional
-  `atlas_<version>_<architecture>.deb` format.
+- Debian release artifacts follow the project-wide architecture naming scheme,
+  such as `Atlas-x86_64.deb`; Debian's internal package metadata continues to
+  use its conventional lowercase name, version, and architecture fields.
 - The package should be built on the oldest supported Linux baseline to
   retain the intended glibc compatibility.

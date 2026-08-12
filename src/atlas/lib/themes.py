@@ -116,9 +116,7 @@ def initialize(window) -> None:
         hints = QtGui.QGuiApplication.styleHints()
         if hints and hasattr(hints, "colorSchemeChanged"):
             hints.colorSchemeChanged.connect(
-                lambda *_: QtCore.QTimer.singleShot(
-                    0, lambda: apply(window)
-                )
+                lambda *_: QtCore.QTimer.singleShot(0, lambda: apply(window))
             )
         else:
             LOGGER.debug(

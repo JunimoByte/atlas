@@ -52,7 +52,9 @@ def test_initialize_accepts_color_scheme_signal_value(
 
     monkeypatch.setattr(themes, "icon", MagicMock())
     monkeypatch.setattr(themes, "apply", apply_theme)
-    monkeypatch.setattr(themes.QtGui.QGuiApplication, "styleHints", lambda: hints)
+    monkeypatch.setattr(
+        themes.QtGui.QGuiApplication, "styleHints", lambda: hints
+    )
     monkeypatch.setattr(
         themes.QtCore.QTimer,
         "singleShot",
@@ -136,7 +138,9 @@ def test_apply_light_sets_stylesheet(
         lambda: type("WinVer", (), {"major": 10})(),
         raising=False,
     )
-    monkeypatch.setattr(themes, "_supports_native_windows_theming", lambda: False)
+    monkeypatch.setattr(
+        themes, "_supports_native_windows_theming", lambda: False
+    )
     themes._apply_light(mock_window)
 
     mock_window.setStyleSheet.assert_called_once()
@@ -169,7 +173,9 @@ def test_apply_dark_calls_dwmapi(
     )
 
     mock_dwm = MagicMock()
-    monkeypatch.setattr(themes, "_supports_native_windows_theming", lambda: False)
+    monkeypatch.setattr(
+        themes, "_supports_native_windows_theming", lambda: False
+    )
 
     with patch("ctypes.windll", create=True) as mock_windll:
         mock_windll.dwmapi = mock_dwm
@@ -184,7 +190,9 @@ def test_apply_native_windows_theme_uses_qt_palette(
 ) -> None:
     """Modern PyQt6 uses Qt's system-following colour scheme API."""
     hints = MagicMock()
-    monkeypatch.setattr(themes.QtGui.QGuiApplication, "styleHints", lambda: hints)
+    monkeypatch.setattr(
+        themes.QtGui.QGuiApplication, "styleHints", lambda: hints
+    )
     monkeypatch.setattr(themes, "_set_windows_chrome", MagicMock())
 
     themes._apply_native_windows_theme(mock_window, "Dark")
@@ -257,7 +265,9 @@ def test_windows_11_chrome_enables_mica(
         themes._set_windows_chrome(mock_window, True)
 
     assert mock_dwm.DwmSetWindowAttribute.call_count == 3
-    assert mock_dwm.DwmSetWindowAttribute.call_args_list[-1].args[1].value == 38
+    assert (
+        mock_dwm.DwmSetWindowAttribute.call_args_list[-1].args[1].value == 38
+    )
 
 
 def test_apply_dark_linux(
