@@ -53,7 +53,8 @@ DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
 
 OutputBaseFilename=Atlas-{#MyAppArch}-Setup
-OutputDir=Output
+; Inno Setup creates this directory when it does not already exist.
+OutputDir=..\dist
 SolidCompression=yes
 WizardStyle=modern
 
