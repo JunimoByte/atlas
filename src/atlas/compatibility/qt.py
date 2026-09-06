@@ -80,7 +80,7 @@ def _configure_frozen_linux_environment() -> None:
     development runs are unaffected.
 
     """
-    if not sys.platform.startswith("linux"):
+    if not sys.platform.startswith(("linux", "freebsd", "openbsd", "netbsd", "dragonfly")):
         return
     if not getattr(sys, "frozen", False):
         return
@@ -99,7 +99,7 @@ def _configure_frozen_linux_environment() -> None:
 
 def _is_tiling_window_manager() -> bool:
     """Return whether the current Linux session is a known tiling WM."""
-    if not sys.platform.startswith("linux"):
+    if not sys.platform.startswith(("linux", "freebsd", "openbsd", "netbsd", "dragonfly")):
         return False
     if "SWAYSOCK" in os.environ:
         return True
@@ -117,9 +117,9 @@ def _configure_linux_environment() -> None:
     This retains working X11/XWayland support for every desktop, including
     tiling window managers. ``QT_QPA_PLATFORM`` always takes precedence.
     """
-    if not sys.platform.startswith("linux") or os.environ.get(
-        "QT_QPA_PLATFORM"
-    ):
+    if not sys.platform.startswith(
+        ("linux", "freebsd", "openbsd", "netbsd", "dragonfly")
+    ) or os.environ.get("QT_QPA_PLATFORM"):
         return
 
     os.environ["QT_QPA_PLATFORM"] = "xcb"
