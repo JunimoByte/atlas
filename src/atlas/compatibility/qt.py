@@ -80,7 +80,9 @@ def _configure_frozen_linux_environment() -> None:
     development runs are unaffected.
 
     """
-    if not sys.platform.startswith(("linux", "freebsd", "openbsd", "netbsd", "dragonfly")):
+    if not sys.platform.startswith(
+        ("linux", "freebsd", "openbsd", "netbsd", "dragonfly")
+    ):
         return
     if not getattr(sys, "frozen", False):
         return
@@ -99,7 +101,9 @@ def _configure_frozen_linux_environment() -> None:
 
 def _is_tiling_window_manager() -> bool:
     """Return whether the current Linux session is a known tiling WM."""
-    if not sys.platform.startswith(("linux", "freebsd", "openbsd", "netbsd", "dragonfly")):
+    if not sys.platform.startswith(
+        ("linux", "freebsd", "openbsd", "netbsd", "dragonfly")
+    ):
         return False
     if "SWAYSOCK" in os.environ:
         return True
