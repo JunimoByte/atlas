@@ -108,6 +108,22 @@
                     "profiles.ini"
                 ]
             }
+        ],
+        "BSD": [
+            {
+                "Type": "HOME",
+                "Path": ".mozilla/firefox",
+                "Signature": [
+                    "profiles.ini"
+                ]
+            },
+            {
+                "Type": "HOME",
+                "Path": "mozilla/firefox",
+                "Signature": [
+                    "profiles.ini"
+                ]
+            }
         ]
     },
     "Microsoft Edge": {

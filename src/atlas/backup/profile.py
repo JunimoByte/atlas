@@ -17,6 +17,7 @@ from typing import Any, Dict, List, Optional, Set, Union
 
 from atlas.lib import browsers as browsers_list
 from atlas.lib.read import load_json
+from atlas.lib.system import normalize_os_key
 
 # =============================================================================
 # LOGGING
@@ -181,7 +182,7 @@ def find_profile(
         return []
 
     browser_data = browsers_data[browser_name]
-    os_key = operating_system.capitalize()
+    os_key = normalize_os_key(operating_system)
     os_entries = browser_data.get(os_key, [])
 
     valid_profiles: List[str] = []

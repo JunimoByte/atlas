@@ -24,12 +24,12 @@ gui = [
 #   Python 3.9+ (Windows 10/11) gets the latest available release.
 dev = [
     "pytest>=7.0",
-    "pytest-qt>=4.0",
+    "pytest-qt>=4.0; platform_system != 'FreeBSD' and platform_system != 'OpenBSD' and platform_system != 'NetBSD' and platform_system != 'DragonFly'",
     "black>=23.0.0",
     "flake8>=5.0.0,<7.0.0; python_version < '3.9'",
     "flake8>=7.0.0; python_version >= '3.9'",
-    "ruff>=0.1.0,<0.5.0; python_version < '3.9'",
-    "ruff>=0.5.0; python_version >= '3.9'",
+    "ruff>=0.1.0,<0.5.0; python_version < '3.9' and platform_system != 'FreeBSD' and platform_system != 'OpenBSD' and platform_system != 'NetBSD' and platform_system != 'DragonFly'",
+    "ruff>=0.5.0; python_version >= '3.9' and platform_system != 'FreeBSD' and platform_system != 'OpenBSD' and platform_system != 'NetBSD' and platform_system != 'DragonFly'",
 ]
 
 [project.scripts]

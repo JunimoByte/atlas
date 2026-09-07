@@ -40,5 +40,11 @@
         "FLATPAK": [
             "~/.var/app"
         ]
+    },
+    "BSD": {
+        "HOME": [
+            "~",
+            "~/.config"
+        ]
     }
 }

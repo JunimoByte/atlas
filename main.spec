@@ -8,15 +8,45 @@ PyInstaller spec file for Atlas application.
 - Includes resources and configuration files.
 - Detects which Qt binding is installed at build time and excludes the other
   to prevent PyInstaller's 'multiple Qt bindings' error.
+- On FreeBSD/GhostBSD, automatically adds system site-packages to pathex so
+  that pkg-installed PyQt is found and bundled correctly.
 """
 
 import importlib
 import pkgutil
+import site
 import struct
+import sys
+import sysconfig
 from typing import List
 
 from PyInstaller.building.build_main import EXE, PYZ, Analysis
 from PyInstaller.utils.hooks import collect_data_files
+
+# =============================================================================
+# BSD PATH DETECTION
+# =============================================================================
+# On FreeBSD/GhostBSD, PyQt is installed via pkg into the system Python
+# site-packages (e.g. /usr/local/lib/python3.12/site-packages), not into
+# the venv. PyInstaller needs these paths explicitly so it can find and
+# bundle the Qt extension modules alongside the application.
+
+_bsd_extra_paths: List[str] = []
+if sys.platform.startswith(
+    ("freebsd", "openbsd", "netbsd", "dragonfly")
+):
+    for _scheme in ("posix_prefix", "posix_user"):
+        _candidate = sysconfig.get_path("platlib", _scheme)
+        if _candidate and _candidate not in _bsd_extra_paths:
+            _bsd_extra_paths.append(_candidate)
+    for _sp in site.getsitepackages():
+        if _sp not in _bsd_extra_paths:
+            _bsd_extra_paths.append(_sp)
+    if _bsd_extra_paths:
+        print(
+            "main.spec: BSD detected — adding to pathex: "
+            f"{_bsd_extra_paths}"
+        )
 
 # =============================================================================
 # QT BINDING DETECTION
@@ -37,7 +67,7 @@ print(f"main.spec: bundling {_active_qt}, excluding {_excluded_qt}")
 _target_arch = "x86_64" if struct.calcsize("P") == 8 else "x86"
 _portable_name = f"Atlas-{_target_arch}-Portable"
 
-print(f"main.spec: creating {_portable_name}.exe")
+print(f"main.spec: creating {_portable_name}")
 
 # =============================================================================
 # RESOURCES & CONFIGS
@@ -193,7 +223,7 @@ def enforce_offline_payload(analysis: Analysis) -> None:
 
 a = Analysis(
     ['src/atlas/main.py'],
-    pathex=['src'],
+    pathex=['src'] + _bsd_extra_paths,
     binaries=[],
     datas=datas,
     hiddenimports=hiddenimports,
@@ -212,6 +242,8 @@ pyz = PYZ(a.pure)
 # =============================================================================
 # EXECUTABLE
 # =============================================================================
+
+_icon = 'assets/icons/Icon.ico' if sys.platform == 'win32' else None
 
 exe = EXE(
     pyz,
@@ -232,5 +264,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='assets/icons/Icon.ico',
+    icon=_icon,
 )

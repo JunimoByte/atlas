@@ -177,6 +177,12 @@ Defines the `UiDialog` class, which constructs the graphical elements of the win
 ### Library (`src/atlas/lib`)
 Core utilities for application state, configuration, and OS integration.
 
+#### `lib/system.py`
+Centralized system identification and OS string normalization.
+
+- **`normalize_os_key(os_name)`** — Maps raw OS strings (e.g. BSD variants like 'freebsd', 'openbsd') to stable configuration keys (e.g. `'BSD'`, `'Macos'`).
+- **`get_os_key()`** — Convenience function returning the normalized key for the current system.
+
 #### `lib/browsers.py`
 Manages browser configuration loading and validation.
 

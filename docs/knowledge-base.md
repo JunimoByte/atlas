@@ -107,6 +107,11 @@ Browser definitions come from `configs/browsers.json`; path expansion types
 come from `configs/types.json`. `lib.browsers.verify_entries` validates and
 caches these files during startup, then exposes a read-only mapping.
 
+OS keys in these configuration files (`Windows`, `Linux`, `Macos`, `BSD`) are
+agnostic. They are mapped dynamically via `lib.system.normalize_os_key` to match
+the current platform (`platform.system()`), ensuring variants like GhostBSD or
+OpenBSD resolve correctly to `BSD`.
+
 For each configured browser, `Pipeline.scan_profiles` resolves candidate
 locations for the current operating system and verifies profile signatures.
 It reports scan status in batches. Found profile directories are deduplicated
