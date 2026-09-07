@@ -739,7 +739,7 @@
             }
         ],
         "BSD": [
-           {
+            {
                 "Type": "HOME",
                 "Path": "BraveSoftware/Brave-Browser",
                 "Signature": [
@@ -759,7 +759,7 @@
                 "Signature": [
                     "Local State"
                 ]
-            } 
+            }
         ]
     },
     "Brave Origin": {
@@ -1326,7 +1326,7 @@
             }
         ],
         "BSD": [
-           {
+            {
                 "Type": "HOME",
                 "Path": ".config/falkon/profiles",
                 "Signature": [
@@ -1863,6 +1863,13 @@
                 "Path": "Ladybird/Profiles",
                 "Signature": false
             }
+        ],
+        "BSD": [
+            {
+                "Type": "HOME",
+                "Path": "Ladybird/Profiles",
+                "Signature": false
+            }
         ]
     },
     "Lagrange": {
@@ -1885,6 +1892,29 @@
     },
     "Links": {
         "Linux": [
+            {
+                "Type": "HOME",
+                "Path": ".links2",
+                "Signature": [
+                    "bookmarks.html"
+                ]
+            },
+            {
+                "Type": "HOME",
+                "Path": ".links",
+                "Signature": [
+                    "bookmarks.html"
+                ]
+            }
+        ],
+        "BSD": [
+            {
+                "Type": "HOME",
+                "Path": ".links",
+                "Signature": [
+                    "bookmarks.html"
+                ]
+            },
             {
                 "Type": "HOME",
                 "Path": ".links2",
@@ -2112,13 +2142,13 @@
             }
         ],
         "BSD": [
-          {
+            {
                 "Type": "HOME",
                 "Path": "midori",
                 "Signature": [
                     "history.db"
                 ]
-            }  
+            }
         ]
     },
     "Min": {
@@ -2291,6 +2321,13 @@
             {
                 "Type": "FLATPAK",
                 "Path": "org.netsurf_browser.NetSurf/config/netsurf",
+                "Signature": false
+            }
+        ],
+        "BSD": [
+            {
+                "Type": "HOME",
+                "Path": "netsurf",
                 "Signature": false
             }
         ]
@@ -2623,11 +2660,29 @@
             }
         ]
     },
-    "Otter": {
+    "Otter Browser": {
         "Windows": [
             {
                 "Type": "LOCALAPPDATA",
                 "Path": "Otter/otter",
+                "Signature": [
+                    "otter.conf"
+                ]
+            }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "otter",
+                "Signature": [
+                    "otter.conf"
+                ]
+            }
+        ],
+        "BSD": [
+            {
+                "Type": "HOME",
+                "Path": "otter",
                 "Signature": [
                     "otter.conf"
                 ]
@@ -2804,6 +2859,13 @@
             {
                 "Type": "FLATPAK",
                 "Path": "org.qutebrowser.qutebrowser",
+                "Signature": false
+            }
+        ],
+        "BSD": [
+            {
+                "Type": "HOME",
+                "Path": "qutebrowser",
                 "Signature": false
             }
         ]
@@ -3062,6 +3124,24 @@
                 "Path": "Surf",
                 "Signature": [
                     "Local State"
+                ]
+            }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": ".surf",
+                "Signature": [
+                    "cookies.txt"
+                ]
+            }
+        ],
+        "BSD": [
+            {
+                "Type": "HOME",
+                "Path": ".surf",
+                "Signature": [
+                    "cookies.txt"
                 ]
             }
         ]
@@ -3483,6 +3563,22 @@
                 "Signature": [
                     "Local State"
                 ]
+            }
+        ]
+    },
+    "w3m": {
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": ".w3m",
+                "Signature": false
+            }
+        ],
+        "BSD": [
+            {
+                "Type": "HOME",
+                "Path": ".w3m",
+                "Signature": false
             }
         ]
     },
