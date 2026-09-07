@@ -66,6 +66,29 @@
                     "Local State"
                 ]
             }
+        ],
+        "BSD": [
+            {
+                "Type": "HOME",
+                "Path": "google-chrome",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "HOME",
+                "Path": "google-chrome-beta",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "HOME",
+                "Path": "google-chrome-unstable",
+                "Signature": [
+                    "Local State"
+                ]
+            }
         ]
     },
     "Firefox": {
@@ -172,6 +195,15 @@
                     "Local State"
                 ]
             },
+            {
+                "Type": "HOME",
+                "Path": "microsoft-edge",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ],
+        "BSD": [
             {
                 "Type": "HOME",
                 "Path": "microsoft-edge",
@@ -705,6 +737,29 @@
                     "Local State"
                 ]
             }
+        ],
+        "BSD": [
+           {
+                "Type": "HOME",
+                "Path": "BraveSoftware/Brave-Browser",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "HOME",
+                "Path": "BraveSoftware/Brave-Browser-Beta",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "HOME",
+                "Path": "BraveSoftware/Brave-Browser-Nightly",
+                "Signature": [
+                    "Local State"
+                ]
+            } 
         ]
     },
     "Brave Origin": {
@@ -718,6 +773,15 @@
             }
         ],
         "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "BraveSoftware/Brave-Origin",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ],
+        "BSD": [
             {
                 "Type": "HOME",
                 "Path": "BraveSoftware/Brave-Origin",
@@ -878,6 +942,15 @@
             {
                 "Type": "SNAP",
                 "Path": "chromium/common/chromium",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ],
+        "BSD": [
+            {
+                "Type": "HOME",
+                "Path": "chromium",
                 "Signature": [
                     "Local State"
                 ]
@@ -1224,24 +1297,41 @@
             {
                 "Type": "LOCALAPPDATA",
                 "Path": "falkon/profiles",
-                "Signature": false
+                "Signature": [
+                    "profiles.ini"
+                ]
             }
         ],
         "Linux": [
             {
                 "Type": "HOME",
                 "Path": ".config/falkon/profiles",
-                "Signature": false
+                "Signature": [
+                    "profiles.ini"
+                ]
             },
             {
                 "Type": "FLATPAK",
                 "Path": "org.kde.falkon/config/falkon/profiles",
-                "Signature": false
+                "Signature": [
+                    "profiles.ini"
+                ]
             },
             {
                 "Type": "SNAP",
                 "Path": "falkon/current/.config/falkon/profiles",
-                "Signature": false
+                "Signature": [
+                    "profiles.ini"
+                ]
+            }
+        ],
+        "BSD": [
+           {
+                "Type": "HOME",
+                "Path": ".config/falkon/profiles",
+                "Signature": [
+                    "profiles.ini"
+                ]
             }
         ]
     },
@@ -1827,6 +1917,15 @@
                     "profiles.ini"
                 ]
             }
+        ],
+        "BSD": [
+            {
+                "Type": "HOME",
+                "Path": "librewolf/librewolf",
+                "Signature": [
+                    "profiles.ini"
+                ]
+            }
         ]
     },
     "LobbyBrowser": {
@@ -1847,6 +1946,26 @@
                 "Path": "Local Browser",
                 "Signature": [
                     "Cookies"
+                ]
+            }
+        ]
+    },
+    "Luakit": {
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": ".local/share/luakit",
+                "Signature": [
+                    "cookies.db"
+                ]
+            }
+        ],
+        "BSD": [
+            {
+                "Type": "HOME",
+                "Path": ".local/share/luakit",
+                "Signature": [
+                    "cookies.db"
                 ]
             }
         ]
@@ -1991,6 +2110,15 @@
                     "config"
                 ]
             }
+        ],
+        "BSD": [
+          {
+                "Type": "HOME",
+                "Path": "midori",
+                "Signature": [
+                    "history.db"
+                ]
+            }  
         ]
     },
     "Min": {
@@ -2403,6 +2531,29 @@
             {
                 "Type": "SNAP",
                 "Path": "opera-developer/current/.config/opera-developer",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ],
+        "BSD": [
+            {
+                "Type": "HOME",
+                "Path": "opera",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "HOME",
+                "Path": "opera-beta",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "HOME",
+                "Path": "opera-developer",
                 "Signature": [
                     "Local State"
                 ]
@@ -3196,6 +3347,15 @@
                     "Local State"
                 ]
             }
+        ],
+        "BSD": [
+            {
+                "Type": "HOME",
+                "Path": "ungoogled-chromium",
+                "Signature": [
+                    "Local State"
+                ]
+            }
         ]
     },
     "Undetectable": {
@@ -3282,6 +3442,22 @@
             {
                 "Type": "SNAP",
                 "Path": "vivaldi/current/.config/vivaldi",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ],
+        "BSD": [
+            {
+                "Type": "HOME",
+                "Path": "vivaldi",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "HOME",
+                "Path": "vivaldi-snapshot",
                 "Signature": [
                     "Local State"
                 ]
@@ -3390,6 +3566,15 @@
             {
                 "Type": "SNAP",
                 "Path": "epiphany/current/.local/share/epiphany",
+                "Signature": [
+                    "ephy-history.db"
+                ]
+            }
+        ],
+        "BSD": [
+            {
+                "Type": "HOME",
+                "Path": ".local/share/epiphany",
                 "Signature": [
                     "ephy-history.db"
                 ]
