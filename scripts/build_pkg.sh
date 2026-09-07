@@ -73,7 +73,9 @@ install -d \
 cp -a "$appdir/usr/bin/." "$package_root/usr/local/atlas/"
 
 # Desktop integration
-install -Dm644 "$project_root/assets/icons/Icon.svg" "$package_root/usr/local/atlas/atlas.svg"
+icon_dir="$package_root/usr/local/share/icons/hicolor/scalable/apps"
+mkdir -p "$icon_dir"
+install -Dm644 "$project_root/assets/icons/Icon.svg" "$icon_dir/atlas.svg"
 
 # Create a shell wrapper for launching the application
 cat << 'EOF' > "$package_root/usr/local/bin/atlas"
@@ -88,7 +90,7 @@ cat << 'EOF' > "$package_root/usr/local/share/applications/atlas.desktop"
 Name=Atlas
 Comment=Browser profile backup application
 Exec=/usr/local/bin/atlas
-Icon=/usr/local/atlas/atlas.svg
+Icon=/usr/local/share/icons/hicolor/scalable/apps/atlas.svg
 Terminal=false
 Type=Application
 Categories=Utility;Archiving;
@@ -106,16 +108,19 @@ desc: "Atlas is a browser profile backup application."
 maintainer: "Atlas Developers"
 categories: ["sysutils"]
 www: "https://github.com/JunimoByte/atlas"
-prefix: "/usr/local"
+prefix: "/"
 EOF
 
 mkdir -p "$output_dir"
 temporary_dir="$(mktemp -d "$project_root/build/pkg-package.XXXXXX")"
 trap 'rm -rf -- "$temporary_dir"' EXIT
 
-pkg create -M "$package_root/+MANIFEST" -r "$package_root" -o "$temporary_dir"
+plist_file="$temporary_dir/plist"
+(cd "$package_root" && find . -type f -o -type l | sed -e 's/^\.\///' | grep -v '^+MANIFEST$') > "$plist_file"
 
-pkg_file=\$(ls "$temporary_dir"/*.pkg 2>/dev/null | head -n 1)
+pkg create -M "$package_root/+MANIFEST" -p "$plist_file" -r "$package_root" -o "$temporary_dir"
+
+pkg_file=$(ls "$temporary_dir"/*.pkg 2>/dev/null | head -n 1)
 if [[ -f "$pkg_file" ]]; then
     mv -f -- "$pkg_file" "$output"
 else
