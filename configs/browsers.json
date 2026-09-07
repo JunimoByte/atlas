@@ -3605,6 +3605,15 @@
                     "profiles.ini"
                 ]
             }
+        ],
+        "BSD": [
+            {
+                "Type": "HOME",
+                "Path": ".waterfox",
+                "Signature": [
+                    "profiles.ini"
+                ]
+            }
         ]
     },
     "WaveBrowser": {
@@ -3817,6 +3826,15 @@
             {
                 "Type": "SNAP",
                 "Path": "zen-browser-snap/common/.zen",
+                "Signature": [
+                    "profiles.ini"
+                ]
+            }
+        ],
+        "BSD": [
+            {
+                "Type": "HOME",
+                "Path": "zen",
                 "Signature": [
                     "profiles.ini"
                 ]
