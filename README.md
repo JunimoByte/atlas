@@ -24,7 +24,7 @@ Atlas creates portable ZIP backups of browser profiles while not writing to any 
 - Supports 250+ Chromium, Gecko, and legacy browser variants.
 - Excludes caches and temporary data, often reducing a 1 GB+ profile to about 100 MB while preserving settings, history, and bookmarks.
 - Uses a strictly read-only source model and atomically creates ZIP archives in a user-selected location.
-- Supports Windows 7 through 11, Linux (glibc 2.31+), Windows portable executables, Linux AppImage and Debian packages, and Python-package installs.
+- Supports Windows 7 through 11, Linux (glibc 2.31+), FreeBSD/GhostBSD, Windows portable executables, Linux AppImage, Debian packages, FreeBSD pkg packages, and Python-package installs.
 - CI builds the Linux payload and runs Atlas tests in a network-disabled container; startup networking attempts fail the build.
 
 ## Requirements
@@ -32,14 +32,15 @@ Atlas creates portable ZIP backups of browser profiles while not writing to any 
 - Python 3.8+
 - PyQt6 6.0+ (PyQt5 is the fallback for Windows 7)
 - Linux builds: glibc 2.31+; Ubuntu 20.04 LTS is the preferred baseline
+- FreeBSD/GhostBSD builds require system Python and Qt packages (`py312-qt6-pyqt` etc.)
 
-For Linux builds, first run:
+For Linux or FreeBSD builds, first run:
 
 ```bash
 source scripts/setup_dev.sh
 ```
 
-The setup script checks XCB/XWayland libraries for reliable Qt startup and asks before installing missing dependencies.
+The setup script checks XCB/XWayland libraries for reliable Qt startup and automatically configures safe virtual environments matching the system Python version on BSD.
 
 ## Install and run
 
@@ -105,6 +106,22 @@ Install a built package with:
 
 ```bash
 sudo apt install ./dist/Atlas-x86_64.deb
+```
+
+### FreeBSD pkg package
+
+```bash
+bash scripts/build_pkg.sh
+```
+
+This creates an artifact such as `dist/Atlas-amd64.pkg`. It extracts the same
+PyInstaller payload into a native FreeBSD package, registers the XDG
+desktop icon natively, and binds to `/usr/local/`.
+
+Install a built package with:
+
+```bash
+sudo pkg add ./dist/Atlas-amd64.pkg
 ```
 
 ## Structure
