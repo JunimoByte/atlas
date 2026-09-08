@@ -822,6 +822,17 @@
             }
         ]
     },
+    "Cachy Browser": {
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": ".cachy",
+                "Signature": [
+                    "profiles.ini"
+                ]
+            }
+        ]
+    },
     "Carbon": {
         "Windows": [
             {
@@ -1550,6 +1561,15 @@
                 "Path": "Mozilla/icecat/Profiles",
                 "Signature": false
             }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": ".mozilla/icecat",
+                "Signature": [
+                    "profiles.ini"
+                ]
+            }
         ]
     },
     "Ghost Browser": {
@@ -2114,6 +2134,15 @@
                 "Type": "APPDATA",
                 "Path": "mercury/Profiles",
                 "Signature": false
+            }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": ".mercury",
+                "Signature": [
+                    "profiles.ini"
+                ]
             }
         ]
     },
@@ -3474,6 +3503,22 @@
             {
                 "Type": "APPDATA",
                 "Path": "Vieb",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "Vieb",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "dev.vieb.Vieb/config/Vieb",
                 "Signature": [
                     "Local State"
                 ]
