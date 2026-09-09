@@ -26,26 +26,32 @@ LOGGER = logging.getLogger(__name__)
 # =============================================================================
 
 
-def safe_zipinfo_date(file_path: Path) -> Tuple[int, int, int, int, int, int]:
+def safe_zipinfo_date(
+    file_path: Path, mtime: Optional[float] = None
+) -> Tuple[int, int, int, int, int, int]:
     """Return a safe datetime tuple for ZIP (year >= 1980).
 
     Args:
         file_path (Path): Path to the file.
+        mtime (Optional[float]): Pre-fetched modification timestamp.
+            If None, stat() is called to obtain it.
 
     Returns:
         Tuple[int, int, int, int, int, int]: Date tuple (Y, M, D, h, m, s).
 
     """
     try:
-        mtime = datetime.fromtimestamp(file_path.stat().st_mtime)
-        year = max(1980, min(mtime.year, 2107))
+        if mtime is None:
+            mtime = file_path.stat().st_mtime
+        dt = datetime.fromtimestamp(mtime)
+        year = max(1980, min(dt.year, 2107))
         return (
             year,
-            mtime.month,
-            mtime.day,
-            mtime.hour,
-            mtime.minute,
-            mtime.second,
+            dt.month,
+            dt.day,
+            dt.hour,
+            dt.minute,
+            dt.second,
         )
     except Exception as error:
         LOGGER.debug(
@@ -104,7 +110,7 @@ def create_zip_info(file_path: Path) -> zipfile.ZipInfo:
     zi = zipfile.ZipInfo()
     try:
         st = file_path.stat()
-        zi.date_time = safe_zipinfo_date(file_path)
+        zi.date_time = safe_zipinfo_date(file_path, st.st_mtime)
         zi.external_attr = set_file_permissions(st.st_mode)
     except Exception as error:
         LOGGER.debug(

@@ -14,7 +14,7 @@ from enum import Enum
 from typing import Any, Dict, Optional, Tuple
 
 from atlas.compatibility.qt import QtCore, QtGui, QtWidgets
-from atlas.display.controller import Controller
+from atlas.display.controller import Controller, ControllerState
 from atlas.display.controls import (
     _get_button,
     configure_button,
@@ -349,11 +349,22 @@ class Window(QtWidgets.QDialog):
         # re-enter the event loop.
         QtCore.QCoreApplication.processEvents()
 
-        self.controller.cancel_backup()
+        # processEvents() may have delivered the thread-finished signal,
+        # which already transitioned the FSM out of RUNNING.  Only
+        # request cancellation if the pipeline is still active.
+        if self.controller.state == ControllerState.RUNNING:
+            self.controller.cancel_backup()
 
     # =========================================================================
     # DIALOGUE & EVENTS
     # =========================================================================
+
+    def reject(self) -> None:
+        """Handle Escape key or native dialog reject gracefully."""
+        if self.controller.state == ControllerState.RUNNING:
+            self._handle_cancel_button()
+        else:
+            super().reject()
 
     def closeEvent(self, event: Any) -> None:  # noqa: N802
         """Handle cleanup on close."""

@@ -85,9 +85,9 @@ def _validate_profile_path(
     path: Path, signature: Union[str, List[str], None, bool]
 ) -> Optional[str]:
     """Validate profile path contains required signature(s)."""
-    # Normalize path to lowercase for Windows case-insensitivity
+    # Normalize path for platform-appropriate case comparison
     cache_key = (
-        str(path).lower(),
+        os.path.normcase(str(path)),
         tuple(signature) if isinstance(signature, list) else signature,
     )
     if cache_key in _PATH_CACHE:
@@ -202,7 +202,7 @@ def find_profile(
         for location in candidate_paths:
             result = _validate_profile_path(location, signature_file)
             if result:
-                norm_path = result.lower()
+                norm_path = os.path.normcase(result)
                 if norm_path not in seen_paths:
                     valid_profiles.append(result)
                     seen_paths.add(norm_path)
@@ -231,7 +231,7 @@ def get_browser_name_from_path(
     if browsers_data is None:
         browsers_data = browsers_list.grab()
 
-    path_lower = str(Path(path_str)).lower()
+    path_lower = os.path.normcase(str(Path(path_str)))
 
     for name, systems in browsers_data.items():
         for os_name, entries in systems.items():
@@ -249,7 +249,9 @@ def get_browser_name_from_path(
 
                 for location in candidate_paths:
                     resolved = _validate_profile_path(location, signature)
-                    if resolved and path_lower.startswith(resolved.lower()):
+                    if resolved and path_lower.startswith(
+                        os.path.normcase(resolved)
+                    ):
                         return name
 
     return "Unknown"

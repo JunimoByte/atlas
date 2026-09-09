@@ -13,7 +13,8 @@ Atlas is intended to run on Linux (glibc 2.31+) and Windows 7 or later. The
 supported runtime is Python 3.8 or newer. Qt is supplied by PyQt6 when
 available, with PyQt5 selected as a fallback. Ubuntu 20.04 LTS is the
 recommended Linux build baseline because it provides a broad compatibility
-foundation for newer Linux desktop systems.
+foundation for newer Linux desktop systems. For BSD systems, it is recommended
+to compile on FreeBSD 13+ or GhostBSD 22+.
 
 Linux configuration is performed before the Qt binding is imported. Atlas uses
 XWayland/XCB for stable decorations and window flags, including on tiling
@@ -105,7 +106,8 @@ tests and headless code through `backup.runner.run_pipeline`.
 
 Browser definitions come from `configs/browsers.json`; path expansion types
 come from `configs/types.json`. `lib.browsers.verify_entries` validates and
-caches these files during startup, then exposes a read-only mapping.
+caches the browser list during startup, while `backup.profile` loads and caches
+the path types. Both expose their results transparently.
 
 OS keys in these configuration files (`Windows`, `Linux`, `Macos`, `BSD`) are
 agnostic. They are mapped dynamically via `lib.system.normalize_os_key` to match

@@ -55,27 +55,48 @@ def test_open_folder_with_valid_path(temp_folder: Path) -> None:
         mock_open.assert_called_once_with(temp_folder)
 
 
-def test_open_folder_none_uses_archive(
+def test_open_folder_none_uses_zip_output_dir(
     tmp_path: Path,
 ) -> None:
-    """Verify the fallback to the default archive directory."""
+    """Verify fallback to ZIP_OUTPUT_DIR when it has been set by a prior run."""
     fake_dir = tmp_path / "archive_dir"
     fake_dir.mkdir()
-    with patch.object(Archive, "get_zip_output_dir", return_value=fake_dir):
+    with patch.object(Archive, "ZIP_OUTPUT_DIR", fake_dir):
         with patch("atlas.lib.integration._open_folder_platform") as mock_open:
             integration.open_folder(None)
             mock_open.assert_called_once_with(fake_dir)
 
 
+def test_open_folder_none_uses_default_output_dir(
+    tmp_path: Path,
+) -> None:
+    """Verify fallback to _get_default_output_dir when ZIP_OUTPUT_DIR is None."""
+    fake_dir = tmp_path / "default_dir"
+    fake_dir.mkdir()
+    with patch.object(Archive, "ZIP_OUTPUT_DIR", None):
+        with patch.object(
+            Archive, "_get_default_output_dir", return_value=fake_dir
+        ):
+            with patch(
+                "atlas.lib.integration._open_folder_platform"
+            ) as mock_open:
+                integration.open_folder(None)
+                mock_open.assert_called_once_with(fake_dir)
+
+
 def test_open_folder_none_and_archive_none(
     mock_warning: MagicMock,
 ) -> None:
-    """Verify that a warning is shown if no path is available."""
-    with patch.object(Archive, "get_zip_output_dir", return_value=None):
-        integration.open_folder(None)
-        mock_warning.assert_called_once()
-        args = mock_warning.call_args[1]
-        assert "Folder Not Found" in args["message"]
+    """Verify that a warning is shown if no path resolves to an existing folder."""
+    missing = Path("/tmp/_atlas_nonexistent_12345")
+    with patch.object(Archive, "ZIP_OUTPUT_DIR", None):
+        with patch.object(
+            Archive, "_get_default_output_dir", return_value=missing
+        ):
+            integration.open_folder(None)
+            mock_warning.assert_called_once()
+            args = mock_warning.call_args[1]
+            assert "Folder Not Found" in args["message"]
 
 
 def test_open_folder_missing_folder(
@@ -93,7 +114,7 @@ def test_open_folder_missing_folder(
     [
         ("windows", "os.startfile"),
         ("darwin", "subprocess.call"),
-        ("linux", "subprocess.Popen"),
+        ("linux", "subprocess.run"),
     ],
 )
 def test_open_folder_platform_calls(
@@ -113,11 +134,26 @@ def test_open_folder_platform_calls(
                 integration._open_folder_platform(folder)
                 mock_sub.assert_called_once()
                 assert str(folder) in mock_sub.call_args[0][0]
-        else:  # subprocess.Popen
-            with patch("subprocess.Popen") as mock_popen:
-                integration._open_folder_platform(folder)
-                mock_popen.assert_called_once()
-                assert str(folder) in mock_popen.call_args[0][0]
+        else:  # subprocess.run via threading
+            with patch("subprocess.run") as mock_run:
+                with patch("threading.Thread") as mock_thread_class:
+                    # Capture the target function passed to Thread
+                    mock_thread_instance = MagicMock()
+                    mock_thread_class.return_value = mock_thread_instance
+                    
+                    integration._open_folder_platform(folder)
+                    
+                    # Verify thread was created and started
+                    mock_thread_class.assert_called_once()
+                    mock_thread_instance.start.assert_called_once()
+                    
+                    # Extract the target and run it synchronously
+                    target = mock_thread_class.call_args[1].get("target")
+                    if target:
+                        target()
+                        
+                    mock_run.assert_called_once()
+                    assert str(folder) in mock_run.call_args[0][0]
 
 
 def test_open_folder_handles_exception(

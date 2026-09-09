@@ -267,8 +267,10 @@ def _parse_xdg_user_dirs_file() -> Optional[Path]:
 
     The file is typically located at
     ``$XDG_CONFIG_HOME/user-dirs.dirs`` or, when that variable
-    is unset, ``~/.config/user-dirs.dirs``.  Lines have the
-    format ``XDG_DOWNLOAD_DIR="$HOME/Downloads"``.
+    is unset, ``~/.config/user-dirs.dirs``.  Lines usually have the
+    format ``XDG_DOWNLOAD_DIR="$HOME/Downloads"``, but single quotes
+    and unquoted paths are fully supported, alongside proper POSIX
+    environment variable expansion.
 
     Returns:
         Optional[Path]: Parsed path, or None if unavailable.
@@ -290,15 +292,30 @@ def _parse_xdg_user_dirs_file() -> Optional[Path]:
         LOGGER.debug("Could not read %s: %s", dirs_file, error)
         return None
 
-    pattern = re.compile(r'^XDG_DOWNLOAD_DIR\s*=\s*"(.+)"', re.MULTILINE)
+    # Allow double quotes, single quotes, or no quotes
+    pattern = re.compile(
+        r"^XDG_DOWNLOAD_DIR\s*=\s*(?:\"([^\"]*)\"|'([^']*)'|([^#\n]+))",
+        re.MULTILINE,
+    )
     match = pattern.search(content)
     if match is None:
         LOGGER.debug("XDG_DOWNLOAD_DIR not found in %s", dirs_file)
         return None
 
-    raw_value = match.group(1)
-    expanded = raw_value.replace("$HOME", str(Path.home()))
-    resolved = Path(expanded).expanduser()
+    # Get whichever capture group matched
+    raw_value = match.group(1) or match.group(2) or match.group(3)
+    if raw_value is None:
+        return None
+    
+    raw_value = raw_value.strip()
+
+    # Safely expand $HOME and ${HOME}. Using replace ensures we don't depend
+    # on os.environ having HOME set (which expandvars relies on).
+    home_str = str(Path.home())
+    expanded = raw_value.replace("${HOME}", home_str).replace("$HOME", home_str)
+    
+    # Safely expand other environment variables and ~ constructs
+    resolved = Path(os.path.expandvars(expanded)).expanduser()
 
     if not resolved.is_absolute():
         LOGGER.debug(

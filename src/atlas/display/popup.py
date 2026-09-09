@@ -14,6 +14,7 @@ from typing import Optional
 
 from atlas.compatibility.qt import QtCore, QtGui, QtWidgets
 from atlas.lib.themes import apply as _apply_theme
+from atlas.lib.themes import icon as _apply_icon
 
 # =============================================================================
 # LOGGING
@@ -121,6 +122,7 @@ def show(
 
         try:
             _apply_theme(msg)
+            _apply_icon(msg)
         except Exception as error:
             LOGGER.debug("Theme application failed: %s", error)
 

@@ -45,7 +45,14 @@ def open_folder(folder_path: Optional[Path] = None) -> None:
     """
     try:
         if folder_path is None:
-            folder_path = Archive.get_zip_output_dir()
+            # Use the raw stored path or compute the default without calling
+            # get_zip_output_dir(), which always calls mkdir() and would
+            # silently recreate a folder the user just deleted.
+            folder_path = (
+                Archive.ZIP_OUTPUT_DIR
+                if Archive.ZIP_OUTPUT_DIR is not None
+                else Archive._get_default_output_dir()
+            )
 
         if folder_path is None:
             LOGGER.warning("No folder path available to open")
@@ -118,8 +125,9 @@ def _open_folder_platform(folder_path: Path) -> None:
     Dispatches to the appropriate OS command:
     - Windows: ``os.startfile``
     - macOS:   ``open``
-    - Linux:   ``xdg-open`` (LD_LIBRARY_PATH stripped for
-      PyInstaller compatibility)
+    - Linux:   ``xdg-open`` (Executed in a daemon thread to prevent
+      zombie processes and GUI freezing, with LD_LIBRARY_PATH
+      stripped for PyInstaller compatibility)
 
     Args:
         folder_path (Path): Absolute path to open.
@@ -141,9 +149,21 @@ def _open_folder_platform(folder_path: Path) -> None:
         # interfere with the file manager's own shared libraries.
         env = os.environ.copy()
         env.pop("LD_LIBRARY_PATH", None)
-        subprocess.Popen(
-            ["xdg-open", str(folder_path)],
-            env=env,
-            start_new_session=True,
-            close_fds=True,
-        )
+        import threading
+
+        def _run_xdg_open() -> None:
+            try:
+                # subprocess.run waits for the process to exit, preventing zombies.
+                # Running it in a daemon thread prevents it from blocking the GUI
+                # if xdg-open takes a moment to detach or execute.
+                subprocess.run(
+                    ["xdg-open", str(folder_path)],
+                    env=env,
+                    check=False,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+            except Exception as e:
+                LOGGER.debug("Failed to execute xdg-open: %s", e)
+
+        threading.Thread(target=_run_xdg_open, daemon=True).start()

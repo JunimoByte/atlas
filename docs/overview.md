@@ -15,7 +15,7 @@ Engineered for maximum portability, Atlas runs on diverse operating systems:
 *   **Windows**: 7 (see upcoming `win7` branch), 8, 10, 11.
 *   **Linux (glibc 2.31+)**: Build portable releases on Ubuntu 20.04 LTS for
     the broadest practical compatibility with newer Linux desktop systems.
-*   **FreeBSD/GhostBSD**: Native support with automated `.pkg` generation.
+*   **FreeBSD/GhostBSD**: Native support with automated `.pkg` generation (recommended to compile on FreeBSD 13+ or GhostBSD 22+).
 
 ### Linux and BSD Desktop Compatibility
 
