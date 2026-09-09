@@ -6,10 +6,11 @@ The following versions of Atlas are currently being supported with security upda
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 1.1.x   | :white_check_mark: |
-| 1.1     | :white_check_mark: |
-| 1.0.x   | :x:                |
-| < 1.0   | :x:                |
+| 1.2.x   | Yes                |
+| 1.2     | Yes                |
+| 1.1     | No                 |
+| 1.0.x   | No                 |
+| < 1.0   | No                 |
 
 ## Reporting a Vulnerability
 

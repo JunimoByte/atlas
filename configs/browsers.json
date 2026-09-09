@@ -2152,6 +2152,11 @@
                 "Type": "APPDATA",
                 "Path": "Midori/Profiles",
                 "Signature": false
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "Mozilla/Midori/Profiles",
+                "Signature": false
             }
         ],
         "Linux": [
@@ -2763,6 +2768,15 @@
                     "profiles.ini"
                 ]
             }
+        ],
+        "BSD": [
+            {
+                "Type": "HOME",
+                "Path": ".moonchild productions/pale moon",
+                "Signature": [
+                    "profiles.ini"
+                ]
+            }
         ]
     },
     "Peersky Browser": {
@@ -3010,6 +3024,15 @@
             }
         ],
         "Linux": [
+            {
+                "Type": "HOME",
+                "Path": ".mozilla/seamonkey",
+                "Signature": [
+                    "profiles.ini"
+                ]
+            }
+        ],
+        "BSD": [
             {
                 "Type": "HOME",
                 "Path": ".mozilla/seamonkey",

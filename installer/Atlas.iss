@@ -1,7 +1,7 @@
 ; Atlas Installer Script
 
 #define MyAppName "Atlas"
-#define MyAppVersion "1.1"
+#define MyAppVersion "1.2"
 #define MyAppPublisher "Michael Dorman"
 #define MyAppURL "https://junimobyte.github.io/atlas-website/"
 
