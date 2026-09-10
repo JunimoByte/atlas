@@ -302,6 +302,17 @@
             }
         ]
     },
+    "Abrowser": {
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "mozilla/abrowser",
+                "Signature": [
+                    "profiles.ini"
+                ]
+            }
+        ]
+    },
     "Ace Browser": {
         "Windows": [
             {
@@ -1281,6 +1292,26 @@
             }
         ]
     },
+    "Elinks": {
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "elinks",
+                "Signature": [
+                    "cookies"
+                ]
+            }
+        ],
+        "BSD": [
+            {
+                "Type": "HOME",
+                "Path": "elinks",
+                "Signature": [
+                    "cookies"
+                ]
+            }
+        ]
+    },
     "Elza Browser": {
         "Windows": [
             {
@@ -1572,6 +1603,17 @@
             }
         ]
     },
+    "GNU IceWeasel": {
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": ".mozilla/iceweasel",
+                "Signature": [
+                    "profiles.ini"
+                ]
+            }
+        ]
+    },
     "Ghost Browser": {
         "Windows": [
             {
@@ -1835,6 +1877,25 @@
                 "Signature": [
                     "user.config"
                 ]
+            }
+        ]
+    },
+    "Konqueror": {
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": ".local/share/konqueror",
+                "Signature": false
+            },
+            {
+                "Type": "HOME",
+                "Path": "konquerorrc",
+                "Signature": false
+            },
+            {
+                "Type": "SNAP",
+                "Path": "konqueror/current/.local/share/konqueror",
+                "Signature": false
             }
         ]
     },
@@ -3129,6 +3190,15 @@
                     "Local State"
                 ]
             }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "slimjet",
+                "Signature": [
+                    "Local State"
+                ]
+            }
         ]
     },
     "Samsung Internet": {
@@ -3302,6 +3372,17 @@
             {
                 "Type": "LOCALAPPDATA",
                 "Path": "TempestBrowser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Terminal Browser": {
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "terminal-browser*",
                 "Signature": [
                     "Local State"
                 ]
@@ -3623,6 +3704,26 @@
             }
         ]
     },
+    "Vimb": {
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": ".local/share/vimb",
+                "Signature": [
+                    "cookies.db"
+                ]
+            }
+        ],
+        "BSD": [
+            {
+                "Type": "HOME",
+                "Path": ".local/share/vimb",
+                "Signature": [
+                    "cookies.db"
+                ]
+            }
+        ]
+    },
     "Vitamin": {
         "Windows": [
             {
@@ -3917,6 +4018,22 @@
                 "Signature": [
                     "Local State"
                 ]
+            }
+        ]
+    },
+    "Zerno": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Zervo",
+                "Signature": false
+            }
+        ],
+        "Linux": [
+            {
+                "Type": "HOME",
+                "Path": "Zervo",
+                "Signature": false
             }
         ]
     }
