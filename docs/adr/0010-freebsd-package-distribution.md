@@ -15,12 +15,18 @@ FreeBSD has a robust native package manager (`pkg`) that utilizes `.pkg` archive
 
 ## Decision
 
-We will automate the creation of native FreeBSD `.pkg` installers via a dedicated script (`scripts/build_pkg.sh`).
+We support two distribution methods for FreeBSD:
+
+### 1. Native FreeBSD Packages (.pkg)
+We automate the creation of native FreeBSD `.pkg` installers via a dedicated script (`scripts/build_pkg.sh`).
 
 1. **Reuse Existing PyInstaller Payloads**: To ensure consistency across Unix-like systems and keep build times down, we utilize the exact same `onedir` payload built during the PyInstaller Linux/BSD freezing step.
-2. **Native Tooling**: We use FreeBSD's native `pkg create` utility instead of relying on third-party packaging abstraction layers (e.g., FPM). 
-3. **Dynamic Packing List (`plist`)**: `pkg create` requires an explicit file manifest. Since PyInstaller's outputs frequently shift based on Python dependencies, `build_pkg.sh` dynamically generates the `plist` by scanning the temporary packaging directory, preventing "Missing File" packaging faults while rejecting extraneous metadata like the `+MANIFEST` itself.
-4. **Standardized XDG Desktop Integration**: The build script embeds XDG-compliant absolute paths into the `/usr/local/share/applications/atlas.desktop` configuration and writes the icon SVG into `/usr/local/share/icons/hicolor/scalable/apps/`. This enforces compatibility with FreeBSD-centric desktop environments like MATE and bypasses system icon themes that might intercept ambiguous generic names (e.g., "atlas").
+2. **Native Tooling**: We use FreeBSD's native `pkg create` utility.
+3. **Dynamic Packing List (`plist`)**: `pkg create` requires an explicit file manifest. `build_pkg.sh` dynamically generates this `plist`.
+4. **Standardized XDG Desktop Integration**: The build script embeds XDG-compliant absolute paths into the desktop configuration.
+
+### 2. Standalone Portable Executable (install_bsd.sh)
+Because `.pkg` files enforce strict ABI architecture checks (e.g., FreeBSD 13 vs 14), distributing a pre-compiled `.pkg` file directly to users often fails. To bypass this, we distribute the standalone PyInstaller binary (`Atlas-x86_64-Portable`) alongside `install_bsd.sh`. This script installs the necessary compatibility packages (like `compat13x-amd64`) and mimics the `.pkg` desktop integration by moving the binary to `/usr/local/bin`.
 
 ## Consequences
 

@@ -285,7 +285,7 @@ class Pipeline:
 
     def estimate_size(self, browser_matches: Dict[str, List[str]]) -> int:
         """Estimate total size of profiles in bytes.
-        
+
         Sizes are cached per unique path to avoid scanning the same folder
         multiple times, but the final sum accounts for shared paths being
         written to multiple ZIP archives.

@@ -58,7 +58,7 @@ def test_open_folder_with_valid_path(temp_folder: Path) -> None:
 def test_open_folder_none_uses_zip_output_dir(
     tmp_path: Path,
 ) -> None:
-    """Verify fallback to ZIP_OUTPUT_DIR when it has been set by a prior run."""
+    """Verify fallback to ZIP_OUTPUT_DIR from a prior run."""
     fake_dir = tmp_path / "archive_dir"
     fake_dir.mkdir()
     with patch.object(Archive, "ZIP_OUTPUT_DIR", fake_dir):
@@ -70,7 +70,7 @@ def test_open_folder_none_uses_zip_output_dir(
 def test_open_folder_none_uses_default_output_dir(
     tmp_path: Path,
 ) -> None:
-    """Verify fallback to _get_default_output_dir when ZIP_OUTPUT_DIR is None."""
+    """Verify fallback to _get_default_output_dir."""
     fake_dir = tmp_path / "default_dir"
     fake_dir.mkdir()
     with patch.object(Archive, "ZIP_OUTPUT_DIR", None):
@@ -87,7 +87,7 @@ def test_open_folder_none_uses_default_output_dir(
 def test_open_folder_none_and_archive_none(
     mock_warning: MagicMock,
 ) -> None:
-    """Verify that a warning is shown if no path resolves to an existing folder."""
+    """Verify warning is shown if no path resolves."""
     missing = Path("/tmp/_atlas_nonexistent_12345")
     with patch.object(Archive, "ZIP_OUTPUT_DIR", None):
         with patch.object(
@@ -140,18 +140,18 @@ def test_open_folder_platform_calls(
                     # Capture the target function passed to Thread
                     mock_thread_instance = MagicMock()
                     mock_thread_class.return_value = mock_thread_instance
-                    
+
                     integration._open_folder_platform(folder)
-                    
+
                     # Verify thread was created and started
                     mock_thread_class.assert_called_once()
                     mock_thread_instance.start.assert_called_once()
-                    
+
                     # Extract the target and run it synchronously
                     target = mock_thread_class.call_args[1].get("target")
                     if target:
                         target()
-                        
+
                     mock_run.assert_called_once()
                     assert str(folder) in mock_run.call_args[0][0]
 

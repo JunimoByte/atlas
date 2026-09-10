@@ -70,7 +70,7 @@ def _validate_entry(
     return errors
 
 
-def verify_entries(
+def verify_entries(  # noqa: C901
     browsers_json: Optional[Dict[str, Any]] = None,
 ) -> bool:
     """Load and validate browser configuration.

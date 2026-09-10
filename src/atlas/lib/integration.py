@@ -153,9 +153,9 @@ def _open_folder_platform(folder_path: Path) -> None:
 
         def _run_xdg_open() -> None:
             try:
-                # subprocess.run waits for the process to exit, preventing zombies.
-                # Running it in a daemon thread prevents it from blocking the GUI
-                # if xdg-open takes a moment to detach or execute.
+                # subprocess.run waits for the process to exit, preventing
+                # zombies. Running it in a daemon thread prevents blocking
+                # the GUI if xdg-open takes a moment to detach or execute.
                 subprocess.run(
                     ["xdg-open", str(folder_path)],
                     env=env,

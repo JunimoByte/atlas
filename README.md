@@ -37,10 +37,11 @@ Atlas creates portable ZIP backups of browser profiles while not writing to any 
 For Linux or FreeBSD builds, first run:
 
 ```bash
+# If using fish, switch to bash or zsh first: bash
 source scripts/setup_dev.sh
 ```
 
-The setup script checks XCB/XWayland libraries for reliable Qt startup and automatically configures safe virtual environments matching the system Python version on BSD.
+The setup script requires a POSIX-compliant shell (`bash` or `zsh`). It checks XCB/XWayland libraries for reliable Qt startup and automatically configures safe virtual environments matching the system Python version on BSD.
 
 ## Install and run
 
@@ -123,6 +124,18 @@ Install a built package with:
 ```bash
 sudo pkg add ./dist/Atlas-amd64.pkg
 ```
+
+### FreeBSD/GhostBSD portable executable
+
+If distributing a standalone portable binary, use the included installer script to bypass strict `.pkg` architecture mismatch errors across major FreeBSD releases. Package `Atlas-x86_64-Portable`, `Icon.svg`, and `scripts/install_bsd.sh` into a single zip file. Users extract it and run:
+
+```bash
+sh install_bsd.sh
+```
+
+*(Note: Do not use the `source` command to run this installer, as it replaces the current process with `sudo` and will terminate your interactive shell).*
+
+This handles dependency checks (e.g. `compat13x-amd64` for older binaries on newer operating systems) and integrates the app natively into `/usr/local/`.
 
 ## Structure
 
