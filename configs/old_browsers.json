@@ -66,29 +66,6 @@
                     "Local State"
                 ]
             }
-        ],
-        "BSD": [
-            {
-                "Type": "HOME",
-                "Path": "google-chrome",
-                "Signature": [
-                    "Local State"
-                ]
-            },
-            {
-                "Type": "HOME",
-                "Path": "google-chrome-beta",
-                "Signature": [
-                    "Local State"
-                ]
-            },
-            {
-                "Type": "HOME",
-                "Path": "google-chrome-unstable",
-                "Signature": [
-                    "Local State"
-                ]
-            }
         ]
     },
     "Firefox": {
@@ -127,22 +104,6 @@
             {
                 "Type": "SNAP",
                 "Path": "firefox/common/.mozilla/firefox",
-                "Signature": [
-                    "profiles.ini"
-                ]
-            }
-        ],
-        "BSD": [
-            {
-                "Type": "HOME",
-                "Path": ".mozilla/firefox",
-                "Signature": [
-                    "profiles.ini"
-                ]
-            },
-            {
-                "Type": "HOME",
-                "Path": "mozilla/firefox",
                 "Signature": [
                     "profiles.ini"
                 ]
@@ -195,15 +156,6 @@
                     "Local State"
                 ]
             },
-            {
-                "Type": "HOME",
-                "Path": "microsoft-edge",
-                "Signature": [
-                    "Local State"
-                ]
-            }
-        ],
-        "BSD": [
             {
                 "Type": "HOME",
                 "Path": "microsoft-edge",
@@ -298,17 +250,6 @@
                 "Path": "7Star/7Star/User Data",
                 "Signature": [
                     "Local State"
-                ]
-            }
-        ]
-    },
-    "Abrowser": {
-        "Linux": [
-            {
-                "Type": "HOME",
-                "Path": "mozilla/abrowser",
-                "Signature": [
-                    "profiles.ini"
                 ]
             }
         ]
@@ -748,29 +689,6 @@
                     "Local State"
                 ]
             }
-        ],
-        "BSD": [
-            {
-                "Type": "HOME",
-                "Path": "BraveSoftware/Brave-Browser",
-                "Signature": [
-                    "Local State"
-                ]
-            },
-            {
-                "Type": "HOME",
-                "Path": "BraveSoftware/Brave-Browser-Beta",
-                "Signature": [
-                    "Local State"
-                ]
-            },
-            {
-                "Type": "HOME",
-                "Path": "BraveSoftware/Brave-Browser-Nightly",
-                "Signature": [
-                    "Local State"
-                ]
-            }
         ]
     },
     "Brave Origin": {
@@ -784,15 +702,6 @@
             }
         ],
         "Linux": [
-            {
-                "Type": "HOME",
-                "Path": "BraveSoftware/Brave-Origin",
-                "Signature": [
-                    "Local State"
-                ]
-            }
-        ],
-        "BSD": [
             {
                 "Type": "HOME",
                 "Path": "BraveSoftware/Brave-Origin",
@@ -829,17 +738,6 @@
                 "Path": "app.bushido-browser.desktop/EBWebView",
                 "Signature": [
                     "Local State"
-                ]
-            }
-        ]
-    },
-    "Cachy Browser": {
-        "Linux": [
-            {
-                "Type": "HOME",
-                "Path": ".cachy",
-                "Signature": [
-                    "profiles.ini"
                 ]
             }
         ]
@@ -964,15 +862,6 @@
             {
                 "Type": "SNAP",
                 "Path": "chromium/common/chromium",
-                "Signature": [
-                    "Local State"
-                ]
-            }
-        ],
-        "BSD": [
-            {
-                "Type": "HOME",
-                "Path": "chromium",
                 "Signature": [
                     "Local State"
                 ]
@@ -1218,17 +1107,6 @@
             }
         ]
     },
-    "Dooble": {
-        "Linux": [
-            {
-                "Type": "HOME",
-                "Path": ".dooble",
-                "Signature": [
-                    "dooble_cookies.db"
-                ]
-            }
-        ]
-    },
     "DuckDuckGo": {
         "Windows": [
             {
@@ -1255,13 +1133,6 @@
         "Windows": [
             {
                 "Type": "USERPROFILE",
-                "Path": ".dillo",
-                "Signature": false
-            }
-        ],
-        "Linux": [
-            {
-                "Type": "HOME",
                 "Path": ".dillo",
                 "Signature": false
             }
@@ -1310,26 +1181,6 @@
             }
         ]
     },
-    "Elinks": {
-        "Linux": [
-            {
-                "Type": "HOME",
-                "Path": "elinks",
-                "Signature": [
-                    "cookies"
-                ]
-            }
-        ],
-        "BSD": [
-            {
-                "Type": "HOME",
-                "Path": "elinks",
-                "Signature": [
-                    "cookies"
-                ]
-            }
-        ]
-    },
     "Elza Browser": {
         "Windows": [
             {
@@ -1357,41 +1208,24 @@
             {
                 "Type": "LOCALAPPDATA",
                 "Path": "falkon/profiles",
-                "Signature": [
-                    "profiles.ini"
-                ]
+                "Signature": false
             }
         ],
         "Linux": [
             {
                 "Type": "HOME",
                 "Path": ".config/falkon/profiles",
-                "Signature": [
-                    "profiles.ini"
-                ]
+                "Signature": false
             },
             {
                 "Type": "FLATPAK",
                 "Path": "org.kde.falkon/config/falkon/profiles",
-                "Signature": [
-                    "profiles.ini"
-                ]
+                "Signature": false
             },
             {
                 "Type": "SNAP",
                 "Path": "falkon/current/.config/falkon/profiles",
-                "Signature": [
-                    "profiles.ini"
-                ]
-            }
-        ],
-        "BSD": [
-            {
-                "Type": "HOME",
-                "Path": ".config/falkon/profiles",
-                "Signature": [
-                    "profiles.ini"
-                ]
+                "Signature": false
             }
         ]
     },
@@ -1609,26 +1443,6 @@
                 "Type": "APPDATA",
                 "Path": "Mozilla/icecat/Profiles",
                 "Signature": false
-            }
-        ],
-        "Linux": [
-            {
-                "Type": "HOME",
-                "Path": ".mozilla/icecat",
-                "Signature": [
-                    "profiles.ini"
-                ]
-            }
-        ]
-    },
-    "GNU IceWeasel": {
-        "Linux": [
-            {
-                "Type": "HOME",
-                "Path": ".mozilla/iceweasel",
-                "Signature": [
-                    "profiles.ini"
-                ]
             }
         ]
     },
@@ -1898,25 +1712,6 @@
             }
         ]
     },
-    "Konqueror": {
-        "Linux": [
-            {
-                "Type": "HOME",
-                "Path": ".local/share/konqueror",
-                "Signature": false
-            },
-            {
-                "Type": "HOME",
-                "Path": "konquerorrc",
-                "Signature": false
-            },
-            {
-                "Type": "SNAP",
-                "Path": "konqueror/current/.local/share/konqueror",
-                "Signature": false
-            }
-        ]
-    },
     "Kosmik": {
         "Windows": [
             {
@@ -1962,13 +1757,6 @@
                 "Path": "Ladybird/Profiles",
                 "Signature": false
             }
-        ],
-        "BSD": [
-            {
-                "Type": "HOME",
-                "Path": "Ladybird/Profiles",
-                "Signature": false
-            }
         ]
     },
     "Lagrange": {
@@ -1991,29 +1779,6 @@
     },
     "Links": {
         "Linux": [
-            {
-                "Type": "HOME",
-                "Path": ".links2",
-                "Signature": [
-                    "bookmarks.html"
-                ]
-            },
-            {
-                "Type": "HOME",
-                "Path": ".links",
-                "Signature": [
-                    "bookmarks.html"
-                ]
-            }
-        ],
-        "BSD": [
-            {
-                "Type": "HOME",
-                "Path": ".links",
-                "Signature": [
-                    "bookmarks.html"
-                ]
-            },
             {
                 "Type": "HOME",
                 "Path": ".links2",
@@ -2046,15 +1811,6 @@
                     "profiles.ini"
                 ]
             }
-        ],
-        "BSD": [
-            {
-                "Type": "HOME",
-                "Path": "librewolf/librewolf",
-                "Signature": [
-                    "profiles.ini"
-                ]
-            }
         ]
     },
     "LobbyBrowser": {
@@ -2075,26 +1831,6 @@
                 "Path": "Local Browser",
                 "Signature": [
                     "Cookies"
-                ]
-            }
-        ]
-    },
-    "Luakit": {
-        "Linux": [
-            {
-                "Type": "HOME",
-                "Path": ".local/share/luakit",
-                "Signature": [
-                    "cookies.db"
-                ]
-            }
-        ],
-        "BSD": [
-            {
-                "Type": "HOME",
-                "Path": ".local/share/luakit",
-                "Signature": [
-                    "cookies.db"
                 ]
             }
         ]
@@ -2214,15 +1950,6 @@
                 "Path": "mercury/Profiles",
                 "Signature": false
             }
-        ],
-        "Linux": [
-            {
-                "Type": "HOME",
-                "Path": ".mercury",
-                "Signature": [
-                    "profiles.ini"
-                ]
-            }
         ]
     },
     "Midori": {
@@ -2230,11 +1957,6 @@
             {
                 "Type": "APPDATA",
                 "Path": "Midori/Profiles",
-                "Signature": false
-            },
-            {
-                "Type": "APPDATA",
-                "Path": "Mozilla/Midori/Profiles",
                 "Signature": false
             }
         ],
@@ -2251,15 +1973,6 @@
                 "Path": "org.midori_browser.Midori/config/midori",
                 "Signature": [
                     "config"
-                ]
-            }
-        ],
-        "BSD": [
-            {
-                "Type": "HOME",
-                "Path": "midori",
-                "Signature": [
-                    "history.db"
                 ]
             }
         ]
@@ -2436,13 +2149,6 @@
                 "Path": "org.netsurf_browser.NetSurf/config/netsurf",
                 "Signature": false
             }
-        ],
-        "BSD": [
-            {
-                "Type": "HOME",
-                "Path": "netsurf",
-                "Signature": false
-            }
         ]
     },
     "Neo": {
@@ -2547,31 +2253,6 @@
                 "Path": "nOS",
                 "Signature": [
                     "Preferences"
-                ]
-            }
-        ]
-    },
-    "Nora": {
-        "Linux": [
-            {
-                "Type": "HOME",
-                "Path": "Nora",
-                "Signature": [
-                    "Local State"
-                ]
-            },
-            {
-                "Type": "FLATPAK",
-                "Path": "jp.nonbili.nora/config/Nora",
-                "Signature": [
-                    "Local State"
-                ]
-            },
-            {
-                "Type": "SNAP",
-                "Path": "nora/current/.config/Nora",
-                "Signature": [
-                    "Local State"
                 ]
             }
         ]
@@ -2710,29 +2391,6 @@
                     "Local State"
                 ]
             }
-        ],
-        "BSD": [
-            {
-                "Type": "HOME",
-                "Path": "opera",
-                "Signature": [
-                    "Local State"
-                ]
-            },
-            {
-                "Type": "HOME",
-                "Path": "opera-beta",
-                "Signature": [
-                    "Local State"
-                ]
-            },
-            {
-                "Type": "HOME",
-                "Path": "opera-developer",
-                "Signature": [
-                    "Local State"
-                ]
-            }
         ]
     },
     "Opera GX": {
@@ -2798,29 +2456,11 @@
             }
         ]
     },
-    "Otter Browser": {
+    "Otter": {
         "Windows": [
             {
                 "Type": "LOCALAPPDATA",
                 "Path": "Otter/otter",
-                "Signature": [
-                    "otter.conf"
-                ]
-            }
-        ],
-        "Linux": [
-            {
-                "Type": "HOME",
-                "Path": "otter",
-                "Signature": [
-                    "otter.conf"
-                ]
-            }
-        ],
-        "BSD": [
-            {
-                "Type": "HOME",
-                "Path": "otter",
                 "Signature": [
                     "otter.conf"
                 ]
@@ -2865,15 +2505,6 @@
             }
         ],
         "Linux": [
-            {
-                "Type": "HOME",
-                "Path": ".moonchild productions/pale moon",
-                "Signature": [
-                    "profiles.ini"
-                ]
-            }
-        ],
-        "BSD": [
             {
                 "Type": "HOME",
                 "Path": ".moonchild productions/pale moon",
@@ -2987,13 +2618,6 @@
                 "Path": "QupZilla/profiles",
                 "Signature": false
             }
-        ],
-        "Linux": [
-            {
-                "Type": "HOME",
-                "Path": "qupzilla/profiles",
-                "Signature": false
-            }
         ]
     },
     "Qutebrowser": {
@@ -3013,13 +2637,6 @@
             {
                 "Type": "FLATPAK",
                 "Path": "org.qutebrowser.qutebrowser",
-                "Signature": false
-            }
-        ],
-        "BSD": [
-            {
-                "Type": "HOME",
-                "Path": "qutebrowser",
                 "Signature": false
             }
         ]
@@ -3142,15 +2759,6 @@
                     "profiles.ini"
                 ]
             }
-        ],
-        "BSD": [
-            {
-                "Type": "HOME",
-                "Path": ".mozilla/seamonkey",
-                "Signature": [
-                    "profiles.ini"
-                ]
-            }
         ]
     },
     "Seznam cz": {
@@ -3240,15 +2848,6 @@
                     "Local State"
                 ]
             }
-        ],
-        "Linux": [
-            {
-                "Type": "HOME",
-                "Path": "slimjet",
-                "Signature": [
-                    "Local State"
-                ]
-            }
         ]
     },
     "Samsung Internet": {
@@ -3296,24 +2895,6 @@
                 "Path": "Surf",
                 "Signature": [
                     "Local State"
-                ]
-            }
-        ],
-        "Linux": [
-            {
-                "Type": "HOME",
-                "Path": ".surf",
-                "Signature": [
-                    "cookies.txt"
-                ]
-            }
-        ],
-        "BSD": [
-            {
-                "Type": "HOME",
-                "Path": ".surf",
-                "Signature": [
-                    "cookies.txt"
                 ]
             }
         ]
@@ -3422,17 +3003,6 @@
             {
                 "Type": "LOCALAPPDATA",
                 "Path": "TempestBrowser/User Data",
-                "Signature": [
-                    "Local State"
-                ]
-            }
-        ]
-    },
-    "Terminal Browser": {
-        "Linux": [
-            {
-                "Type": "HOME",
-                "Path": "terminal-browser*",
                 "Signature": [
                     "Local State"
                 ]
@@ -3610,15 +3180,6 @@
                     "Local State"
                 ]
             }
-        ],
-        "BSD": [
-            {
-                "Type": "HOME",
-                "Path": "ungoogled-chromium",
-                "Signature": [
-                    "Local State"
-                ]
-            }
         ]
     },
     "Undetectable": {
@@ -3657,22 +3218,6 @@
             {
                 "Type": "APPDATA",
                 "Path": "Vieb",
-                "Signature": [
-                    "Local State"
-                ]
-            }
-        ],
-        "Linux": [
-            {
-                "Type": "HOME",
-                "Path": "Vieb",
-                "Signature": [
-                    "Local State"
-                ]
-            },
-            {
-                "Type": "FLATPAK",
-                "Path": "dev.vieb.Vieb/config/Vieb",
                 "Signature": [
                     "Local State"
                 ]
@@ -3725,22 +3270,6 @@
                     "Local State"
                 ]
             }
-        ],
-        "BSD": [
-            {
-                "Type": "HOME",
-                "Path": "vivaldi",
-                "Signature": [
-                    "Local State"
-                ]
-            },
-            {
-                "Type": "HOME",
-                "Path": "vivaldi-snapshot",
-                "Signature": [
-                    "Local State"
-                ]
-            }
         ]
     },
     "VibeMate": {
@@ -3754,26 +3283,6 @@
             }
         ]
     },
-    "Vimb": {
-        "Linux": [
-            {
-                "Type": "HOME",
-                "Path": ".local/share/vimb",
-                "Signature": [
-                    "cookies.db"
-                ]
-            }
-        ],
-        "BSD": [
-            {
-                "Type": "HOME",
-                "Path": ".local/share/vimb",
-                "Signature": [
-                    "cookies.db"
-                ]
-            }
-        ]
-    },
     "Vitamin": {
         "Windows": [
             {
@@ -3782,22 +3291,6 @@
                 "Signature": [
                     "Local State"
                 ]
-            }
-        ]
-    },
-    "w3m": {
-        "Linux": [
-            {
-                "Type": "HOME",
-                "Path": ".w3m",
-                "Signature": false
-            }
-        ],
-        "BSD": [
-            {
-                "Type": "HOME",
-                "Path": ".w3m",
-                "Signature": false
             }
         ]
     },
@@ -3820,15 +3313,6 @@
             {
                 "Type": "FLATPAK",
                 "Path": "net.waterfox.waterfox/.waterfox",
-                "Signature": [
-                    "profiles.ini"
-                ]
-            }
-        ],
-        "BSD": [
-            {
-                "Type": "HOME",
-                "Path": ".waterfox",
                 "Signature": [
                     "profiles.ini"
                 ]
@@ -3857,7 +3341,7 @@
             }
         ]
     },
-    "Epiphany": {
+    "GNOME Web": {
         "Linux": [
             {
                 "Type": "HOME",
@@ -3890,15 +3374,6 @@
             {
                 "Type": "SNAP",
                 "Path": "epiphany/current/.local/share/epiphany",
-                "Signature": [
-                    "ephy-history.db"
-                ]
-            }
-        ],
-        "BSD": [
-            {
-                "Type": "HOME",
-                "Path": ".local/share/epiphany",
                 "Signature": [
                     "ephy-history.db"
                 ]
@@ -4049,15 +3524,6 @@
                     "profiles.ini"
                 ]
             }
-        ],
-        "BSD": [
-            {
-                "Type": "HOME",
-                "Path": "zen",
-                "Signature": [
-                    "profiles.ini"
-                ]
-            }
         ]
     },
     "ZenBrowser": {
@@ -4068,22 +3534,6 @@
                 "Signature": [
                     "Local State"
                 ]
-            }
-        ]
-    },
-    "Zerno": {
-        "Windows": [
-            {
-                "Type": "APPDATA",
-                "Path": "Zervo",
-                "Signature": false
-            }
-        ],
-        "Linux": [
-            {
-                "Type": "HOME",
-                "Path": "Zervo",
-                "Signature": false
             }
         ]
     }

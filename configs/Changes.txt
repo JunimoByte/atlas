@@ -1,0 +1,7 @@
+Added to Windows: Otter Browser, Zerno
+Changes to Windows: Midori got a new path to detect
+
+Added to Linux: Abrowser, Cachy Browser, Elinks, GNU IceCat, GNU IceWeasel, Konqueror, Luakit, Mercury, Otter Browser, FlashPeak SlimJet, Surf, Terminal Browser, Vieb, Vimb, w3m, Zerno
+Changes to Linux: Links got a new path to detect
+
+Added to Unix: Google Chrome, Firefox, Microsoft Edge, Brave Browser, Brave Origin, Chromium, Elinks, Falkon, Ladybird, Links, LibreWolf, Luakit, Midori, NetSurf, Opera, Otter Browser, Pale Moon, Qutebrowser, SeaMonkey, Surf, Ungoogled Chromium, Vivaldi, Vimb, w3m, Waterfox, GNOME Web, Zen
