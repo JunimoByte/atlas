@@ -12,7 +12,7 @@
             "%USERPROFILE%/AppData/LocalLow",
             "%USERPROFILE%/Local Settings/Application Data"
         ],
-        "UWP": [
+        "MSIX": [
             "%LOCALAPPDATA%/Packages",
             "%USERPROFILE%/Local Settings/Application Data/Packages"
         ],

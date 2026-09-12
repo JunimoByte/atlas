@@ -180,7 +180,7 @@
                 ]
             },
             {
-                "Type": "UWP",
+                "Type": "MSIX",
                 "Path": "Microsoft.MicrosoftEdge_*",
                 "Signature": [
                     "AC"
@@ -502,10 +502,10 @@
     "Anand Browser": {
         "Windows": [
             {
-                "Type": "UWP",
-                "Path": "AnandSingapore*",
+                "Type": "MSIX",
+                "Path": "AnandSingapore*/LocalState/EBWebView",
                 "Signature": [
-                    "AC"
+                    "Local State"
                 ]
             }
         ]
@@ -542,10 +542,10 @@
     "Browser Pro": {
         "Windows": [
             {
-                "Type": "UWP",
-                "Path": "*MontyInc.ChromaticBrowser_*",
+                "Type": "MSIX",
+                "Path": "*MontyInc.ChromaticBrowser_*/LocalCache/Roaming/Browser Pro*",
                 "Signature": [
-                    "AC"
+                    "Local State"
                 ]
             }
         ]
@@ -615,6 +615,17 @@
             {
                 "Type": "LOCALAPPDATA",
                 "Path": "BlackHawk/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Blazer Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Blazer/User Data",
                 "Signature": [
                     "Local State"
                 ]
@@ -809,6 +820,17 @@
                 "Path": "BriskBard",
                 "Signature": [
                     "Local State"
+                ]
+            }
+        ]
+    },
+    "Brevity Browser": {
+        "Windows": [
+            {
+                "Type": "MSIX",
+                "Path": "BrevityBrowser.BrevityBrowser_*/LocalCache/Roaming/BrevityBrowser",
+                "Signature": [
+                    "Cookies"
                 ]
             }
         ]
@@ -1085,6 +1107,17 @@
             }
         ]
     },
+    "Cronos Browser": {
+        "Windows": [
+            {
+                "Type": "MSIX",
+                "Path": "Avalw.CronosBrowse_*/LocalCache/Roaming/cronos-browser",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
     "CS Commander": {
         "Windows": [
             {
@@ -1232,10 +1265,10 @@
     "DuckDuckGo": {
         "Windows": [
             {
-                "Type": "UWP",
-                "Path": "DuckDuckGo.DesktopBrowser_*",
+                "Type": "MSIX",
+                "Path": "*DuckDuckGoInc.DuckDuckGoPrivateBrowser_*/LocalState/DDGWebView",
                 "Signature": [
-                    "AC"
+                    "Local State"
                 ]
             }
         ]
@@ -1264,6 +1297,28 @@
                 "Type": "HOME",
                 "Path": ".dillo",
                 "Signature": false
+            }
+        ]
+    },
+    "Dia": {
+        "Windows": [
+            {
+                "Type": "MSIX",
+                "Path": "TheBrowserCompany.Dia_*/LocalCache/Local/Dia/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Echo Browser": {
+        "Windows": [
+            {
+                "Type": "MSIX",
+                "Path": "*TheMockingBird.EchoBrowser_*/LocalState/EBWebView",
+                "Signature": [
+                    "Local State"
+                ]
             }
         ]
     },
@@ -1398,10 +1453,10 @@
     "Fast Internet Browser": {
         "Windows": [
             {
-                "Type": "UWP",
-                "Path": "Stollenwerk.FastInternetBrowser_*",
+                "Type": "MSIX",
+                "Path": "Stollenwerk.FastInternetBrowser_*/LocalState/EBWebView",
                 "Signature": [
-                    "AC"
+                    "Local State"
                 ]
             }
         ]
@@ -1698,6 +1753,15 @@
                 "Signature": [
                     "Local State"
                 ]
+            }
+        ]
+    },
+    "Horizon Browser": {
+        "Windows": [
+            {
+                "Type": "MSIX",
+                "Path": "Pinguin2001.HorizonBrowser_*/LocalState/EBWebView",
+                "Signature": false
             }
         ]
     },
@@ -2099,6 +2163,17 @@
             }
         ]
     },
+    "Lumio Browser": {
+        "Windows": [
+            {
+                "Type": "MSIX",
+                "Path": "LumioBrowser.LumioBrowser_*/LocalCache/Roaming/LumioBrowser",
+                "Signature": [
+                    "Cookies"
+                ]
+            }
+        ]
+    },
     "Lulumi Browser": {
         "Windows": [
             {
@@ -2141,6 +2216,17 @@
                 "Type": "LEGACY",
                 "Path": "Lumina Browser",
                 "Signature": false
+            }
+        ]
+    },
+    "LyBrowser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "LYBrowser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
             }
         ]
     },
@@ -2604,6 +2690,17 @@
             }
         ]
     },
+    "O Browser": {
+        "Windows": [
+            {
+                "Type": "MSIX",
+                "Path": "*Tronlabs.OperaticBrowser_*/LocalCache/Roaming/O-browser",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
     "OffByOne": {
         "Windows": [
             {
@@ -2620,6 +2717,17 @@
                 "Path": "OhHai Browser",
                 "Signature": [
                     "Preferences"
+                ]
+            }
+        ]
+    },
+    "Orions Browser": {
+        "Windows": [
+            {
+                "Type": "MSIX",
+                "Path": "*Myrcello.Orions_*/LocalState/Default/EBWebView",
+                "Signature": [
+                    "Local State"
                 ]
             }
         ]
@@ -3406,6 +3514,17 @@
             }
         ]
     },
+    "Tabbit": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Tabbit/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
     "TakTak": {
         "Windows": [
             {
@@ -3649,6 +3768,26 @@
                 "Signature": [
                     "Local State"
                 ]
+            }
+        ]
+    },
+    "V Browser": {
+        "Windows": [
+            {
+                "Type": "LEGACY",
+                "Path": "modern-web-browser/cef_cache",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Vuttara Browser": {
+        "Windows": [
+            {
+                "Type": "MSIX",
+                "Path": "NuttaButtaInAA.VuttaraBrowser_*/LocalCache/Roaming/Vuttara Browser Store",
+                "Signature": false
             }
         ]
     },
@@ -3916,6 +4055,15 @@
             }
         ]
     },
+    "Web Explorer": {
+        "Windows": [
+            {
+                "Type": "MSIX",
+                "Path": "*ThiagoFortes.WebExplorer_*/Profiles",
+                "Signature": false
+            }
+        ]
+    },
     "Wexond": {
         "Windows": [
             {
@@ -3936,13 +4084,24 @@
             }
         ]
     },
+    "www Web Browser": {
+        "Windows": [
+            {
+                "Type": "MSIX",
+                "Path": "*SiamPicturesInc.wwwWebBrowser_*/LocalState/EBWebView",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
     "X Browser": {
         "Windows": [
             {
-                "Type": "UWP",
-                "Path": "*CoalaApps.ChromosomeXSearch_*",
+                "Type": "MSIX",
+                "Path": "*CoalaApps.ChromosomeXSearch_*/LocalCache/Roaming/X Browser",
                 "Signature": [
-                    "AC"
+                    "Local State"
                 ]
             }
         ]

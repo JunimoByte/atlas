@@ -1,7 +1,7 @@
-Added to Windows: Otter Browser, Zerno
-Changes to Windows: Midori got a new path to detect
+Added to Windows: Blazer Browser, Brevity Browser, Cronos Browser, Dia, Echo Browser, Horizon Browser, Lumio Browser, LyBrowser, O Browser, Orions Browser, Otter Browser, Tabbit, V Browser, Vuttara Browser, Web Explorer, www Web Browser, Zerno
+Changes to Windows: Anand Browser got a new path to detect, Browser Pro got a new path to detect, DuckDuckGo got a new path to detect, Fast Internet Browser got a new path to detect, Midori got a new path to detect, X Browser got a new path to detect
 
-Added to Linux: Abrowser, Cachy Browser, Elinks, GNU IceCat, GNU IceWeasel, Konqueror, Luakit, Mercury, Otter Browser, FlashPeak SlimJet, Surf, Terminal Browser, Vieb, Vimb, w3m, Zerno
+Added to Linux: Abrowser, Cachy Browser, Dooble, Dillo, Elinks, GNU IceCat, GNU IceWeasel, Konqueror, Luakit, Mercury, Nora, Otter Browser, QupZilla, FlashPeak SlimJet, Surf, Terminal Browser, Vieb, Vimb, w3m, Epiphany, Zerno
 Changes to Linux: Links got a new path to detect
 
-Added to Unix: Google Chrome, Firefox, Microsoft Edge, Brave Browser, Brave Origin, Chromium, Elinks, Falkon, Ladybird, Links, LibreWolf, Luakit, Midori, NetSurf, Opera, Otter Browser, Pale Moon, Qutebrowser, SeaMonkey, Surf, Ungoogled Chromium, Vivaldi, Vimb, w3m, Waterfox, GNOME Web, Zen
+Added to Unix: Google Chrome, Firefox, Microsoft Edge, Brave Browser, Brave Origin, Chromium, Elinks, Falkon, Ladybird, Links, LibreWolf, Luakit, Midori, NetSurf, Opera, Otter Browser, Pale Moon, Qutebrowser, SeaMonkey, Surf, Ungoogled Chromium, Vivaldi, Vimb, w3m, Waterfox, Epiphany, Zen
