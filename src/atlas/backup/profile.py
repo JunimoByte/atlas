@@ -17,7 +17,7 @@ from typing import Any, Dict, List, Optional, Set, Union
 
 from atlas.lib import browsers as browsers_list
 from atlas.lib.read import load_json
-from atlas.lib.system import normalize_os_key
+from atlas.lib.system import get_os_key, normalize_os_key
 
 # =============================================================================
 # LOGGING
@@ -211,7 +211,9 @@ def find_profile(
 
 
 def get_browser_name_from_path(
-    path_str: str, browsers_data: Optional[Dict[str, Any]] = None
+    path_str: str,
+    browsers_data: Optional[Dict[str, Any]] = None,
+    operating_system: Optional[str] = None,
 ) -> str:
     """Return the browser name for a given profile path.
 
@@ -219,6 +221,8 @@ def get_browser_name_from_path(
         path_str: Profile path string.
         browsers_data: Optional dictionary of browser configurations.
                        If None, loads from atlas.lib.browsers.grab().
+        operating_system: OS key to restrict lookup to. Defaults to the
+                          current host OS via get_os_key().
 
     Returns:
         Browser name if matched, else "Unknown".
@@ -231,27 +235,32 @@ def get_browser_name_from_path(
     if browsers_data is None:
         browsers_data = browsers_list.grab()
 
+    os_key = (
+        normalize_os_key(operating_system)
+        if operating_system
+        else get_os_key()
+    )
     path_lower = os.path.normcase(str(Path(path_str)))
 
     for name, systems in browsers_data.items():
-        for os_name, entries in systems.items():
-            for entry in entries:
-                raw_path = entry.get("Path")
-                path_type = entry.get("Type")
-                signature = entry.get("Signature")
+        entries = systems.get(os_key, [])
+        for entry in entries:
+            raw_path = entry.get("Path")
+            path_type = entry.get("Type")
+            signature = entry.get("Signature")
 
-                if not raw_path or not path_type:
-                    continue
+            if not raw_path or not path_type:
+                continue
 
-                candidate_paths = _expand_path_by_type(
-                    path_type, raw_path, os_name
-                )
+            candidate_paths = _expand_path_by_type(
+                path_type, raw_path, os_key
+            )
 
-                for location in candidate_paths:
-                    resolved = _validate_profile_path(location, signature)
-                    if resolved and path_lower.startswith(
-                        os.path.normcase(resolved)
-                    ):
-                        return name
+            for location in candidate_paths:
+                resolved = _validate_profile_path(location, signature)
+                if resolved and path_lower.startswith(
+                    os.path.normcase(resolved)
+                ):
+                    return name
 
     return "Unknown"

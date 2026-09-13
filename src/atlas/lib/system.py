@@ -18,13 +18,20 @@ def normalize_os_key(os_name: str) -> str:
         str: Normalized OS key (e.g. 'Windows', 'Linux', 'Macos', 'BSD').
 
     """
-    sys_name = os_name.lower()
+    sys_name = os_name.strip().lower()
 
-    if sys_name in ("freebsd", "openbsd", "netbsd", "dragonfly"):
+    if (
+        sys_name == "bsd"
+        or sys_name.endswith("bsd")
+        or sys_name == "dragonfly"
+    ):
         return "BSD"
 
-    if sys_name == "darwin":
+    if sys_name in ("darwin", "macos", "mac"):
         return "Macos"
+
+    if sys_name == "win32":
+        return "Windows"
 
     # Windows -> Windows, Linux -> Linux
     return sys_name.capitalize()
