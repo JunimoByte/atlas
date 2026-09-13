@@ -1187,6 +1187,15 @@
             }
         ]
     },
+    "Dactyloidae": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Eclipse Community/Dactyloidae/Profiles",
+                "Signature": false
+            }
+        ]
+    },
     "Dashob": {
         "Windows": [
             {
@@ -1455,6 +1464,17 @@
             {
                 "Type": "MSIX",
                 "Path": "Stollenwerk.FastInternetBrowser_*/LocalState/EBWebView",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Ferdium": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Ferdium",
                 "Signature": [
                     "Local State"
                 ]
@@ -1904,6 +1924,17 @@
                 "Type": "LOCALAPPDATA",
                 "Path": "iTop Private Browser/User Data",
                 "Signature": false
+            }
+        ]
+    },
+    "ixBrowser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "ixBrowser",
+                "Signature": [
+                    "Local State"
+                ]
             }
         ]
     },
@@ -2964,6 +2995,28 @@
             }
         ]
     },
+    "Power Browser": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "PowerSoftware/Power-Browser/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Polypane": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "Polypane",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
     "Pale Moon": {
         "Windows": [
             {
@@ -3051,6 +3104,17 @@
                 "Path": "PuffinSecureBrowser",
                 "Signature": [
                     "pref.json"
+                ]
+            }
+        ]
+    },
+    "Pulse Browser": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "pulse-browser/Profiles",
+                "Signature": [
+                    "Local State"
                 ]
             }
         ]
@@ -3261,6 +3325,17 @@
             }
         ]
     },
+    "Suprow": {
+        "Windows": [
+            {
+                "Type": "APPDATA",
+                "Path": "suprow",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
     "Seznam cz": {
         "Windows": [
             {
@@ -3385,6 +3460,15 @@
                 "Signature": [
                     "Extensions"
                 ]
+            }
+        ]
+    },
+    "Social Browser": {
+        "Windows": [
+            {
+                "Type": "USERPROFILE",
+                "Path": "social-data",
+                "Signature": false
             }
         ]
     },
@@ -4051,6 +4135,24 @@
                 "Path": "WebNet_Official",
                 "Signature": [
                     "Preferences"
+                ]
+            }
+        ]
+    },
+    "WebAura": {
+        "Windows": [
+            {
+                "Type": "MSIX",
+                "Path": "MikeSwimming.WebAura_*/LocalCache/Local/webview_all_windows/webaura_compat_*/EBWebView/EBWebView",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "webview_all_windows/webaura_compat_*/EBWebView/EBWebView",
+                "Signature": [
+                    "Local State"
                 ]
             }
         ]
