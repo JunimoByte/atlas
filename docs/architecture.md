@@ -137,7 +137,7 @@ Defines `Signals(QObject)` — the event contract between `Controller` and `Wind
 | `backup_cancelled` | — | Backup was cancelled by the user |
 | `progress` | `int, int` | Current and total archive count |
 | `estimated_size` | `str` | Formatted total profile size |
-| `scanned_entries` | `str` | Scan status text (e.g. `"42 / 250 scanned"`) |
+| `scanned_entries` | `str` | Scan status text (e.g. `"42 / 280 scanned"`) |
 | `elapsed_time` | `int` | Seconds elapsed since backup started |
 | `disk_space_error` | `str, str` | Required and available space strings |
 | `no_browsers_found` | — | No supported browsers detected |

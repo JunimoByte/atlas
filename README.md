@@ -21,7 +21,7 @@ Atlas creates portable ZIP backups of browser profiles while not writing to any 
 
 ## Features
 
-- Supports 250+ Chromium, Gecko, and legacy browser variants.
+- Supports 280+ Chromium, Gecko, and legacy browser variants.
 - Excludes caches and temporary data, often reducing a 1 GB+ profile to about 100 MB while preserving settings, history, and bookmarks.
 - Uses a strictly read-only source model and atomically creates ZIP archives in a user-selected location.
 - Supports Windows 7 through 11, Linux (glibc 2.31+), FreeBSD/GhostBSD, Windows portable executables, Linux AppImage, Debian packages, FreeBSD pkg packages, and Python-package installs.

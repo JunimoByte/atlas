@@ -3,7 +3,7 @@
 Atlas is a comprehensive, cross-platform utility designed to safeguard your web browsing data. It provides a simple yet powerful way to back up profiles from a vast array of web browsers.
 
 ## Features
-Atlas supports over **250** different browser variants. It detects and backs up not just standard releases, but also:
+Atlas supports over **280** different browser variants. It detects and backs up not just standard releases, but also:
 *   **Development Builds** (Dev, Beta, Nightly)
 *   **Canary Channels**
 *   **Legacy Versions** & Older Engines
