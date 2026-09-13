@@ -151,6 +151,7 @@ class Pipeline:
                 PermissionError,
                 FileNotFoundError,
                 ScanTimeoutError,
+                InterruptedError,
             ) as error:
                 LOGGER.debug(
                     "Non-retryable error on attempt %d: %s", attempt + 1, error
@@ -283,22 +284,33 @@ class Pipeline:
         return browser_matches
 
     def estimate_size(self, browser_matches: Dict[str, List[str]]) -> int:
-        """Estimate total size of profiles in bytes."""
-        # Flatten unique paths efficiently
-        unique_paths = {
+        """Estimate total size of profiles in bytes.
+
+        Sizes are cached per unique path to avoid scanning the same folder
+        multiple times, but the final sum accounts for shared paths being
+        written to multiple ZIP archives.
+        """
+        all_paths = [
             p for paths in browser_matches.values() for p in paths if p
-        }
-        total_profiles = len(unique_paths)
+        ]
+        total_profiles = len(all_paths)
         processed = 0
         total_size = 0
         last_emit_time = time.monotonic()
+        path_size_cache: Dict[str, int] = {}
 
-        for path_str in unique_paths:
+        for path_str in all_paths:
             if self.is_cancelled():
                 return total_size
 
             try:
-                size = self._retry_operation(Size.get_directory_size, path_str)
+                if path_str not in path_size_cache:
+                    size = self._retry_operation(
+                        Size.get_directory_size, path_str, self.is_cancelled
+                    )
+                    path_size_cache[path_str] = size
+                else:
+                    size = path_size_cache[path_str]
 
                 if size is not None:
                     total_size += size

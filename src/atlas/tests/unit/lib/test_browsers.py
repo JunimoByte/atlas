@@ -61,10 +61,8 @@ def sample_invalid_browser() -> Dict[str, Any]:
 def clear_globals_before_each_test() -> Generator[None, None, None]:
     """Clear BROWSERS and _PATH_CACHE before every test."""
     browsers.BROWSERS.clear()
-    browsers._PATH_CACHE.clear()
     yield
     browsers.BROWSERS.clear()
-    browsers._PATH_CACHE.clear()
 
 
 # =============================================================================
@@ -94,7 +92,7 @@ def test_verify_entries_loads_valid_config(
 ) -> None:
     """Verify that valid configurations are loaded into memory."""
     result = browsers.verify_entries(
-        browsers_json=sample_valid_browser, types_json={}
+        browsers_json=sample_valid_browser
     )
     assert result is True
     assert "Chrome" in browsers.BROWSERS
@@ -106,7 +104,7 @@ def test_verify_entries_rejects_invalid_config(
 ) -> None:
     """Verify that invalid configurations are rejected."""
     result = browsers.verify_entries(
-        browsers_json=sample_invalid_browser, types_json={}
+        browsers_json=sample_invalid_browser
     )
     assert result is False
     assert "Firefox" not in browsers.BROWSERS
@@ -120,18 +118,6 @@ def test_grab_returns_cached_data(
     cached = browsers.grab()
     assert cached == browsers.BROWSERS
     assert "Chrome" in cached
-
-
-def test_path_cache_population(sample_valid_browser: Dict[str, Any]) -> None:
-    """Verify that the path cache is populated with OS-scoped keys."""
-    fake_path = os.path.join("mock_dir", "my", "fake", "profile")
-    types_json = {"Windows": {"PROFILE": [fake_path]}}
-    result = browsers.verify_entries(
-        browsers_json=sample_valid_browser, types_json=types_json
-    )
-    assert result is True
-    assert "Windows.PROFILE" in browsers._PATH_CACHE
-    assert browsers._PATH_CACHE["Windows.PROFILE"] == [fake_path]
 
 
 # =============================================================================

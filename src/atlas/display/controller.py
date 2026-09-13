@@ -184,6 +184,9 @@ class Controller(QtCore.QObject):
     def cleanup(self) -> None:
         """Perform full synchronous cleanup for application exit."""
         self._stop_elapsed_timer()
+        # Block signals so shutdown-path errors don't try to update
+        # a half-destroyed UI (e.g. worker_error emitted after force-idle).
+        self.signals.blockSignals(True)
         if self.state != ControllerState.IDLE:
             self._force_idle("application shutdown")
             self._request_worker_shutdown(wait=True)
@@ -212,10 +215,11 @@ class Controller(QtCore.QObject):
 
         self._worker_thread.started.connect(self.worker.run)
 
-        # Native Qt thread-safe cleanup routing
+        # Clean up Python references before Qt queues C++ destruction.
+        # Connection order matters: finished fires slots in connect order.
+        self._worker_thread.finished.connect(self._handle_thread_finished)
         self._worker_thread.finished.connect(self.worker.deleteLater)
         self._worker_thread.finished.connect(self._worker_thread.deleteLater)
-        self._worker_thread.finished.connect(self._handle_thread_finished)
 
         self._worker_thread.start()
         LOGGER.info("Worker thread deployed")

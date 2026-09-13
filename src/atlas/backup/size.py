@@ -90,7 +90,10 @@ def format_size(bytes_size: Union[int, float]) -> str:
     return "Unknown size"
 
 
-def get_directory_size(path_str: Union[str, Path]) -> int:  # noqa: C901
+def get_directory_size(  # noqa: C901
+    path_str: Union[str, Path],
+    cancel_callback: Union[None, callable] = None,
+) -> int:
     """Recursively compute the total size of a directory.
 
     Uses ``os.scandir`` with a manual stack for performance. On Windows,
@@ -100,6 +103,8 @@ def get_directory_size(path_str: Union[str, Path]) -> int:  # noqa: C901
 
     Args:
         path_str (Union[str, Path]): Path to the directory.
+        cancel_callback (Optional[callable]): Callback to check for
+            cancellation.
 
     Returns:
         int: Total size in bytes.
@@ -118,6 +123,9 @@ def get_directory_size(path_str: Union[str, Path]) -> int:  # noqa: C901
     stack = [str(root)]
 
     while stack:
+        if cancel_callback and cancel_callback():
+            raise InterruptedError("Directory size scan cancelled by user")
+
         current_dir = stack.pop()
 
         if time.time() - start_time > MAX_SCAN_TIME:

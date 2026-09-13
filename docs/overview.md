@@ -3,7 +3,7 @@
 Atlas is a comprehensive, cross-platform utility designed to safeguard your web browsing data. It provides a simple yet powerful way to back up profiles from a vast array of web browsers.
 
 ## Features
-Atlas supports over **250** different browser variants. It detects and backs up not just standard releases, but also:
+Atlas supports over **280** different browser variants. It detects and backs up not just standard releases, but also:
 *   **Development Builds** (Dev, Beta, Nightly)
 *   **Canary Channels**
 *   **Legacy Versions** & Older Engines
@@ -15,13 +15,14 @@ Engineered for maximum portability, Atlas runs on diverse operating systems:
 *   **Windows**: 7 (see upcoming `win7` branch), 8, 10, 11.
 *   **Linux (glibc 2.31+)**: Build portable releases on Ubuntu 20.04 LTS for
     the broadest practical compatibility with newer Linux desktop systems.
+*   **FreeBSD/GhostBSD**: Native support with automated `.pkg` generation (recommended to compile on FreeBSD 13+ or GhostBSD 22+).
 
-### Linux Desktop Compatibility
+### Linux and BSD Desktop Compatibility
 
-Atlas uses Qt's XWayland/XCB backend on Linux, including in Wayland sessions.
+Atlas uses Qt's XWayland/XCB backend on Unix-like platforms, including in Wayland sessions.
 This is intentional: it provides more consistent Qt theming, window
 decorations, and behavior across the desktop environments commonly used from
-Ubuntu 20.04 LTS onward.
+Ubuntu 20.04 LTS onward, as well as on FreeBSD-based systems.
 
 The Linux development setup checks for the required XCB libraries and asks
 before installing missing dependencies. It stops if the compatibility layer is

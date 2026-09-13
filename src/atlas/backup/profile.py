@@ -17,6 +17,7 @@ from typing import Any, Dict, List, Optional, Set, Union
 
 from atlas.lib import browsers as browsers_list
 from atlas.lib.read import load_json
+from atlas.lib.system import get_os_key, normalize_os_key
 
 # =============================================================================
 # LOGGING
@@ -84,9 +85,9 @@ def _validate_profile_path(
     path: Path, signature: Union[str, List[str], None, bool]
 ) -> Optional[str]:
     """Validate profile path contains required signature(s)."""
-    # Normalize path to lowercase for Windows case-insensitivity
+    # Normalize path for platform-appropriate case comparison
     cache_key = (
-        str(path).lower(),
+        os.path.normcase(str(path)),
         tuple(signature) if isinstance(signature, list) else signature,
     )
     if cache_key in _PATH_CACHE:
@@ -181,7 +182,7 @@ def find_profile(
         return []
 
     browser_data = browsers_data[browser_name]
-    os_key = operating_system.capitalize()
+    os_key = normalize_os_key(operating_system)
     os_entries = browser_data.get(os_key, [])
 
     valid_profiles: List[str] = []
@@ -201,7 +202,7 @@ def find_profile(
         for location in candidate_paths:
             result = _validate_profile_path(location, signature_file)
             if result:
-                norm_path = result.lower()
+                norm_path = os.path.normcase(result)
                 if norm_path not in seen_paths:
                     valid_profiles.append(result)
                     seen_paths.add(norm_path)
@@ -210,7 +211,9 @@ def find_profile(
 
 
 def get_browser_name_from_path(
-    path_str: str, browsers_data: Optional[Dict[str, Any]] = None
+    path_str: str,
+    browsers_data: Optional[Dict[str, Any]] = None,
+    operating_system: Optional[str] = None,
 ) -> str:
     """Return the browser name for a given profile path.
 
@@ -218,6 +221,8 @@ def get_browser_name_from_path(
         path_str: Profile path string.
         browsers_data: Optional dictionary of browser configurations.
                        If None, loads from atlas.lib.browsers.grab().
+        operating_system: OS key to restrict lookup to. Defaults to the
+                          current host OS via get_os_key().
 
     Returns:
         Browser name if matched, else "Unknown".
@@ -230,25 +235,32 @@ def get_browser_name_from_path(
     if browsers_data is None:
         browsers_data = browsers_list.grab()
 
-    path_lower = str(Path(path_str)).lower()
+    os_key = (
+        normalize_os_key(operating_system)
+        if operating_system
+        else get_os_key()
+    )
+    path_lower = os.path.normcase(str(Path(path_str)))
 
     for name, systems in browsers_data.items():
-        for os_name, entries in systems.items():
-            for entry in entries:
-                raw_path = entry.get("Path")
-                path_type = entry.get("Type")
-                signature = entry.get("Signature")
+        entries = systems.get(os_key, [])
+        for entry in entries:
+            raw_path = entry.get("Path")
+            path_type = entry.get("Type")
+            signature = entry.get("Signature")
 
-                if not raw_path or not path_type:
-                    continue
+            if not raw_path or not path_type:
+                continue
 
-                candidate_paths = _expand_path_by_type(
-                    path_type, raw_path, os_name
-                )
+            candidate_paths = _expand_path_by_type(
+                path_type, raw_path, os_key
+            )
 
-                for location in candidate_paths:
-                    resolved = _validate_profile_path(location, signature)
-                    if resolved and path_lower.startswith(resolved.lower()):
-                        return name
+            for location in candidate_paths:
+                resolved = _validate_profile_path(location, signature)
+                if resolved and path_lower.startswith(
+                    os.path.normcase(resolved)
+                ):
+                    return name
 
     return "Unknown"

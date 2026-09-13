@@ -257,7 +257,7 @@ class UiDialog:
             tr(
                 "MainDialog",
                 '<span style="font-size:16pt;">Atlas</span> '
-                '<span style="font-size:11pt; vertical-align:super;">1.1'
+                '<span style="font-size:11pt; vertical-align:super;">1.2'
                 "</span>",
             )
         )
