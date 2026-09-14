@@ -1,78 +1,17 @@
-0-9 — Numerically Named Browsers
-Browsers with names starting with numbers, often representing company identifiers or version numbers.
-
-A — A Named Browsers
-A curated collection of the browsers named starting from A.
-
-B — B Named Browsers
-A curated collection of the browsers named starting from B.
-
 Blue Hawk	QtWebEngine	Windows	Engineered for the modern web
 BrowserBox	Chromium	Web	Browse the whole web from a web page. Remote browser isolation.
 BrowserJet	Chromium	Windows, macOS	Multiple sessions with built-in multiple IPs
 Browsh	Gecko	Linux, macOS, Windows	Fully-modern text-based browser
-C — C Named Browsers
-A collection of browsers named starting from C.
 
 Companion	Electron	Windows, macOS, Linux	A friendly mini browser to pin on top of any other desktop app and keep doing your things while enjoying a live stream or a youtube video.
-D — D Named Browsers
-A curated collection of browsers named starting from D.
-
-E — E Named Browsers
-A curated collection of browsers named starting from E.
-
-F — F Named Browsers
-A curated collection of browsers named starting from F.
-
-FixBrowser	Custom	Windows, Linux, HaikuOS	A truly lightweight web browser created from scratch
-G — G Named Browsers
-A curated collection of browsers named starting from G.
-
-H — H Named Browsers
-A curated collection of browsers named starting from H.
 
 Helix	Gecko	Windows, Linux, macOS	Just another Gecko browser. [Experimental]
-I — I Named Browsers
-A curated collection of browsers named starting from I.
-
-J — J Named Browsers
-A curated collection of browsers named starting from J.
-
 Jupiter Browser	Electron	Windows	An alternative to Default Browsers.
-K — K Named Browsers
-A curated collection of browsers named starting from K.
-
 K-browser	Trident	Windows	A simple lightweight browser
 kristall	Custom	Windows, macOS, Linux, BSD	Browser without support for css/js/wasm
-L — L Named Browsers
-A curated collection of browsers named starting from L.
 
-Light Browser	CefSharp	Windows	One-Tab-Browsing for low memory usage [Archived]
 LoboEvolution	Custom	Windows, macOS, Linux	Extensible all-Java web browser
 LT Browser	Chromium	Windows, macOS, Linux	For building and testing mobile view
-Lynx	Custom	Linux, Unix-like, Windows, macOS	Text-based web browser
-M — M Named Browsers
-A curated collection of browsers named starting from M.
-
-MilkShake	Electron	Windows, macOS, Linux	Simple web browser with only one tab
-Mitra Browser	Electron	Windows, macOS, Linux	Minimalist and open-source
-N — N Named Browsers
-A curated collection of browsers named starting from N.
-
-Neriven	Chromium	Windows, macOS	Smart browser with easy automation
-Nexus Browser	Electron	Windows	Private browser
-O — O Named Browsers
-A curated collection of browsers named starting from O.
-
-P — P Named Browsers
-A curated collection of browsers named starting from P.
-Q — Q Named Browsers
-A curated collection of browsers named starting from Q.
-
-Qinghu Browser	Chromium	Windows, macOS	New generation browser for e-commerce
-Quetta Browser	Chromium	Windows, macOS	Your online privacy isn't an option, it's our foundation.
-R — R Named Browsers
-A curated collection of browsers named starting from R.
 
 Responsively	Chromium	Windows, macOS, Linux	A must-have DevTool for all web developers that will make your job easier.
 S — S Named Browsers
@@ -82,60 +21,34 @@ Sandcat Browser	Edge WebView2/Chromium	Windows	Browser for pen-testers and web d
 Santa Browser	Chromium	Windows, macOS	The Browser That Keeps Giving
 SEOBrowse	Chromium	Windows, macOS	Browse search results for any location
 SharpBrowser	CefSharp	Windows	Full featured web-browser in C#
-Sizzy	Chromium	Windows, macOS, Linux	Development-focused browser with modern CI/CD-like features.
-slashB	Chromium	Windows, Linux, macOS	Allows testing responsive websites on multiple screens simultaneously.
 Split Browser	WebKit, WebKitGTK, Edge WebView2	macOS, Linux, Windows	Minimalistic browser with split screen view.
 Sputnik	WebKit, Blink	Windows, macOS, Linux, FreeBSD	Aims to remove Google web service dependency.
 SRWare Iron Browser	Blink, V8	Windows, macOS, Linux	Focuses on user security.
 Station	Blink	Windows, macOS, Linux	Open-source smart browser for web applications.
 Synth	Chromium	Windows, macOS	AI-driven browser for research and work.
-T — T Named Browsers
-A curated collection of browsers named starting from T.
 
-The Classic Browser	Chromium	Windows	Uses Chromium renderer for a faster, safer web browser with its own interface and number-crunching routines.
 theWeb	QtWebEngine	Windows, macOS, Linux	A web browser.
 Turbo	Electron	Windows, macOS, Linux	The browser for developers [Archived]
 U — U Named Browsers
 A curated collection of browsers named starting from U.
 
-Ultimatum	Blink	Windows	Chromium fork with anti-detect browser capabilities, web3.0 support.
 Unstoppable Blockchain Browser	Electron	Windows, macOS	Web browser for browsing the decentralized web. [Archived]
 V — V Named Browsers
 A curated collection of browsers named starting from V.
 
-Verso	Servo	Linux, macOS, Windows	A web browser that plays old world blues to build new world hope.
 Viasat Browser	Blink	Windows, Linux, macOS	A smarter way to browse the Internet.
 W — W Named Browsers
 A curated collection of browsers named starting from W.
 
-WebAura	-	Windows	The private media browser.
 Webian Shell	Gecko	Windows, Linux	Browser-based operating system UI for web use.
 WebSM	Microsoft WebView2, WebKit	Windows, Linux	Simple, minimalist Uno Platform based web browser.
-X — X Named Browsers
-A curated collection of browsers named starting from X.
 
-Y — Y Named Browsers
-A curated collection of browsers named starting from Y.
-
-Yaeb Browser	Electron	Windows, macOS, Linux	Minimalist Electron-based browser with API for webview manipulation.
-Z — Z Named Browsers
-A curated collection of browsers named starting from Z.
-
-Zervo	Servo	Windows, macOS, Linux	A calm, workspace-oriented browser built on the Servo engine.360 AI Browser	Blink, Trident	Windows, Mac OS	A web browser with integrated AI features
-Acent Browser (Osiris)	Blink	Windows, macOS, Linux	Blockchain-only browser
-AMP Browser	Chromium	Windows, Ubuntu	Open source, accelerates web browsing
 Arctic Fox Web Browser	Goana, SpiderMonkey	Mac OS X 10.6+, Linux, BSD, Windows XP	Fork of Pale Moon 27.9.4
-Carbonyl	Chromium	Linux, macOS, Windows	Chromium running inside terminal
-Chromium-Gost	V8, Blink	Windows, Linux, macOS	Open-source with GOST algorithm support
 CyberGhost Browser	Chromium	Windows, macOS, Linux	Free, fast & private app
-Edgescape Navigator	EdgeWebView2	Windows	Just a web browser, no bloatware, no mess and no unnecessary features.
-Free Adblock Browser	-	Windows	Browse securely on a clean, incognito search engine
 Guardian Browser	Chromium	Windows, macOS	Secure internet browser for ProctorU
 NetSurfer	Edge WebView2	Windows	Fast and secure web browser
 Opera Crypto Browser	Blink, V8	Windows, macOS	Browser for Web3 experience [Discontinued]
 PolyBrowser	Electron	Windows, macOS, Linux	The Panoramic Web Browser
 Programmer Browser	Electron	Windows, Linux	Fast-searching browser for programmers
-Sphere Browser	Chromium	Windows, macOS, Linux	Anti-detection browser for managing multiple identities.
-Stack Browser	Chromium	Windows, macOS	Spatial browser for mindful online living.
 Tor Browser	Gecko	Windows, macOS, Linux, BSD (Onion Browser)	Free and open-source software guaranteeing anonymity online and enhancing security and safety.
 Waterfox Classic	Gecko	Windows, macOS, Linux	Legacy web browser for older systems and those that require use of XPCOM and XUL extensions. [Discontinued]

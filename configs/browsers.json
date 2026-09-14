@@ -510,6 +510,17 @@
             }
         ]
     },
+    "Arora": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Arora",
+                "Signature": [
+                    "cookies.ini"
+                ]
+            }
+        ]
+    },
     "Aw2 Browser": {
         "Windows": [
             {
@@ -535,7 +546,9 @@
             {
                 "Type": "APPDATA",
                 "Path": "Baidu/Spark",
-                "Signature": "config.ini"
+                "Signature": [
+                    "config.ini"
+                ]
             }
         ]
     },
@@ -1352,6 +1365,17 @@
             {
                 "Type": "SNAP",
                 "Path": "ecosia/current/.config/EcosiaBrowser",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
+    "Edgescape Navigator": {
+        "Windows": [
+            {
+                "Type": "LOCALAPPDATA",
+                "Path": "Programs/Edgescape Navigator/Edgescape Navigator.exe.WebView2/EBWebView",
                 "Signature": [
                     "Local State"
                 ]
@@ -2477,7 +2501,7 @@
         "Windows": [
             {
                 "Type": "APPDATA",
-                "Path": "Mypal68/Profiles",
+                "Path": "Mypal*/Profiles",
                 "Signature": false
             }
         ]
