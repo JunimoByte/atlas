@@ -43,7 +43,7 @@ ZIP_OUTPUT_DIR = None  # type: Optional[Path]
 def _get_default_output_dir() -> Path:
     """Return the default output directory inside Downloads.
 
-    The path is ``<Downloads>/Atlas`` where ``<Downloads>``
+    The path is ``<Downloads>/Backup`` where ``<Downloads>``
     is resolved by :func:`get_downloads_dir`.
 
     Returns:

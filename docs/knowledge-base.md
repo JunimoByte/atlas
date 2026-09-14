@@ -9,7 +9,7 @@ user-controlled output location.
 
 ## Supported Environments
 
-Atlas is intended to run on Linux (glibc 2.31+) and Windows 7 or later. The
+Atlas is intended to run across Windows (NT), Linux, and BSD kernels (Windows 7 or later, Linux with glibc 2.31+, and FreeBSD/GhostBSD). The
 supported runtime is Python 3.8 or newer. Qt is supplied by PyQt6 when
 available, with PyQt5 selected as a fallback. Ubuntu 20.04 LTS is the
 recommended Linux build baseline because it provides a broad compatibility
@@ -215,6 +215,11 @@ separately.
 | `scripts/build_appimage.sh` | Consent-based AppDir and AppImage build script. |
 | `installer/debian/` | Debian package control, launcher, and desktop metadata. |
 | `scripts/build_deb.sh` | Debian package build script using the Linux onedir payload. |
+| `scripts/build_pkg.sh` | Native FreeBSD `.pkg` package build script. |
+| `scripts/install_bsd.sh` | Standalone FreeBSD/GhostBSD portable runner and installer. |
+| `installer/Atlas.iss` | Windows Inno Setup installer definition. |
+| `scripts/setup_dev.sh` | Linux/BSD developer environment configuration script. |
+| `scripts/setup_dev.bat` | Windows developer environment configuration script. |
 
 ## Testing and Headless Use
 

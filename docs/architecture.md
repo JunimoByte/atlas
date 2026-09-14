@@ -20,9 +20,9 @@ All validation steps occur before any disk-intensive or long-running operations 
 
 ---
 
-## Linux Desktop Compatibility
+## Platform and Kernel Compatibility
 
-Atlas supports Linux (glibc 2.31+). Ubuntu 20.04 LTS is the recommended Linux
+Atlas supports Windows (NT), Linux (glibc 2.31+), and BSD kernels. Ubuntu 20.04 LTS is the recommended Linux
 build baseline because its older userspace maximizes compatibility with newer
 Linux desktop systems. For BSD systems, compiling on FreeBSD 13+ or GhostBSD 22+
 is recommended.
@@ -137,7 +137,7 @@ Defines `Signals(QObject)` — the event contract between `Controller` and `Wind
 | `backup_cancelled` | — | Backup was cancelled by the user |
 | `progress` | `int, int` | Current and total archive count |
 | `estimated_size` | `str` | Formatted total profile size |
-| `scanned_entries` | `str` | Scan status text (e.g. `"42 / 280 scanned"`) |
+| `scanned_entries` | `str` | Scan status text (e.g. `"42 / 300 scanned"`) |
 | `elapsed_time` | `int` | Seconds elapsed since backup started |
 | `disk_space_error` | `str, str` | Required and available space strings |
 | `no_browsers_found` | — | No supported browsers detected |
