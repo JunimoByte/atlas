@@ -1760,6 +1760,17 @@
             }
         ]
     },
+    "Glot Browser": {
+        "Windows": [
+            {
+                "Type": "MSIX",
+                "Path": "Qryp.ai.GlotBrowser_*/LocalState/Profile",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ]
+    },
     "GT Web Browser": {
         "Windows": [
             {
@@ -3887,6 +3898,15 @@
                 "Signature": [
                     "Local State"
                 ]
+            }
+        ]
+    },
+    "Vantage Browser": {
+        "Windows": [
+            {
+                "Type": "MSIX",
+                "Path": "ASYSTechnology.VantageBrowser_*/LocalCache/Roaming/vantage",
+                "Signature": false
             }
         ]
     },
