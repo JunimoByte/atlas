@@ -34,7 +34,7 @@ LOGGER = logging.getLogger(__name__)
 def main() -> None:
     """Launch Atlas.
 
-    Validate permissions, check config, initialize PyQt6,
+    Validate permissions, check config, initialize Qt,
     set up the UI with theming, and run the event loop.
     Exit gracefully on errors.
     """

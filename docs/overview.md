@@ -3,19 +3,19 @@
 Atlas is a comprehensive, cross-platform utility designed to safeguard your web browsing data. It provides a simple yet powerful way to back up profiles from a vast array of web browsers.
 
 ## Features
-Atlas supports over **280** different browser variants. It detects and backs up not just standard releases, but also:
+Atlas supports over **300+** different browser variants. It detects and backs up not just standard releases, but also:
 *   **Development Builds** (Dev, Beta, Nightly)
 *   **Canary Channels**
 *   **Legacy Versions** & Older Engines
 
 > **Disclaimer:** Due to Chromium's hardware-level encryption (DPAPI), logins must be manually exported/imported. All other data (Bookmarks, History, Settings) is fully backed up.
 
-### 🖥️ Cross-Platform Compatibility
-Engineered for maximum portability, Atlas runs on diverse operating systems:
-*   **Windows**: 7 (see upcoming `win7` branch), 8, 10, 11.
-*   **Linux (glibc 2.31+)**: Build portable releases on Ubuntu 20.04 LTS for
+### 🖥️ Cross-Platform Kernel & OS Compatibility
+Engineered for maximum portability across Windows, Linux, and BSD kernels:
+*   **Windows (NT Kernel)**: 7, 8, 10, 11.
+*   **Linux (Linux Kernel / glibc 2.31+)**: Build portable releases on Ubuntu 20.04 LTS for
     the broadest practical compatibility with newer Linux desktop systems.
-*   **FreeBSD/GhostBSD**: Native support with automated `.pkg` generation (recommended to compile on FreeBSD 13+ or GhostBSD 22+).
+*   **BSD (FreeBSD/GhostBSD Kernels)**: Native support with automated `.pkg` generation (recommended to compile on FreeBSD 13+ or GhostBSD 22+).
 
 ### Linux and BSD Desktop Compatibility
 
