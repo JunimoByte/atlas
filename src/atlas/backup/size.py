@@ -10,6 +10,7 @@ Provides human-readable size formatting and disk space validation.
 
 import gc
 import logging
+import math
 import os
 import shutil
 import time
@@ -31,7 +32,7 @@ LOGGER = logging.getLogger(__name__)
 
 try:
     BLACKLIST_JSON = load_json("blacklist.json")
-    SKIP_FOLDERS = set(BLACKLIST_JSON.get("SKIP_FOLDERS", []))
+    SKIP_FOLDERS = {f.lower() for f in BLACKLIST_JSON.get("SKIP_FOLDERS", [])}
 except Exception:
     LOGGER.warning("Failed to load blacklist.json", exc_info=True)
     SKIP_FOLDERS = set()
@@ -72,7 +73,7 @@ def format_size(bytes_size: Union[int, float]) -> str:
     """
     try:
         bytes_size = float(bytes_size)
-        if bytes_size < 0:
+        if bytes_size < 0 or math.isnan(bytes_size) or math.isinf(bytes_size):
             return "Invalid size"
 
         units = ["B", "KB", "MB", "GB", "TB", "PB"]
@@ -139,7 +140,7 @@ def get_directory_size(  # noqa: C901
                 for entry in entries:
                     try:
                         if entry.is_dir(follow_symlinks=False):
-                            if entry.name not in SKIP_FOLDERS:
+                            if entry.name.lower() not in SKIP_FOLDERS:
                                 stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
                             total += entry.stat(follow_symlinks=False).st_size
@@ -172,6 +173,13 @@ def check_disk_space(
             Formatted available space).
 
     """
+    if estimated_size_bytes < 0:
+        LOGGER.warning(
+            "check_disk_space called with negative size: %d",
+            estimated_size_bytes,
+        )
+        return False, "Unknown"
+
     try:
         output_dir = (
             Path(output_path).resolve()

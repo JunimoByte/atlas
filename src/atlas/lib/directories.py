@@ -178,8 +178,9 @@ def _shell_known_folder_path() -> Optional[Path]:
             )
             return None
 
-        folder = Path(path_ptr.value)
+        folder_str = path_ptr.value
         ole32.CoTaskMemFree(path_ptr)
+        folder = Path(folder_str)
         return folder
 
     except Exception as error:

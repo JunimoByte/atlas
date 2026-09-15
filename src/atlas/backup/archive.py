@@ -264,7 +264,8 @@ def write_zip(
                         else None
                     )
                     if archive_root_name:
-                        _, relative_file_path = rel_path.split("/", 1)
+                        parts = rel_path.split("/", 1)
+                        relative_file_path = parts[1] if len(parts) == 2 else rel_path
                         rel_path = "{}/{}".format(
                             archive_root_name, relative_file_path
                         )
@@ -349,7 +350,7 @@ def compress(  # noqa: C901
 
     try:
         zip_path = _resolve_output_zip_path(zip_name)
-    except ValueError as error:
+    except (ValueError, OSError) as error:
         LOGGER.error("Invalid zip output path: %s", error)
         return None
 

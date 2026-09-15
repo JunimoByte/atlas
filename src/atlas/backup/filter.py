@@ -26,10 +26,12 @@ LOGGER = logging.getLogger(__name__)
 
 try:
     BLACKLIST_JSON = load_json("blacklist.json")
-    SKIP_FOLDERS = set(BLACKLIST_JSON.get("SKIP_FOLDERS", []))
-    SKIP_FILE_EXTENSION = set(BLACKLIST_JSON.get("SKIP_FILE_EXTENSION", []))
+    SKIP_FOLDERS = {f.lower() for f in BLACKLIST_JSON.get("SKIP_FOLDERS", [])}
+    SKIP_FILE_EXTENSION = {
+        ext.lower() for ext in BLACKLIST_JSON.get("SKIP_FILE_EXTENSION", [])
+    }
     SKIP_FILE_WITH_EXTENSION = {
-        ext: set(names)
+        ext.lower(): set(names)
         for ext, names in BLACKLIST_JSON.get(
             "SKIP_FILE_WITH_EXTENSION", {}
         ).items()
@@ -94,11 +96,11 @@ def scan_files(  # noqa: C901
 
                         try:
                             if entry.is_dir(follow_symlinks=False):
-                                if entry.name not in SKIP_FOLDERS:
+                                if entry.name.lower() not in SKIP_FOLDERS:
                                     stack.append(entry.path)
                             elif entry.is_file(follow_symlinks=False):
                                 file_name = entry.name
-                                file_ext = Path(file_name).suffix
+                                file_ext = Path(file_name).suffix.lower()
 
                                 if file_ext in SKIP_FILE_EXTENSION:
                                     continue

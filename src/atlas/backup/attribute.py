@@ -43,7 +43,7 @@ def safe_zipinfo_date(
     try:
         if mtime is None:
             mtime = file_path.stat().st_mtime
-        dt = datetime.fromtimestamp(mtime)
+        dt = datetime.fromtimestamp(max(0.0, mtime))
         year = max(1980, min(dt.year, 2107))
         return (
             year,

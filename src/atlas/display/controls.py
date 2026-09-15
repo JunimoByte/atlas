@@ -132,6 +132,7 @@ def format_elapsed_time(elapsed: int, info: str = "") -> str:
         Formatted string like 'Time Elapsed: 1m 30s (Scanning...)'.
 
     """
+    elapsed = max(0, elapsed)
     hours, rem = divmod(elapsed, SECONDS_PER_HOUR)
     minutes, seconds = divmod(rem, SECONDS_PER_MINUTE)
 
