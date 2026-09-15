@@ -85,10 +85,10 @@ def show(
 
     """
     try:
-        app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(
-            sys.argv
-        )
-        app.setQuitOnLastWindowClosed(True)
+        existing_app = QtWidgets.QApplication.instance()
+        app = existing_app or QtWidgets.QApplication(sys.argv)
+        if existing_app is None:
+            app.setQuitOnLastWindowClosed(True)
 
         msg = QtWidgets.QMessageBox()
         msg.setObjectName("PopupMessageBox")

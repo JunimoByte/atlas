@@ -496,7 +496,15 @@ def backdrop(element) -> None:
             LOGGER.warning("Backdrop image not found: %s", image_path)
             return
 
-        element.setPixmap(QtGui.QPixmap(image_path))
+        pixmap = QtGui.QPixmap(image_path)
+        if pixmap.isNull():
+            LOGGER.warning(
+                "Backdrop image could not be loaded (missing plugin?): %s",
+                image_path,
+            )
+            return
+
+        element.setPixmap(pixmap)
         element.setScaledContents(True)
 
         LOGGER.debug("Backdrop set successfully: %s", image_path)
@@ -522,7 +530,14 @@ def icon(window) -> None:
             LOGGER.warning("Icon file not found: %s", icon_path)
             return
 
-        window.setWindowIcon(QtGui.QIcon(icon_path))
+        loaded_icon = QtGui.QIcon(icon_path)
+        if loaded_icon.isNull():
+            LOGGER.warning(
+                "Icon could not be loaded (missing plugin?): %s", icon_path
+            )
+            return
+
+        window.setWindowIcon(loaded_icon)
         LOGGER.debug("Window icon set successfully: %s", icon_path)
 
     except Exception as error:

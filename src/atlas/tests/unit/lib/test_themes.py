@@ -318,6 +318,10 @@ def test_backdrop_sets_pixmap(monkeypatch: pytest.MonkeyPatch) -> None:
             """Initialise with a path."""
             self.path = path
 
+        def isNull(self):
+            """Return False — pixmap loaded successfully."""
+            return False
+
     monkeypatch.setattr(themes.QtGui, "QPixmap", FakeQPixmap)
 
     themes.backdrop(mock_element)
@@ -346,6 +350,10 @@ def test_icon_uses_svg_on_linux(monkeypatch: pytest.MonkeyPatch) -> None:
             """Initialise with a path."""
             self.path = path
 
+        def isNull(self):
+            """Return False — icon loaded successfully."""
+            return False
+
     monkeypatch.setattr(themes.QtGui, "QIcon", FakeQIcon)
 
     themes.icon(mock_window)
@@ -373,6 +381,10 @@ def test_icon_uses_ico_on_windows(monkeypatch: pytest.MonkeyPatch) -> None:
         def __init__(self, path):
             """Initialise with a path."""
             self.path = path
+
+        def isNull(self):
+            """Return False — icon loaded successfully."""
+            return False
 
     monkeypatch.setattr(themes.QtGui, "QIcon", FakeQIcon)
 
