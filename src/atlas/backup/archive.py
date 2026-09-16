@@ -31,7 +31,7 @@ LOGGER = logging.getLogger(__name__)
 # CONSTANTS
 # =============================================================================
 
-CHUNK_SIZE = 64 * 1024
+CHUNK_SIZE = 1024 * 1024
 ATLAS_SUBDIR = "Backup"
 ZIP_OUTPUT_DIR = None  # type: Optional[Path]
 
@@ -261,6 +261,7 @@ def write_zip(
             zipfile.ZIP_DEFLATED,
             allowZip64=True,
             strict_timestamps=False,
+            compresslevel=1,
         ) as zip_file:
             for base_path, file_path in files:
                 if cancel_callback and cancel_callback():

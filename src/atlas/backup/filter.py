@@ -100,7 +100,8 @@ def scan_files(  # noqa: C901
                                     stack.append(entry.path)
                             elif entry.is_file(follow_symlinks=False):
                                 file_name = entry.name
-                                file_ext = Path(file_name).suffix.lower()
+                                _, file_ext = os.path.splitext(file_name)
+                                file_ext = file_ext.lower()
 
                                 if file_ext in SKIP_FILE_EXTENSION:
                                     continue
