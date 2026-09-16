@@ -38,7 +38,9 @@ try:
     }
 except Exception as error:
     LOGGER.error("Failed to load blacklist.json: {}".format(error))
-    raise RuntimeError("Failed to load required blacklist configuration") from error
+    raise RuntimeError(
+        "Failed to load required blacklist configuration"
+    ) from error
 
 # =============================================================================
 # CONSTANTS
@@ -113,11 +115,15 @@ def scan_files(  # noqa: C901
                                 if os.name == "nt" and ":" in file_name:
                                     continue
 
-                                # Note: A TOCTOU (Time of Check, Time of Use) race condition exists here.
-                                # The file size or contents could change between this stat() call and the 
-                                # moment the ZIP writer opens it. This is expected and acceptable for live 
-                                # browser profiles. The downstream _write_file_to_zip() is built to handle 
-                                # ordinary OSErrors safely when files change or disappear during backup.
+                                # Note: A TOCTOU (Time of Check, Time of Use)
+                                # race condition exists here. The file size or
+                                # contents could change between this stat()
+                                # call and the moment the ZIP writer opens it.
+                                # This is expected and acceptable for live
+                                # browser profiles. The downstream
+                                # _write_file_to_zip() is built to handle
+                                # ordinary OSErrors safely when files change
+                                # or disappear during backup.
                                 stat_info = entry.stat(follow_symlinks=False)
 
                                 if stat_info.st_size > MAX_FILE_SIZE:

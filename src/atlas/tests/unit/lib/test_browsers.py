@@ -91,9 +91,7 @@ def test_verify_entries_loads_valid_config(
     sample_valid_browser: Dict[str, Any],
 ) -> None:
     """Verify that valid configurations are loaded into memory."""
-    result = browsers.verify_entries(
-        browsers_json=sample_valid_browser
-    )
+    result = browsers.verify_entries(browsers_json=sample_valid_browser)
     assert result is True
     assert "Chrome" in browsers.BROWSERS
     assert "Windows" in browsers.BROWSERS["Chrome"]
@@ -103,9 +101,7 @@ def test_verify_entries_rejects_invalid_config(
     sample_invalid_browser: Dict[str, Any],
 ) -> None:
     """Verify that invalid configurations are rejected."""
-    result = browsers.verify_entries(
-        browsers_json=sample_invalid_browser
-    )
+    result = browsers.verify_entries(browsers_json=sample_invalid_browser)
     assert result is False
     assert "Firefox" not in browsers.BROWSERS
 

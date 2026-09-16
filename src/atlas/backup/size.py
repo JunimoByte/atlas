@@ -8,7 +8,6 @@ Provides human-readable size formatting and disk space validation.
 # IMPORTS
 # =============================================================================
 
-import gc
 import logging
 import math
 import os
@@ -35,7 +34,9 @@ try:
     SKIP_FOLDERS = {f.lower() for f in BLACKLIST_JSON.get("SKIP_FOLDERS", [])}
 except Exception as error:
     LOGGER.error("Failed to load blacklist.json: {}".format(error))
-    raise RuntimeError("Failed to load required blacklist configuration") from error
+    raise RuntimeError(
+        "Failed to load required blacklist configuration"
+    ) from error
 
 # =============================================================================
 # CONSTANTS
@@ -58,7 +59,7 @@ class ScanTimeoutError(RuntimeError):
 
 class ScanError(RuntimeError):
     """Raised when a directory scan encounters inaccessible files or folders.
-    
+
     Like timeouts, incomplete scans mean the size estimate is unreliable
     and should not be trusted for disk-space approval.
     """
@@ -165,7 +166,8 @@ def get_directory_size(  # noqa: C901
 
     if scan_incomplete:
         raise ScanError(
-            "Directory scan was incomplete due to inaccessible paths: {}".format(path_str)
+            "Directory scan was incomplete due to inaccessible "
+            "paths: {}".format(path_str)
         )
 
     return total

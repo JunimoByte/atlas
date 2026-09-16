@@ -77,8 +77,12 @@ def test_apply_calls_windows_themer(
     theme_name: str,
 ) -> None:
     """Verify that apply delegates to WindowsThemer on Windows."""
-    with patch("atlas.lib.themes.ThemeDetector.detect", return_value=theme_name):
-        with patch("atlas.lib.themes.ThemeDetector._is_windows", return_value=True):
+    with patch(
+        "atlas.lib.themes.ThemeDetector.detect", return_value=theme_name
+    ):
+        with patch(
+            "atlas.lib.themes.ThemeDetector._is_windows", return_value=True
+        ):
             with patch("atlas.lib.themes.WindowsThemer.apply") as mock_target:
                 themes.apply(mock_window)
                 mock_target.assert_called_once_with(mock_window, theme_name)
@@ -97,6 +101,7 @@ def test_get_theme_windows_error(monkeypatch: pytest.MonkeyPatch) -> None:
     class FakeWinreg:
         def open_key(self, *args, **kwargs):
             raise Exception("fail")
+
         OpenKey = open_key
 
     sys.modules["winreg"] = FakeWinreg()
@@ -137,7 +142,7 @@ def test_apply_light_sets_stylesheet(
 def test_apply_linux_skips_windows_themer(
     monkeypatch: pytest.MonkeyPatch, mock_window: MagicMock
 ) -> None:
-    """Verify theme application on Linux skips calling Windows-specific styling."""
+    """Verify Linux theme app skips calling Windows-specific styling."""
     monkeypatch.setattr(themes.ThemeDetector, "_is_windows", lambda: False)
     with patch("atlas.lib.themes.WindowsThemer.apply") as mock_windows_apply:
         themes.apply(mock_window)
@@ -178,7 +183,9 @@ def test_apply_native_windows_theme_uses_qt_palette(
     monkeypatch.setattr(
         themes.QtGui.QGuiApplication, "styleHints", lambda: hints
     )
-    monkeypatch.setattr(themes.WindowsChromeManager, "apply_chrome", MagicMock())
+    monkeypatch.setattr(
+        themes.WindowsChromeManager, "apply_chrome", MagicMock()
+    )
 
     themes.WindowsThemer._apply_native(mock_window, True)
 
@@ -186,7 +193,9 @@ def test_apply_native_windows_theme_uses_qt_palette(
         themes.QtCore.Qt.ColorScheme.Unknown
     )
     mock_window.setStyleSheet.assert_called_once_with("")
-    themes.WindowsChromeManager.apply_chrome.assert_called_once_with(mock_window, True)
+    themes.WindowsChromeManager.apply_chrome.assert_called_once_with(
+        mock_window, True
+    )
 
 
 def test_native_windows_theming_requires_pyqt6(
@@ -203,7 +212,9 @@ def test_native_windows_theming_requires_windows_11(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Windows 10 retains the reliable registry and stylesheet fallback."""
-    monkeypatch.setattr(themes.WindowsChromeManager, "supports", lambda _feature: False)
+    monkeypatch.setattr(
+        themes.WindowsChromeManager, "supports", lambda _feature: False
+    )
     monkeypatch.setattr(themes, "QT_API", "PyQt6")
 
     assert not themes.WindowsThemer._supports_native()
@@ -230,7 +241,9 @@ def test_legacy_windows_style_keeps_windows_10_progress_bar(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """The fallback styling remains intact for Windows 10 and PyQt5."""
-    monkeypatch.setattr(themes.WindowsChromeManager, "supports", lambda _feature: False)
+    monkeypatch.setattr(
+        themes.WindowsChromeManager, "supports", lambda _feature: False
+    )
 
     style = themes.WindowsThemer._legacy_style("Dark")
 
@@ -242,7 +255,9 @@ def test_windows_11_chrome_enables_mica(
     monkeypatch: pytest.MonkeyPatch, mock_window: MagicMock
 ) -> None:
     """Windows 11 22H2+ enables the system Mica backdrop."""
-    monkeypatch.setattr(themes.WindowsChromeManager, "supports", lambda _feature: True)
+    monkeypatch.setattr(
+        themes.WindowsChromeManager, "supports", lambda _feature: True
+    )
     mock_dwm = MagicMock()
 
     with patch("ctypes.windll", create=True) as mock_windll:
@@ -264,12 +279,14 @@ def test_resource_path_dev(monkeypatch: pytest.MonkeyPatch) -> None:
     assert path.endswith("file.txt")
 
 
-def test_resource_path_traversal_prevention(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_resource_path_traversal_prevention(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """Verify that resource_path prevents escaping the assets directory."""
     monkeypatch.setattr(sys, "frozen", False, raising=False)
-    
+
     path = themes.ImageManager.resource_path("../file.txt")
-    
+
     assert path is None
 
 
@@ -289,13 +306,16 @@ def test_backdrop_sets_pixmap(monkeypatch: pytest.MonkeyPatch) -> None:
     """Verify that a backdrop pixmap is set."""
     mock_element = MagicMock()
 
-    monkeypatch.setattr(themes.ImageManager, "resource_path", lambda x: "exists.png")
+    monkeypatch.setattr(
+        themes.ImageManager, "resource_path", lambda x: "exists.png"
+    )
     monkeypatch.setattr(os.path, "exists", lambda x: True)
 
     class FakeQPixmap:
         def __init__(self, path):
             self.path = path
-        def isNull(self):
+
+        def isNull(self):  # noqa: N802
             return False
 
     monkeypatch.setattr(themes.QtGui, "QPixmap", FakeQPixmap)
@@ -322,7 +342,8 @@ def test_icon_uses_svg_on_linux(monkeypatch: pytest.MonkeyPatch) -> None:
     class FakeQIcon:
         def __init__(self, path):
             self.path = path
-        def isNull(self):
+
+        def isNull(self):  # noqa: N802
             return False
 
     monkeypatch.setattr(themes.QtGui, "QIcon", FakeQIcon)
@@ -349,7 +370,8 @@ def test_icon_uses_ico_on_windows(monkeypatch: pytest.MonkeyPatch) -> None:
     class FakeQIcon:
         def __init__(self, path):
             self.path = path
-        def isNull(self):
+
+        def isNull(self):  # noqa: N802
             return False
 
     monkeypatch.setattr(themes.QtGui, "QIcon", FakeQIcon)
@@ -358,6 +380,7 @@ def test_icon_uses_ico_on_windows(monkeypatch: pytest.MonkeyPatch) -> None:
 
     assert requested_paths == ["icons/Icon.ico"]
     mock_window.setWindowIcon.assert_called_once()
+
 
 # =============================================================================
 # TEST EXECUTION

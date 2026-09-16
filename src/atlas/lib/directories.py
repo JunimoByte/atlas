@@ -224,7 +224,7 @@ def _shell_folder_path_registry() -> Optional[Path]:
 
         if not path.is_absolute():
             LOGGER.debug(
-                "Registry Downloads path is relative, " "ignoring: %s",
+                "Registry Downloads path is relative, ignoring: %s",
                 path,
             )
             return None
@@ -260,7 +260,7 @@ def _get_linux_candidates() -> list:
         candidates.append(path)
 
     candidates.append(_get_downloads_posix_fallback())
-    
+
     sandbox_path = _get_sandbox_fallback()
     if sandbox_path is not None:
         candidates.append(sandbox_path)
@@ -382,7 +382,8 @@ def _get_sandbox_fallback() -> Optional[Path]:
     if flatpak_id:
         LOGGER.debug("Flatpak sandbox detected, using XDG_DATA_HOME fallback.")
         data_home = os.environ.get(
-            "XDG_DATA_HOME", str(Path.home() / ".var" / "app" / flatpak_id / "data")
+            "XDG_DATA_HOME",
+            str(Path.home() / ".var" / "app" / flatpak_id / "data"),
         )
         return Path(data_home) / _DOWNLOADS_SUBDIR
 

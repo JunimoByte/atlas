@@ -40,30 +40,37 @@ LOGGER = logging.getLogger(__name__)
 # CONSTANTS
 # =============================================================================
 
-_WINDOWS_BUILD_FEATURES = MappingProxyType({
-    "dark_titlebar": 17763,
-    "win11_style": 22000,
-    "mica_backdrop": 22621,
-})
+_WINDOWS_BUILD_FEATURES = MappingProxyType(
+    {
+        "dark_titlebar": 17763,
+        "win11_style": 22000,
+        "mica_backdrop": 22621,
+    }
+)
 
 _DWMWA_USE_IMMERSIVE_DARK_MODE = (20, 19)
 _DWMWA_SYSTEMBACKDROP_TYPE = 38
 _DWMWA_WINDOW_CORNER_PREFERENCE = 33
 
+
 class SystemBackdropType(IntEnum):
     """System backdrop types for Windows 11 22H2+."""
+
     AUTO = 0
     DISABLE = 1
-    MAINWINDOW = 2       # Mica (Standard)
+    MAINWINDOW = 2  # Mica (Standard)
     TRANSIENTWINDOW = 3  # Acrylic
-    TABBEDWINDOW = 4     # Mica Alt
+    TABBEDWINDOW = 4  # Mica Alt
+
 
 class WindowCornerPreference(IntEnum):
     """Window corner preferences for Windows 11 21H2+."""
+
     DEFAULT = 0
     DONOTROUND = 1
     ROUND = 2
     ROUNDSMALL = 3
+
 
 _WINDOWS_LIGHT_STYLE = """
     QWidget#MainDialog {
@@ -109,13 +116,14 @@ _WINDOWS_10_PROGRESS_STYLE = """
 # THEME DETECTION
 # =============================================================================
 
+
 class ThemeDetector:
     """Handles detection of the current system theme across platforms."""
 
     @classmethod
     def detect(cls) -> str:
         """Detect the current system theme.
-        
+
         Returns:
             str: 'Dark', 'Light', or 'Unknown'.
         """
@@ -174,7 +182,7 @@ class ThemeDetector:
 
     @staticmethod
     def _query_palette() -> str:
-        """Detect theme by measuring the application palette background luminance."""
+        """Detect theme by measuring app palette background luminance."""
         try:
             app = QtWidgets.QApplication.instance()
             if app is not None:
@@ -194,7 +202,7 @@ class WindowsChromeManager:
 
     @classmethod
     def supports(cls, feature: str) -> bool:
-        """Return whether the current Windows build supports a named feature."""
+        """Return whether current Windows build supports a named feature."""
         min_build = _WINDOWS_BUILD_FEATURES.get(feature)
         if min_build is None:
             return False
@@ -215,10 +223,10 @@ class WindowsChromeManager:
         """Set an integer DWM attribute via ctypes."""
         try:
             import ctypes
-            
+
             dwmapi = ctypes.windll.dwmapi
-            
-            # Define argtypes and restype explicitly for robust native boundaries
+
+            # Define argtypes and restype explicitly for robust boundaries
             dwmapi.DwmSetWindowAttribute.argtypes = [
                 ctypes.c_void_p,  # hwnd
                 ctypes.c_int,     # dwAttribute
@@ -235,21 +243,29 @@ class WindowsChromeManager:
                 ctypes.sizeof(dwm_value),
             )
             if result not in (0, None):
-                LOGGER.debug("DWM rejected attr %d (HRESULT %#x)", attribute, int(result))
+                LOGGER.debug(
+                    "DWM rejected %d (HRESULT %#x)", attribute, int(result)
+                )
         except Exception as error:
             LOGGER.debug("DWM attribute %d unavailable: %s", attribute, error)
 
     @classmethod
     def apply_chrome(cls, window, dark: bool) -> None:
-        """Apply title-bar colour, window corners, and system backdrop effects."""
+        """Apply title-bar colour, window corners, and system backdrop."""
         for attr in _DWMWA_USE_IMMERSIVE_DARK_MODE:
             cls._set_dwm_int(window, attr, int(dark))
 
         if cls.supports("win11_style"):
-            cls._set_dwm_int(window, _DWMWA_WINDOW_CORNER_PREFERENCE, WindowCornerPreference.ROUND)
+            cls._set_dwm_int(
+                window, _DWMWA_WINDOW_CORNER_PREFERENCE,
+                WindowCornerPreference.ROUND
+            )
 
         if cls.supports("mica_backdrop"):
-            cls._set_dwm_int(window, _DWMWA_SYSTEMBACKDROP_TYPE, SystemBackdropType.MAINWINDOW)
+            cls._set_dwm_int(
+                window, _DWMWA_SYSTEMBACKDROP_TYPE,
+                SystemBackdropType.MAINWINDOW
+            )
 
 # =============================================================================
 # PLATFORM THEMERS
@@ -262,7 +278,7 @@ class WindowsThemer:
     def apply(cls, window, theme: str) -> None:
         """Apply native Windows 11 theme support or the legacy fallback."""
         try:
-            dark = (theme == "Dark")
+            dark = theme == "Dark"
             if cls._supports_native():
                 cls._apply_native(window, dark)
             else:
@@ -273,12 +289,19 @@ class WindowsThemer:
 
     @classmethod
     def _supports_native(cls) -> bool:
-        """Return whether this Qt runtime can follow the Windows colour scheme."""
-        if not WindowsChromeManager.supports("win11_style") or QT_API != "PyQt6":
+        """Check if Qt runtime can follow the Windows colour scheme."""
+        if (
+            not WindowsChromeManager.supports("win11_style")
+            or QT_API != "PyQt6"
+        ):
             return False
         try:
             hints = QtGui.QGuiApplication.styleHints()
-            return bool(hints and hasattr(hints, "setColorScheme") and hasattr(QtCore.Qt, "ColorScheme"))
+            return bool(
+                hints
+                and hasattr(hints, "setColorScheme")
+                and hasattr(QtCore.Qt, "ColorScheme")
+            )
         except Exception:
             return False
 
@@ -288,7 +311,9 @@ class WindowsThemer:
         app = QtWidgets.QApplication.instance()
         if app and hasattr(app, "setStyle"):
             try:
-                if "windows11" in [s.lower() for s in QtWidgets.QStyleFactory.keys()]:
+                if "windows11" in [
+                    s.lower() for s in QtWidgets.QStyleFactory.keys()
+                ]:
                     app.setStyle("windows11")
             except Exception as error:
                 LOGGER.debug("Could not apply windows11 style: %s", error)
@@ -320,30 +345,49 @@ class ImageManager:
     @staticmethod
     def resource_path(filename: str) -> Optional[str]:
         """Return the absolute path to a resource file safely.
-        
+
         Args:
             filename (str): Name of the resource file.
-            
+
         Returns:
-            Optional[str]: Absolute path to the resource, or None if validation fails.
+            Optional[str]: Absolute path to the resource, or None if validation
+                fails.
         """
         try:
             if getattr(sys, "frozen", False):
-                base_path = os.path.abspath(os.path.join(getattr(sys, "_MEIPASS", os.getcwd()), "assets"))
+                base_path = os.path.abspath(
+                    os.path.join(
+                        getattr(sys, "_MEIPASS", os.getcwd()), "assets"
+                    )
+                )
             else:
-                project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-                base_path = os.path.abspath(os.path.join(project_root, "assets"))
-            
+                project_root = os.path.dirname(
+                    os.path.dirname(
+                        os.path.dirname(
+                            os.path.dirname(os.path.abspath(__file__))
+                        )
+                    )
+                )
+                base_path = os.path.abspath(
+                    os.path.join(project_root, "assets")
+                )
+
             full_path = os.path.abspath(os.path.join(base_path, filename))
-            
+
             # Prevent directory traversal escaping the assets directory
             if not full_path.startswith(base_path):
-                LOGGER.error("Resource path traversal attempt detected: %s", filename)
+                LOGGER.error(
+                    "Resource path traversal attempt detected: %s", filename
+                )
                 return None
-                
+
             return full_path
         except Exception:
-            LOGGER.error("Failed to resolve resource path for '%s'", filename, exc_info=True)
+            LOGGER.error(
+                "Failed to resolve resource path for '%s'",
+                filename,
+                exc_info=True,
+            )
             return None
 
     @classmethod
@@ -355,12 +399,16 @@ class ImageManager:
         try:
             image_path = cls.resource_path("images/Backdrop.png")
             if image_path is None or not os.path.exists(image_path):
-                LOGGER.warning("Backdrop image not found or invalid: %s", image_path)
+                LOGGER.warning(
+                    "Backdrop image not found or invalid: %s", image_path
+                )
                 return
 
             pixmap = QtGui.QPixmap(image_path)
             if pixmap.isNull():
-                LOGGER.warning("Backdrop image could not be loaded: %s", image_path)
+                LOGGER.warning(
+                    "Backdrop image could not be loaded: %s", image_path
+                )
                 return
 
             element.setPixmap(pixmap)
@@ -372,7 +420,11 @@ class ImageManager:
     def apply_icon(cls, window) -> None:
         """Set the application window icon."""
         try:
-            icon_filename = "icons/Icon.ico" if ThemeDetector._is_windows() else "icons/Icon.svg"
+            icon_filename = (
+                "icons/Icon.ico"
+                if ThemeDetector._is_windows()
+                else "icons/Icon.svg"
+            )
             icon_path = cls.resource_path(icon_filename)
 
             if icon_path is None or not os.path.exists(icon_path):
@@ -388,9 +440,11 @@ class ImageManager:
         except Exception as error:
             LOGGER.error("Failed to set window icon: %s", error)
 
+
 # =============================================================================
 # PUBLIC FACADE (Backwards Compatibility)
 # =============================================================================
+
 
 def initialize(window) -> None:
     """Initialize the theming system for the application window."""
@@ -402,7 +456,7 @@ def initialize(window) -> None:
     backdrop_label = window.findChild(QtWidgets.QLabel, "Backdrop")
     if backdrop_label:
         backdrop(backdrop_label)
-    
+
     apply(window)
 
     try:
@@ -412,7 +466,9 @@ def initialize(window) -> None:
                 lambda *_: QtCore.QTimer.singleShot(0, lambda: apply(window))
             )
         else:
-            LOGGER.debug("colorSchemeChanged unavailable; live theme updates disabled.")
+            LOGGER.debug(
+                "colorSchemeChanged unavailable; live theme updates disabled."
+            )
     except Exception:
         LOGGER.debug("Failed to enable live theme updates", exc_info=True)
 

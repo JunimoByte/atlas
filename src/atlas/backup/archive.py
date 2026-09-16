@@ -163,7 +163,11 @@ def _write_file_to_zip(
     except OSError as error:
         # If disk is full, we must abort the backup completely.
         import errno
-        if error.errno == errno.ENOSPC or getattr(error, "winerror", None) == 112:
+
+        if (
+            error.errno == errno.ENOSPC
+            or getattr(error, "winerror", None) == 112
+        ):
             LOGGER.error("Disk full during backup: %s", error)
             raise
 
@@ -271,7 +275,9 @@ def write_zip(
                     )
                     if archive_root_name:
                         parts = rel_path.split("/", 1)
-                        relative_file_path = parts[1] if len(parts) == 2 else rel_path
+                        relative_file_path = (
+                            parts[1] if len(parts) == 2 else rel_path
+                        )
                         rel_path = "{}/{}".format(
                             archive_root_name, relative_file_path
                         )

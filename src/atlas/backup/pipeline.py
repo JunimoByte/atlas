@@ -136,13 +136,15 @@ class Pipeline:
         self, operation: Callable, *args: Any, **kwargs: Any
     ) -> Any:
         """Retry a given operation up to MAX_RETRIES with exponential backoff.
-        
-        Only transient errors (like general OSErrors) are retried. Logic errors 
-        and definitive system errors (PermissionError, FileNotFoundError) immediately raise.
+
+        Only transient errors (like general OSErrors) are retried. Logic errors
+        and definitive system errors (PermissionError, FileNotFoundError)
+        immediately raise.
 
         Raises:
-            Exception: The last exception encountered if all retries fail, or immediately 
-                       if the exception is not in the retry allowlist.
+            Exception: The last exception encountered if all retries fail,
+                       or immediately if the exception is not in the retry
+                       allowlist.
         """
         for attempt in range(MAX_RETRIES):
             if self.is_cancelled():
@@ -151,15 +153,21 @@ class Pipeline:
             try:
                 return operation(*args, **kwargs)
             except (ScanTimeoutError, ScanError, InterruptedError) as error:
-                LOGGER.debug("Non-retryable operational error on attempt %d: %s", attempt + 1, error)
+                LOGGER.debug(
+                    "Non-retryable operational error on attempt %d: %s",
+                    attempt + 1,
+                    error,
+                )
                 raise
             except OSError as error:
                 if isinstance(error, (PermissionError, FileNotFoundError)):
                     LOGGER.debug(
-                        "Non-retryable OSError on attempt %d: %s", attempt + 1, error
+                        "Non-retryable OSError on attempt %d: %s",
+                        attempt + 1,
+                        error,
                     )
                     raise
-                    
+
                 if attempt < MAX_RETRIES - 1:
                     wait_time = RETRY_DELAY * (2**attempt)
                     LOGGER.warning(
