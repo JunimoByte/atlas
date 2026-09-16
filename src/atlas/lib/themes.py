@@ -151,10 +151,11 @@ class ThemeDetector:
 
             import winreg
 
-            with winreg.OpenKey(
-                winreg.HKEY_CURRENT_USER,
-                r"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize",
-            ) as key:
+            reg_path = (
+                r"Software\Microsoft\Windows\CurrentVersion"
+                r"\Themes\Personalize"
+            )
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, reg_path) as key:
                 value, _ = winreg.QueryValueEx(key, "AppsUseLightTheme")
 
             return "Dark" if value == 0 else "Light"
@@ -193,9 +194,11 @@ class ThemeDetector:
             pass
         return "Unknown"
 
+
 # =============================================================================
 # WINDOWS CHROME MANAGEMENT
 # =============================================================================
+
 
 class WindowsChromeManager:
     """Manages Windows DWM API interactions for native window chrome."""
@@ -267,9 +270,11 @@ class WindowsChromeManager:
                 SystemBackdropType.MAINWINDOW
             )
 
+
 # =============================================================================
 # PLATFORM THEMERS
 # =============================================================================
+
 
 class WindowsThemer:
     """Handles applying the appropriate theme specifically for Windows."""
@@ -335,9 +340,11 @@ class WindowsThemer:
             return style + "QPushButton { border-radius: 4px; }"
         return style + _WINDOWS_10_PROGRESS_STYLE
 
+
 # =============================================================================
 # RESOURCE AND IMAGE UTILITIES
 # =============================================================================
+
 
 class ImageManager:
     """Manages icon loading, UI images, and resource path resolution."""
