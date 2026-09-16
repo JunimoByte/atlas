@@ -159,7 +159,10 @@ class ThemeDetector:
                 value, _ = winreg.QueryValueEx(key, "AppsUseLightTheme")
 
             return "Dark" if value == 0 else "Light"
-        except Exception:
+        except Exception as error:
+            LOGGER.debug(
+                "Failed to query Windows registry for theme: %s", error
+            )
             return "Light"
 
     @staticmethod
@@ -177,8 +180,12 @@ class ThemeDetector:
                 return "Dark"
             if scheme == color_scheme.Light:
                 return "Light"
+        except (AttributeError, TypeError) as error:
+            LOGGER.debug("Qt theme hints unavailable: %s", error)
         except Exception:
-            pass
+            LOGGER.error(
+                "Unexpected error in Qt theme detection", exc_info=True
+            )
         return "Unknown"
 
     @staticmethod
@@ -191,7 +198,7 @@ class ThemeDetector:
                 if bg.isValid():
                     return "Dark" if bg.lightness() < 128 else "Light"
         except Exception:
-            pass
+            LOGGER.error("Failed to query Qt palette for theme", exc_info=True)
         return "Unknown"
 
 
@@ -287,7 +294,12 @@ class WindowsThemer:
             if cls._supports_native():
                 cls._apply_native(window, dark)
             else:
-                WindowsChromeManager.apply_chrome(window, dark)
+                try:
+                    WindowsChromeManager.apply_chrome(window, dark)
+                except Exception:
+                    LOGGER.error(
+                        "Failed to apply Windows DWM chrome", exc_info=True
+                    )
                 window.setStyleSheet(cls._legacy_style(theme))
         except Exception:
             LOGGER.error("Failed to apply Windows theme", exc_info=True)
@@ -308,6 +320,10 @@ class WindowsThemer:
                 and hasattr(QtCore.Qt, "ColorScheme")
             )
         except Exception:
+            LOGGER.error(
+                "Unexpected error checking native Windows support",
+                exc_info=True,
+            )
             return False
 
     @classmethod
@@ -469,8 +485,16 @@ def initialize(window) -> None:
     try:
         hints = QtGui.QGuiApplication.styleHints()
         if hints and hasattr(hints, "colorSchemeChanged"):
+
+            def _safe_apply():
+                try:
+                    window.parent()
+                    apply(window)
+                except RuntimeError:
+                    pass
+
             hints.colorSchemeChanged.connect(
-                lambda *_: QtCore.QTimer.singleShot(0, lambda: apply(window))
+                lambda *_: QtCore.QTimer.singleShot(0, _safe_apply)
             )
         else:
             LOGGER.debug(

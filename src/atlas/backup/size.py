@@ -208,7 +208,7 @@ def check_disk_space(
 
         return has_sufficient_space, format_size(free)
 
-    except Exception as error:
+    except OSError as error:
         LOGGER.error("Error checking disk space: {}".format(error))
         return False, "Unknown"
 
@@ -229,7 +229,7 @@ def create_output_dir(output_path: Union[str, Path, None] = None) -> Path:
     try:
         output_dir.mkdir(parents=True, exist_ok=True)
         LOGGER.info("Output directory ready: %s", output_dir)
-    except Exception as error:
+    except OSError as error:
         LOGGER.error("Failed to create output directory: %s", error)
         raise
     return output_dir
