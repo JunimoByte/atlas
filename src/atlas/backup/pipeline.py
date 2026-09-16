@@ -21,7 +21,7 @@ from typing import Any, Callable, Dict, List, Optional
 from atlas.backup import archive
 from atlas.backup import profile as Profile  # noqa: N812
 from atlas.backup import size as Size  # noqa: N812
-from atlas.backup.size import ScanTimeoutError
+from atlas.backup.size import ScanError, ScanTimeoutError
 from atlas.lib import browsers
 
 # =============================================================================
@@ -136,10 +136,13 @@ class Pipeline:
         self, operation: Callable, *args: Any, **kwargs: Any
     ) -> Any:
         """Retry a given operation up to MAX_RETRIES with exponential backoff.
+        
+        Only transient errors (like general OSErrors) are retried. Logic errors 
+        and definitive system errors (PermissionError, FileNotFoundError) immediately raise.
 
         Raises:
-            Exception: The last exception encountered if all retries fail.
-
+            Exception: The last exception encountered if all retries fail, or immediately 
+                       if the exception is not in the retry allowlist.
         """
         for attempt in range(MAX_RETRIES):
             if self.is_cancelled():
@@ -147,17 +150,16 @@ class Pipeline:
 
             try:
                 return operation(*args, **kwargs)
-            except (
-                PermissionError,
-                FileNotFoundError,
-                ScanTimeoutError,
-                InterruptedError,
-            ) as error:
-                LOGGER.debug(
-                    "Non-retryable error on attempt %d: %s", attempt + 1, error
-                )
+            except (ScanTimeoutError, ScanError, InterruptedError) as error:
+                LOGGER.debug("Non-retryable operational error on attempt %d: %s", attempt + 1, error)
                 raise
-            except Exception as error:
+            except OSError as error:
+                if isinstance(error, (PermissionError, FileNotFoundError)):
+                    LOGGER.debug(
+                        "Non-retryable OSError on attempt %d: %s", attempt + 1, error
+                    )
+                    raise
+                    
                 if attempt < MAX_RETRIES - 1:
                     wait_time = RETRY_DELAY * (2**attempt)
                     LOGGER.warning(
@@ -174,7 +176,7 @@ class Pipeline:
                         MAX_RETRIES,
                         error,
                     )
-                    raise error
+                    raise
         return None
 
     # =========================================================================
@@ -314,11 +316,12 @@ class Pipeline:
 
                 if size is not None:
                     total_size += size
-            except ScanTimeoutError:
+            except (ScanTimeoutError, ScanError) as error:
                 LOGGER.error(
-                    "Size scan timed out for %s — "
-                    "estimate is unreliable, blocking disk check.",
+                    "Size scan failed for %s: %s. "
+                    "Estimate is unreliable, blocking disk check.",
                     path_str,
+                    error,
                 )
                 return -1
             except Exception as error:
@@ -388,6 +391,7 @@ class Pipeline:
                     LOGGER.error("Failed to create archive: %s", zip_name)
 
             except FileNotFoundError as error:
+                backup_succeeded = False
                 LOGGER.warning("Skipped archive %s: %s", zip_name, error)
             except Exception:
                 backup_succeeded = False

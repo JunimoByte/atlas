@@ -260,6 +260,11 @@ def _get_linux_candidates() -> list:
         candidates.append(path)
 
     candidates.append(_get_downloads_posix_fallback())
+    
+    sandbox_path = _get_sandbox_fallback()
+    if sandbox_path is not None:
+        candidates.append(sandbox_path)
+
     return candidates
 
 
@@ -359,6 +364,29 @@ def _read_xdg_env_var() -> Optional[Path]:
         path,
     )
     return path
+
+
+def _get_sandbox_fallback() -> Optional[Path]:
+    """Return a safe writable directory if running in a sandbox.
+
+    Flatpak and Snap restrict access to the host filesystem. If standard
+    XDG directories fail, returning a path inside the sandbox's writable
+    user data area prevents the app from failing completely.
+    """
+    snap_data = os.environ.get("SNAP_USER_DATA")
+    if snap_data:
+        LOGGER.debug("Snap sandbox detected, using SNAP_USER_DATA.")
+        return Path(snap_data) / _DOWNLOADS_SUBDIR
+
+    flatpak_id = os.environ.get("FLATPAK_ID")
+    if flatpak_id:
+        LOGGER.debug("Flatpak sandbox detected, using XDG_DATA_HOME fallback.")
+        data_home = os.environ.get(
+            "XDG_DATA_HOME", str(Path.home() / ".var" / "app" / flatpak_id / "data")
+        )
+        return Path(data_home) / _DOWNLOADS_SUBDIR
+
+    return None
 
 
 # =============================================================================

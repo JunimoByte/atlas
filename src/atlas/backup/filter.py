@@ -31,16 +31,14 @@ try:
         ext.lower() for ext in BLACKLIST_JSON.get("SKIP_FILE_EXTENSION", [])
     }
     SKIP_FILE_WITH_EXTENSION = {
-        ext.lower(): set(names)
+        ext.lower(): {name.lower() for name in names}
         for ext, names in BLACKLIST_JSON.get(
             "SKIP_FILE_WITH_EXTENSION", {}
         ).items()
     }
 except Exception as error:
-    LOGGER.warning("Failed to load blacklist.json: {}".format(error))
-    SKIP_FOLDERS = set()
-    SKIP_FILE_EXTENSION = set()
-    SKIP_FILE_WITH_EXTENSION = {}
+    LOGGER.error("Failed to load blacklist.json: {}".format(error))
+    raise RuntimeError("Failed to load required blacklist configuration") from error
 
 # =============================================================================
 # CONSTANTS
@@ -107,7 +105,7 @@ def scan_files(  # noqa: C901
 
                                 if (
                                     file_ext in SKIP_FILE_WITH_EXTENSION
-                                    and file_name
+                                    and file_name.lower()
                                     in SKIP_FILE_WITH_EXTENSION[file_ext]
                                 ):
                                     continue
@@ -115,6 +113,11 @@ def scan_files(  # noqa: C901
                                 if os.name == "nt" and ":" in file_name:
                                     continue
 
+                                # Note: A TOCTOU (Time of Check, Time of Use) race condition exists here.
+                                # The file size or contents could change between this stat() call and the 
+                                # moment the ZIP writer opens it. This is expected and acceptable for live 
+                                # browser profiles. The downstream _write_file_to_zip() is built to handle 
+                                # ordinary OSErrors safely when files change or disappear during backup.
                                 stat_info = entry.stat(follow_symlinks=False)
 
                                 if stat_info.st_size > MAX_FILE_SIZE:

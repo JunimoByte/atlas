@@ -33,9 +33,9 @@ LOGGER = logging.getLogger(__name__)
 try:
     BLACKLIST_JSON = load_json("blacklist.json")
     SKIP_FOLDERS = {f.lower() for f in BLACKLIST_JSON.get("SKIP_FOLDERS", [])}
-except Exception:
-    LOGGER.warning("Failed to load blacklist.json", exc_info=True)
-    SKIP_FOLDERS = set()
+except Exception as error:
+    LOGGER.error("Failed to load blacklist.json: {}".format(error))
+    raise RuntimeError("Failed to load required blacklist configuration") from error
 
 # =============================================================================
 # CONSTANTS
@@ -53,6 +53,14 @@ class ScanTimeoutError(RuntimeError):
 
     The size returned would be partial and unsafe to use for
     disk-space decisions so callers should treat this conservatively.
+    """
+
+
+class ScanError(RuntimeError):
+    """Raised when a directory scan encounters inaccessible files or folders.
+    
+    Like timeouts, incomplete scans mean the size estimate is unreliable
+    and should not be trusted for disk-space approval.
     """
 
 
@@ -111,10 +119,12 @@ def get_directory_size(  # noqa: C901
 
     """
     total = 0
-    start_time = time.time()
+    start_time = time.monotonic()
+    scan_incomplete = False
+
     try:
         root = Path(path_str).resolve()
-    except (FileNotFoundError, OSError):
+    except OSError:
         root = Path(path_str).absolute()
 
     if not root.exists() or not root.is_dir():
@@ -128,7 +138,7 @@ def get_directory_size(  # noqa: C901
 
         current_dir = stack.pop()
 
-        if time.time() - start_time > MAX_SCAN_TIME:
+        if time.monotonic() - start_time > MAX_SCAN_TIME:
             raise ScanTimeoutError(
                 "Directory scan timed out after {}s: {}".format(
                     MAX_SCAN_TIME, path_str
@@ -144,18 +154,20 @@ def get_directory_size(  # noqa: C901
                                 stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
                             total += entry.stat(follow_symlinks=False).st_size
-                    except (
-                        PermissionError,
-                        FileNotFoundError,
-                        OSError,
-                    ) as error:
+                    except OSError as error:
                         LOGGER.debug(
                             "Error accessing %s: %s", entry.path, error
                         )
-        except (PermissionError, OSError) as error:
+                        scan_incomplete = True
+        except OSError as error:
             LOGGER.debug("Cannot scan directory %s: %s", current_dir, error)
+            scan_incomplete = True
 
-    gc.collect()
+    if scan_incomplete:
+        raise ScanError(
+            "Directory scan was incomplete due to inaccessible paths: {}".format(path_str)
+        )
+
     return total
 
 

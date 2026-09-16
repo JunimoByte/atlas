@@ -112,14 +112,14 @@ def test_retry_operation_succeeds_on_first_try(pipeline: Pipeline) -> None:
 
 
 def test_retry_operation_retries_on_generic_error(pipeline: Pipeline) -> None:
-    """Verify retry logic on generic errors."""
+    """Verify retry logic on transient errors."""
     call_count = {"n": 0}
 
     def flaky():
         """Fail twice before succeeding."""
         call_count["n"] += 1
         if call_count["n"] < 3:
-            raise RuntimeError("transient error")
+            raise OSError("transient I/O error")
         return "ok"
 
     with patch("atlas.backup.pipeline.time.sleep"):

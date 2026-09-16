@@ -161,6 +161,12 @@ def _write_file_to_zip(
                     dest_file.write(chunk)
         return True
     except OSError as error:
+        # If disk is full, we must abort the backup completely.
+        import errno
+        if error.errno == errno.ENOSPC or getattr(error, "winerror", None) == 112:
+            LOGGER.error("Disk full during backup: %s", error)
+            raise
+
         LOGGER.warning(
             "Skipped (I/O error / file in use): {} - {}".format(
                 file_path, error
