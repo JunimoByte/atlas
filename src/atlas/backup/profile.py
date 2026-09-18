@@ -252,9 +252,7 @@ def get_browser_name_from_path(
             if not raw_path or not path_type:
                 continue
 
-            candidate_paths = _expand_path_by_type(
-                path_type, raw_path, os_key
-            )
+            candidate_paths = _expand_path_by_type(path_type, raw_path, os_key)
 
             for location in candidate_paths:
                 resolved = _validate_profile_path(location, signature)

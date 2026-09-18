@@ -26,19 +26,21 @@ LOGGER = logging.getLogger(__name__)
 
 try:
     BLACKLIST_JSON = load_json("blacklist.json")
-    SKIP_FOLDERS = set(BLACKLIST_JSON.get("SKIP_FOLDERS", []))
-    SKIP_FILE_EXTENSION = set(BLACKLIST_JSON.get("SKIP_FILE_EXTENSION", []))
+    SKIP_FOLDERS = {f.lower() for f in BLACKLIST_JSON.get("SKIP_FOLDERS", [])}
+    SKIP_FILE_EXTENSION = {
+        ext.lower() for ext in BLACKLIST_JSON.get("SKIP_FILE_EXTENSION", [])
+    }
     SKIP_FILE_WITH_EXTENSION = {
-        ext: set(names)
+        ext.lower(): {name.lower() for name in names}
         for ext, names in BLACKLIST_JSON.get(
             "SKIP_FILE_WITH_EXTENSION", {}
         ).items()
     }
 except Exception as error:
-    LOGGER.warning("Failed to load blacklist.json: {}".format(error))
-    SKIP_FOLDERS = set()
-    SKIP_FILE_EXTENSION = set()
-    SKIP_FILE_WITH_EXTENSION = {}
+    LOGGER.error("Failed to load blacklist.json: {}".format(error))
+    raise RuntimeError(
+        "Failed to load required blacklist configuration"
+    ) from error
 
 # =============================================================================
 # CONSTANTS
@@ -94,18 +96,19 @@ def scan_files(  # noqa: C901
 
                         try:
                             if entry.is_dir(follow_symlinks=False):
-                                if entry.name not in SKIP_FOLDERS:
+                                if entry.name.lower() not in SKIP_FOLDERS:
                                     stack.append(entry.path)
                             elif entry.is_file(follow_symlinks=False):
                                 file_name = entry.name
-                                file_ext = Path(file_name).suffix
+                                _, file_ext = os.path.splitext(file_name)
+                                file_ext = file_ext.lower()
 
                                 if file_ext in SKIP_FILE_EXTENSION:
                                     continue
 
                                 if (
                                     file_ext in SKIP_FILE_WITH_EXTENSION
-                                    and file_name
+                                    and file_name.lower()
                                     in SKIP_FILE_WITH_EXTENSION[file_ext]
                                 ):
                                     continue
@@ -113,6 +116,15 @@ def scan_files(  # noqa: C901
                                 if os.name == "nt" and ":" in file_name:
                                     continue
 
+                                # Note: A TOCTOU (Time of Check, Time of Use)
+                                # race condition exists here. The file size or
+                                # contents could change between this stat()
+                                # call and the moment the ZIP writer opens it.
+                                # This is expected and acceptable for live
+                                # browser profiles. The downstream
+                                # _write_file_to_zip() is built to handle
+                                # ordinary OSErrors safely when files change
+                                # or disappear during backup.
                                 stat_info = entry.stat(follow_symlinks=False)
 
                                 if stat_info.st_size > MAX_FILE_SIZE:

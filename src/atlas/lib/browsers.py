@@ -53,6 +53,10 @@ def _validate_entry(
             errors.append(
                 "❌ Empty {} in {} ({})".format(field, browser, system)
             )
+        elif isinstance(val, list) and not val:
+            errors.append(
+                "❌ Empty Signature list in {} ({})".format(browser, system)
+            )
         elif isinstance(val, list) and not all(
             isinstance(s, str) and s.strip() for s in val
         ):

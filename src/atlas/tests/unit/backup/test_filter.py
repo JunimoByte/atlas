@@ -94,7 +94,7 @@ def test_scan_files_excludes_named_file_with_extension(
     monkeypatch.setattr(
         backup_filter,
         "SKIP_FILE_WITH_EXTENSION",
-        {".db": {"Cookies.db", "History.db"}},
+        {".db": {"cookies.db", "history.db"}},
     )
     make_file(tmp_path / "Cookies.db")  # full name in blacklist → skip
     make_file(tmp_path / "Cookies.txt")  # different extension → keep

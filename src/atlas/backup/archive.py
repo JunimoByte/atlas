@@ -31,7 +31,7 @@ LOGGER = logging.getLogger(__name__)
 # CONSTANTS
 # =============================================================================
 
-CHUNK_SIZE = 64 * 1024
+CHUNK_SIZE = 1024 * 1024
 ATLAS_SUBDIR = "Backup"
 ZIP_OUTPUT_DIR = None  # type: Optional[Path]
 
@@ -161,6 +161,16 @@ def _write_file_to_zip(
                     dest_file.write(chunk)
         return True
     except OSError as error:
+        # If disk is full, we must abort the backup completely.
+        import errno
+
+        if (
+            error.errno == errno.ENOSPC
+            or getattr(error, "winerror", None) == 112
+        ):
+            LOGGER.error("Disk full during backup: %s", error)
+            raise
+
         LOGGER.warning(
             "Skipped (I/O error / file in use): {} - {}".format(
                 file_path, error
@@ -251,6 +261,7 @@ def write_zip(
             zipfile.ZIP_DEFLATED,
             allowZip64=True,
             strict_timestamps=False,
+            compresslevel=1,
         ) as zip_file:
             for base_path, file_path in files:
                 if cancel_callback and cancel_callback():
@@ -264,7 +275,10 @@ def write_zip(
                         else None
                     )
                     if archive_root_name:
-                        _, relative_file_path = rel_path.split("/", 1)
+                        parts = rel_path.split("/", 1)
+                        relative_file_path = (
+                            parts[1] if len(parts) == 2 else rel_path
+                        )
                         rel_path = "{}/{}".format(
                             archive_root_name, relative_file_path
                         )
@@ -349,7 +363,7 @@ def compress(  # noqa: C901
 
     try:
         zip_path = _resolve_output_zip_path(zip_name)
-    except ValueError as error:
+    except (ValueError, OSError) as error:
         LOGGER.error("Invalid zip output path: %s", error)
         return None
 

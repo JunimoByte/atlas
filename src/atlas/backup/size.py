@@ -8,8 +8,8 @@ Provides human-readable size formatting and disk space validation.
 # IMPORTS
 # =============================================================================
 
-import gc
 import logging
+import math
 import os
 import shutil
 import time
@@ -31,10 +31,12 @@ LOGGER = logging.getLogger(__name__)
 
 try:
     BLACKLIST_JSON = load_json("blacklist.json")
-    SKIP_FOLDERS = set(BLACKLIST_JSON.get("SKIP_FOLDERS", []))
-except Exception:
-    LOGGER.warning("Failed to load blacklist.json", exc_info=True)
-    SKIP_FOLDERS = set()
+    SKIP_FOLDERS = {f.lower() for f in BLACKLIST_JSON.get("SKIP_FOLDERS", [])}
+except Exception as error:
+    LOGGER.error("Failed to load blacklist.json: {}".format(error))
+    raise RuntimeError(
+        "Failed to load required blacklist configuration"
+    ) from error
 
 # =============================================================================
 # CONSTANTS
@@ -55,6 +57,14 @@ class ScanTimeoutError(RuntimeError):
     """
 
 
+class ScanError(RuntimeError):
+    """Raised when a directory scan encounters inaccessible files or folders.
+
+    Like timeouts, incomplete scans mean the size estimate is unreliable
+    and should not be trusted for disk-space approval.
+    """
+
+
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
@@ -72,7 +82,7 @@ def format_size(bytes_size: Union[int, float]) -> str:
     """
     try:
         bytes_size = float(bytes_size)
-        if bytes_size < 0:
+        if bytes_size < 0 or math.isnan(bytes_size) or math.isinf(bytes_size):
             return "Invalid size"
 
         units = ["B", "KB", "MB", "GB", "TB", "PB"]
@@ -110,10 +120,12 @@ def get_directory_size(  # noqa: C901
 
     """
     total = 0
-    start_time = time.time()
+    start_time = time.monotonic()
+    scan_incomplete = False
+
     try:
         root = Path(path_str).resolve()
-    except (FileNotFoundError, OSError):
+    except OSError:
         root = Path(path_str).absolute()
 
     if not root.exists() or not root.is_dir():
@@ -127,7 +139,7 @@ def get_directory_size(  # noqa: C901
 
         current_dir = stack.pop()
 
-        if time.time() - start_time > MAX_SCAN_TIME:
+        if time.monotonic() - start_time > MAX_SCAN_TIME:
             raise ScanTimeoutError(
                 "Directory scan timed out after {}s: {}".format(
                     MAX_SCAN_TIME, path_str
@@ -139,22 +151,25 @@ def get_directory_size(  # noqa: C901
                 for entry in entries:
                     try:
                         if entry.is_dir(follow_symlinks=False):
-                            if entry.name not in SKIP_FOLDERS:
+                            if entry.name.lower() not in SKIP_FOLDERS:
                                 stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
                             total += entry.stat(follow_symlinks=False).st_size
-                    except (
-                        PermissionError,
-                        FileNotFoundError,
-                        OSError,
-                    ) as error:
+                    except OSError as error:
                         LOGGER.debug(
                             "Error accessing %s: %s", entry.path, error
                         )
-        except (PermissionError, OSError) as error:
+                        scan_incomplete = True
+        except OSError as error:
             LOGGER.debug("Cannot scan directory %s: %s", current_dir, error)
+            scan_incomplete = True
 
-    gc.collect()
+    if scan_incomplete:
+        raise ScanError(
+            "Directory scan was incomplete due to inaccessible "
+            "paths: {}".format(path_str)
+        )
+
     return total
 
 
@@ -172,6 +187,13 @@ def check_disk_space(
             Formatted available space).
 
     """
+    if estimated_size_bytes < 0:
+        LOGGER.warning(
+            "check_disk_space called with negative size: %d",
+            estimated_size_bytes,
+        )
+        return False, "Unknown"
+
     try:
         output_dir = (
             Path(output_path).resolve()
@@ -186,7 +208,7 @@ def check_disk_space(
 
         return has_sufficient_space, format_size(free)
 
-    except Exception as error:
+    except OSError as error:
         LOGGER.error("Error checking disk space: {}".format(error))
         return False, "Unknown"
 
@@ -207,7 +229,7 @@ def create_output_dir(output_path: Union[str, Path, None] = None) -> Path:
     try:
         output_dir.mkdir(parents=True, exist_ok=True)
         LOGGER.info("Output directory ready: %s", output_dir)
-    except Exception as error:
+    except OSError as error:
         LOGGER.error("Failed to create output directory: %s", error)
         raise
     return output_dir

@@ -118,7 +118,7 @@ def test_show_elevated_permissions_dialog_calls_popup(
 ) -> None:
     """Verify that the permissions dialog shows a warning and exits."""
     mock_warning = MagicMock()
-    monkeypatch.setattr(permissions, "show_warning", mock_warning)
+    monkeypatch.setattr("atlas.display.popup.show_warning", mock_warning)
 
     permissions.show_elevated_permissions_dialog()
 
@@ -135,7 +135,7 @@ def test_show_elevated_permissions_dialog_fallback(
         """Raise ImportError always."""
         raise ImportError("fail")
 
-    monkeypatch.setattr(permissions, "show_warning", raise_import_error)
+    monkeypatch.setattr("atlas.display.popup.show_warning", raise_import_error)
 
     permissions.show_elevated_permissions_dialog()
     mock_exit.assert_called_once_with(1)

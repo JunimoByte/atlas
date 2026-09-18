@@ -43,7 +43,7 @@ def safe_zipinfo_date(
     try:
         if mtime is None:
             mtime = file_path.stat().st_mtime
-        dt = datetime.fromtimestamp(mtime)
+        dt = datetime.fromtimestamp(max(0.0, mtime))
         year = max(1980, min(dt.year, 2107))
         return (
             year,
@@ -53,7 +53,7 @@ def safe_zipinfo_date(
             dt.minute,
             dt.second,
         )
-    except Exception as error:
+    except OSError as error:
         LOGGER.debug(
             "Failed to get file date for {}: {}".format(file_path, error)
         )
@@ -112,7 +112,7 @@ def create_zip_info(file_path: Path) -> zipfile.ZipInfo:
         st = file_path.stat()
         zi.date_time = safe_zipinfo_date(file_path, st.st_mtime)
         zi.external_attr = set_file_permissions(st.st_mode)
-    except Exception as error:
+    except OSError as error:
         LOGGER.debug(
             "Failed to set file attributes for {}: {}".format(file_path, error)
         )

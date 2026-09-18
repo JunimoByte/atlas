@@ -22,20 +22,22 @@ def test_startup_does_not_attempt_network_access(
     monkeypatch.setattr(socket, "socket", block_network)
     monkeypatch.setattr(socket, "create_connection", block_network)
     monkeypatch.setattr(socket, "getaddrinfo", block_network)
-    monkeypatch.setattr(main.permissions, "is_elevated", lambda: False)
+    from atlas import gui
 
-    original_application = main.QtWidgets.QApplication
+    monkeypatch.setattr(gui.permissions, "is_elevated", lambda: False)
+
+    original_application = gui.QtWidgets.QApplication
 
     def start_and_quit(arguments: Any) -> Any:
         """Create the real application and stop its event loop immediately."""
         application = original_application.instance()
         if application is None:
             application = original_application(arguments)
-        main.QtCore.QTimer.singleShot(0, application.quit)
+        gui.QtCore.QTimer.singleShot(0, application.quit)
         return application
 
     monkeypatch.setattr(
-        main,
+        gui,
         "QtWidgets",
         SimpleNamespace(QApplication=start_and_quit),
     )

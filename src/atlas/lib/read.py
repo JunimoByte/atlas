@@ -54,7 +54,7 @@ def load_json(filename: str, config_dir: str = "configs") -> Dict[str, Any]:
             LOGGER.warning("JSON file not found: %s", json_path)
             return {}
 
-        with open(json_path, "r", encoding="utf-8") as file_handle:
+        with open(json_path, "r", encoding="utf-8-sig") as file_handle:
             data = json.load(file_handle)
 
         if not isinstance(data, dict):

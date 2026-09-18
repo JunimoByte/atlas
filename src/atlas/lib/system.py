@@ -30,7 +30,7 @@ def normalize_os_key(os_name: str) -> str:
     if sys_name in ("darwin", "macos", "mac"):
         return "Macos"
 
-    if sys_name == "win32":
+    if sys_name in ("windows", "win32"):
         return "Windows"
 
     # Windows -> Windows, Linux -> Linux

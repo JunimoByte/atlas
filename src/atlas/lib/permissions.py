@@ -15,8 +15,6 @@ import os
 import platform
 import sys
 
-from atlas.display.popup import show_warning
-
 # =============================================================================
 # LOGGING
 # =============================================================================
@@ -62,6 +60,8 @@ def show_elevated_permissions_dialog() -> None:
     LOGGER.info("Please run as a regular user for security purposes.")
 
     try:
+        from atlas.display.popup import show_warning
+
         show_warning(
             title="Caution",
             message="Elevated Permissions Detected",

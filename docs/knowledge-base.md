@@ -32,13 +32,20 @@ backend with `QT_QPA_PLATFORM`.
 ## Startup and Application Flow
 
 The executable entry point is `atlas.main`, also exposed as the `atlas`
-console command. Startup follows this order:
+console command. The bootstrapper parses arguments and routes execution:
 
+**Graphical Mode (`gui.py`)**:
 1. Refuse elevated/admin execution.
 2. Load and validate browser and path-type configuration.
 3. Create `QApplication` and the main `Window`.
 4. Initialize the window theme, application icon, and backdrop.
 5. Enter the Qt event loop.
+
+**CLI Mode (`cli.py`)**:
+1. Refuse elevated/admin execution (prints warning).
+2. Load and validate browser configuration.
+3. Construct `Pipeline` with console standard output callbacks.
+4. Execute pipeline and exit.
 
 The backup operation follows a separate staged flow:
 
@@ -202,7 +209,9 @@ separately.
 
 | Location | Responsibility |
 | --- | --- |
-| `src/atlas/main.py` | Startup checks and Qt application launch. |
+| `src/atlas/main.py` | Bootstrapper router for `--cli` flag. |
+| `src/atlas/gui.py` | Graphical entry point (Qt application launch). |
+| `src/atlas/cli.py` | Headless entry point (CLI application launch). |
 | `src/atlas/compatibility/qt.py` | Qt binding selection and Linux pre-Qt setup. |
 | `src/atlas/ui/interface.py` | Static main-dialog widgets and layout. |
 | `src/atlas/display/` | Window modes, controller, signals, controls, dialogs. |
