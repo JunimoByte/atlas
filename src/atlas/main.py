@@ -11,10 +11,6 @@ Handles initialization, configuration verification, UI setup, and execution.
 import logging
 import sys
 
-from atlas.compatibility.qt import QtCore, QtGui, QtWidgets
-from atlas.display import window
-from atlas.lib import browsers, permissions, themes
-
 # =============================================================================
 # LOGGING
 # =============================================================================
@@ -34,40 +30,25 @@ LOGGER = logging.getLogger(__name__)
 def main() -> None:
     """Launch Atlas.
 
-    Validate permissions, check config, initialize Qt,
-    set up the UI with theming, and run the event loop.
-    Exit gracefully on errors.
+    Routes execution to either the CLI or GUI based on arguments.
     """
-    # Permission validation
-    if permissions.is_elevated():
-        permissions.show_elevated_permissions_dialog()
+    import argparse
+    import sys
 
-    # Configuration verification
-    if not browsers.verify_entries():
-        LOGGER.error("Failed to load browser configuration. Exiting.")
-        LOGGER.info(
-            "Please check the configuration file and restart the application."
-        )
-        return
-
-    # Application initialization
-    has_policy_setter = hasattr(
-        QtGui.QGuiApplication, "setHighDpiScaleFactorRoundingPolicy"
+    parser = argparse.ArgumentParser(description="Atlas Browser Backup")
+    parser.add_argument(
+        "--cli", action="store_true", help="Run Atlas in command-line mode"
     )
-    has_policy_enum = hasattr(QtCore.Qt, "HighDpiScaleFactorRoundingPolicy")
+    args, _ = parser.parse_known_args()
 
-    if has_policy_setter and has_policy_enum:
-        QtGui.QGuiApplication.setHighDpiScaleFactorRoundingPolicy(
-            QtCore.Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
-        )
-    app = QtWidgets.QApplication(sys.argv)
-    win = window.Window()
-    themes.initialize(win)
+    if args.cli:
+        from atlas.cli import run_cli
 
-    # Application execution
-    win.show()
-    LOGGER.info("Atlas has successfully started.")
-    sys.exit(app.exec())
+        sys.exit(run_cli(args))
+    else:
+        from atlas.gui import run_gui
+
+        sys.exit(run_gui(args))
 
 
 # Entry point

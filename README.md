@@ -50,6 +50,12 @@ pip install .
 atlas
 ```
 
+For purely headless terminal usage (e.g. SSH sessions, cron jobs, or safe mode) you can bypass the graphical UI entirely:
+
+```bash
+atlas --cli
+```
+
 For development:
 
 ```bash

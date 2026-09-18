@@ -78,24 +78,18 @@ Atlas follows a strict, defensive trust model:
 ## Entry Point
 
 ### `src/atlas/main.py`
-The application's main entry point. Can be run via `python -m atlas.main` or the `atlas` command installed by `pyproject.toml`.
+The barebones application bootstrapper. Parses CLI arguments (e.g. `--cli`) and routes execution to either the graphical or headless entry points. Does not import Qt dependencies directly.
 
-It orchestrates the startup sequence:
+### `src/atlas/gui.py`
+The graphical UI runner. Handles the startup sequence for the traditional UI:
+1. **Pre-flight Checks**: Validates root permissions (spawns warning dialog if elevated) and browser configurations.
+2. **High-DPI Setup**: Configures Qt scaling policies.
+3. **UI Initialization**: Instantiates `QApplication` and the main `Window`.
+4. **Theme Application**: Calls `themes.initialize(win)` for custom dark/light mode rendering.
+5. **Event Loop**: Starts the PyQt event loop via `app.exec()`.
 
-1. **Permission Validation**  
-   Calls `permissions.is_elevated()`. If true, calls `permissions.show_elevated_permissions_dialog()` and exits.
-
-2. **Configuration Verification**  
-   Calls `browsers.verify_entries()`. Exits early if configuration is invalid.
-
-3. **UI Initialization**  
-   Instantiates `QApplication` and the main `Window`.
-
-4. **Theme Application**  
-   Calls `themes.initialize(win)` to set the icon, backdrop, and system theme.
-
-5. **Execution**  
-   Starts the PyQt event loop via `app.exec()`.
+### `src/atlas/cli.py`
+The headless runner. Operates without any PyQt dependencies, ensuring maximum compatibility on servers, safe mode boots, and automated scripts. Uses plain Python console streams and carriage returns for an interactive progress output without spanning the terminal.
 
 ---
 

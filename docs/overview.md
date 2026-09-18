@@ -44,12 +44,14 @@ still prepares `dist/Atlas.AppDir` for manual packaging.
 **From Source:**
 ```bash
 python -m atlas.main
+python -m atlas.main --cli
 ```
 
 **As a Package:**
 ```bash
 pip install .
 atlas
+atlas --cli
 ```
 
 ## Project Structure
@@ -59,7 +61,9 @@ Atlas/
 ├── pyproject.toml         # Project metadata and dependencies
 ├── src/                   # Source code
 │   └── atlas/             # Main package
-│       ├── main.py        # Application entry point
+│       ├── main.py        # Bootstrapper router
+│       ├── gui.py         # Graphical entry point
+│       ├── cli.py         # Headless entry point
 │       ├── lib/           # Core utilities
 │       │   ├── browsers.py
 │       │   ├── directories.py
