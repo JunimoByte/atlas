@@ -78,7 +78,10 @@ Atlas follows a strict, defensive trust model:
 ## Entry Point
 
 ### `src/atlas/main.py`
-The barebones application bootstrapper. Parses CLI arguments (e.g. `--cli`) and routes execution to either the graphical or headless entry points. Does not import Qt dependencies directly.
+The barebones application bootstrapper router. Delegates argument parsing to `args.py` and cleanly routes execution to either the graphical or headless runners. Does not import Qt dependencies directly.
+
+### `src/atlas/args.py`
+The command-line argument parser and version resolution module. Builds the CLI argument schema (`--cli`, `-v`/`--version`, `-h`/`--help`) and dynamically resolves the application version from the canonical `pyproject.toml` configuration to prevent hardcoded constants and avoid recursive Python imports.
 
 ### `src/atlas/gui.py`
 The graphical UI runner. Handles the startup sequence for the traditional UI:

@@ -23,6 +23,7 @@ src/
     main.py       # bootstrapper router
     gui.py        # graphical entry point
     cli.py        # headless entry point
+    args.py       # CLI argument parsing and version definition
 assets/           # icons and images
 configs/          # runtime configuration files
 docs/             # documentation and ADRs

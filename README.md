@@ -12,6 +12,9 @@
     <a href="LICENSE">
       <img src="https://img.shields.io/badge/license-AGPL--3.0--or--later-blue.svg" alt="License: AGPL-3.0-or-later">
     </a>
+    <a href="PRIVACY.md">
+      <img src="https://img.shields.io/badge/privacy-100%25%20offline-success.svg" alt="Privacy policy">
+    </a>
   </p>
 </div>
 
@@ -26,6 +29,18 @@ Atlas creates portable ZIP backups of browser profiles while not writing to any 
 - Uses a strictly read-only source model and atomically creates ZIP archives in a user-selected location.
 - Supports Windows (NT), Linux, and BSD kernel platforms (Windows 7 through 11, Linux with glibc 2.31+, and FreeBSD/GhostBSD), with native Windows portable executables, Linux AppImages, Debian packages, FreeBSD pkg packages, and Python-package installs.
 - CI builds the Linux payload and runs Atlas tests in a network-disabled container; startup networking attempts fail the build.
+
+## Privacy & Offline Guarantee
+
+Atlas is engineered from the ground up as an offline-first tool that respects user privacy:
+
+- **100% Offline:** Zero telemetry, zero analytics, zero crash reporting, and zero cloud synchronization.
+- **Physical Network Exclusion:** Standalone executable builds physically exclude standard Python and Qt networking libraries (`socket`, `ssl`, `http`, `QtNetwork`).
+- **Read-Only Operation:** Live browser folders are opened strictly in read-only mode and are never modified, written to, or deleted.
+- **No Password Decryption:** Atlas does not decrypt DPAPI credentials, master keys, or saved browser passwords.
+- **Local Control:** All archives remain on your local drive and are completely under your ownership and control.
+
+For full details, see the [Privacy Policy](PRIVACY.md).
 
 ## Requirements
 
@@ -54,6 +69,7 @@ For purely headless terminal usage (e.g. SSH sessions, cron jobs, or safe mode) 
 
 ```bash
 atlas --cli
+atlas --version
 ```
 
 For development:

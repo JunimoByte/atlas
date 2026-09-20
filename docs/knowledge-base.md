@@ -32,7 +32,8 @@ backend with `QT_QPA_PLATFORM`.
 ## Startup and Application Flow
 
 The executable entry point is `atlas.main`, also exposed as the `atlas`
-console command. The bootstrapper parses arguments and routes execution:
+console command. The bootstrapper delegates argument parsing and version
+resolution to `atlas.args` and routes execution:
 
 **Graphical Mode (`gui.py`)**:
 1. Refuse elevated/admin execution.
@@ -209,9 +210,10 @@ separately.
 
 | Location | Responsibility |
 | --- | --- |
-| `src/atlas/main.py` | Bootstrapper router for `--cli` flag. |
+| `src/atlas/main.py` | Bootstrapper router; delegates argument parsing and routes to GUI or CLI. |
 | `src/atlas/gui.py` | Graphical entry point (Qt application launch). |
 | `src/atlas/cli.py` | Headless entry point (CLI application launch). |
+| `src/atlas/args.py` | CLI argument parser and dynamic version resolution from `pyproject.toml`. |
 | `src/atlas/compatibility/qt.py` | Qt binding selection and Linux pre-Qt setup. |
 | `src/atlas/ui/interface.py` | Static main-dialog widgets and layout. |
 | `src/atlas/display/` | Window modes, controller, signals, controls, dialogs. |

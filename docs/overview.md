@@ -45,6 +45,7 @@ still prepares `dist/Atlas.AppDir` for manual packaging.
 ```bash
 python -m atlas.main
 python -m atlas.main --cli
+python -m atlas.main --version
 ```
 
 **As a Package:**
@@ -52,6 +53,7 @@ python -m atlas.main --cli
 pip install .
 atlas
 atlas --cli
+atlas --version
 ```
 
 ## Project Structure
@@ -64,12 +66,14 @@ Atlas/
 │       ├── main.py        # Bootstrapper router
 │       ├── gui.py         # Graphical entry point
 │       ├── cli.py         # Headless entry point
+│       ├── args.py        # Command-line parser & version resolution
 │       ├── lib/           # Core utilities
 │       │   ├── browsers.py
 │       │   ├── directories.py
 │       │   ├── integration.py
 │       │   ├── permissions.py
 │       │   ├── read.py
+│       │   ├── system.py
 │       │   └── themes.py
 │       ├── backup/        # Backup logic
 │       │   ├── worker.py
@@ -97,6 +101,8 @@ Atlas/
 │   ├── browsers.json
 │   ├── types.json
 │   └── blacklist.json
+├── installer/             # Packaging metadata (MSIX, AppImage, Debian, Inno Setup)
+├── scripts/               # Build and environment setup scripts
 └── docs/                  # Documentation
 ```
 

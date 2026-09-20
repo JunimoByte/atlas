@@ -11,6 +11,8 @@ Handles initialization, configuration verification, UI setup, and execution.
 import logging
 import sys
 
+from atlas.args import parse_args
+
 # =============================================================================
 # LOGGING
 # =============================================================================
@@ -30,16 +32,9 @@ LOGGER = logging.getLogger(__name__)
 def main() -> None:
     """Launch Atlas.
 
-    Routes execution to either the CLI or GUI based on arguments.
+    Routes execution to either the CLI or GUI based on parsed arguments.
     """
-    import argparse
-    import sys
-
-    parser = argparse.ArgumentParser(description="Atlas Browser Backup")
-    parser.add_argument(
-        "--cli", action="store_true", help="Run Atlas in command-line mode"
-    )
-    args, _ = parser.parse_known_args()
+    args = parse_args()
 
     if args.cli:
         from atlas.cli import run_cli

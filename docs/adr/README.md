@@ -16,3 +16,5 @@ For more information on ADRs, see [adr.github.io](https://adr.github.io/).
 8. [Linux AppImage Packaging](0008-linux-appimage-packaging.md)
 9. [Debian Package Distribution](0009-debian-package-distribution.md)
 10. [FreeBSD Package Distribution](0010-freebsd-package-distribution.md)
+11. [Command-Line Argument Parsing: atlas.args](0011-argument-parsing.md)
+12. [Windows MSIX Packaging and Microsoft Store Distribution](0012-windows-msix-distribution.md)

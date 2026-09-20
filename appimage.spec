@@ -46,6 +46,7 @@ datas = [
     ("assets/icons/*", "assets/icons"),
     ("assets/images/*", "assets/images"),
     ("configs/*", "configs"),
+    ("pyproject.toml", "."),
 ]
 
 if _active_qt == "PyQt6":
