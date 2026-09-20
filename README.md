@@ -12,9 +12,6 @@
     <a href="LICENSE">
       <img src="https://img.shields.io/badge/license-AGPL--3.0--or--later-blue.svg" alt="License: AGPL-3.0-or-later">
     </a>
-    <a href="PRIVACY.md">
-      <img src="https://img.shields.io/badge/privacy-100%25%20offline-success.svg" alt="Privacy policy">
-    </a>
   </p>
 </div>
 
