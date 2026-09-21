@@ -1,0 +1,94 @@
+name: Build Linux Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - alpha
+      - beta
+      - main
+    tags:
+      - 'v*'
+    paths:
+      - 'src/**'
+      - 'assets/**'
+      - 'configs/**'
+      - 'installer/appimage/**'
+      - 'installer/debian/**'
+      - 'scripts/build_appimage.sh'
+      - 'scripts/build_deb.sh'
+      - 'appimage.spec'
+      - 'pyproject.toml'
+      - '.github/workflows/build_linux.yml'
+
+jobs:
+  build-linux:
+    name: Build Linux x86_64 (AppImage & DEB)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Build AppImage and DEB in Ubuntu 20.04
+        run: |
+          docker run --rm \
+            -v "$PWD:/workspace" \
+            -w /workspace \
+            ubuntu:20.04 \
+            bash -c '
+              set -e
+              export DEBIAN_FRONTEND=noninteractive
+
+              # 1. System packages & Qt runtime dependencies
+              apt-get update
+              apt-get install -y \
+                python3 \
+                python3-pip \
+                python3-pyqt5 \
+                pyqt5-dev-tools \
+                libxcb-icccm4 \
+                libxcb-image0 \
+                libxcb-keysyms1 \
+                libxcb-render-util0 \
+                libxcb-xkb1 \
+                libxkbcommon-x11-0 \
+                libxkbcommon0 \
+                libgl1 \
+                libegl1 \
+                binutils \
+                dpkg-dev \
+                curl \
+                git \
+                file \
+                ca-certificates
+
+              ln -sf /usr/bin/python3 /usr/local/bin/python
+
+              # 2. Python tooling
+              python3 -m pip install --upgrade pip
+              python3 -m pip install "pyinstaller>=6.0"
+
+              # 3. AppImage packaging tool
+              curl -fsSL -o /usr/local/bin/appimagetool \
+                https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+              chmod +x /usr/local/bin/appimagetool
+
+              # 4. Build AppImage & Debian package
+              bash scripts/build_appimage.sh
+              bash scripts/build_deb.sh
+
+              # 5. Fix permissions for host runner
+              chmod -R a+rX dist/
+            '
+
+      - name: Upload Linux Release Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Atlas-Linux-x86_64
+          path: |
+            dist/Atlas-x86_64.AppImage
+            dist/Atlas-x86_64.deb
+          if-no-files-found: error
+          retention-days: 14
