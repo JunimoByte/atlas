@@ -63,14 +63,14 @@ jobs:
             cp -p scripts/install_bsd.sh dist/FreeBSD_Release/
             chmod +x dist/FreeBSD_Release/install_bsd.sh
 
-            # 4. Package as compressed tarball
+            # 4. Package as tar archive
             cd dist
-            tar -czvf Atlas-FreeBSD13-x86_64.tar.gz FreeBSD_Release/
+            tar -cvf Atlas-FreeBSD13-x86_64.tar FreeBSD_Release/
 
       - name: Upload FreeBSD Release Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Atlas-FreeBSD13-x86_64
-          path: dist/Atlas-FreeBSD13-x86_64.tar.gz
+          path: dist/Atlas-FreeBSD13-x86_64.tar
           if-no-files-found: error
           retention-days: 14
