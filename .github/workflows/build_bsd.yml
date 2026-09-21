@@ -3,6 +3,10 @@ name: Build FreeBSD Release
 on:
   workflow_dispatch:
   push:
+    branches:
+      - alpha
+      - beta
+      - main
     tags:
       - 'v*'
     paths:
