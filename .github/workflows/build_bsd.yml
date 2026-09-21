@@ -34,15 +34,14 @@ jobs:
           release: '13.4'
           usesh: true
           prepare: |
+            export ASSUME_ALWAYS_YES=yes
+            pkg bootstrap -f
             pkg update -f
-            pkg install -y \
-              python311 \
-              py311-pip \
-              py311-setuptools \
-              py311-wheel \
-              py311-qt6-pyqt \
-              py311-pyinstaller \
-              bash
+            pkg install -y python311 py311-pip bash
+            ln -sf /usr/local/bin/python3.11 /usr/local/bin/python3 || true
+            ln -sf /usr/local/bin/python3.11 /usr/local/bin/python || true
+            pkg install -y py311-qt6-pyqt || pkg install -y py311-PyQt6
+            pkg install -y py311-pyinstaller || python3.11 -m pip install pyinstaller
           run: |
             set -e
 
