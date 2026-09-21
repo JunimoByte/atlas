@@ -1,0 +1,73 @@
+name: Build FreeBSD Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+    paths:
+      - 'src/**'
+      - 'assets/**'
+      - 'configs/**'
+      - 'scripts/install_bsd.sh'
+      - 'main.spec'
+      - 'pyproject.toml'
+      - '.github/workflows/build_bsd.yml'
+
+jobs:
+  build-freebsd:
+    name: Build FreeBSD 13 x86_64
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Build in FreeBSD 13 VM
+        uses: vmactions/freebsd-vm@v1
+        with:
+          release: '13.4'
+          usesh: true
+          prepare: |
+            pkg update -f
+            pkg install -y \
+              python311 \
+              py311-pip \
+              py311-setuptools \
+              py311-wheel \
+              py311-qt6-pyqt \
+              py311-pyinstaller \
+              bash
+          run: |
+            set -e
+
+            # 1. Compile single-file portable binary
+            python3.11 -m PyInstaller main.spec --noconfirm --clean
+
+            # 2. Verify binary existence and permissions
+            if [ ! -f "dist/Atlas-x86_64-Portable" ]; then
+              echo "Build failure: dist/Atlas-x86_64-Portable was not generated." >&2
+              exit 1
+            fi
+            chmod +x dist/Atlas-x86_64-Portable
+
+            # 3. Stage the portable release bundle
+            rm -rf dist/FreeBSD_Release
+            mkdir -p dist/FreeBSD_Release
+            cp -p dist/Atlas-x86_64-Portable dist/FreeBSD_Release/
+            cp -p assets/icons/Icon.svg dist/FreeBSD_Release/
+            cp -p scripts/install_bsd.sh dist/FreeBSD_Release/
+            chmod +x dist/FreeBSD_Release/install_bsd.sh
+
+            # 4. Package as compressed tarball
+            cd dist
+            tar -czvf Atlas-FreeBSD13-x86_64.tar.gz FreeBSD_Release/
+
+      - name: Upload FreeBSD Release Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Atlas-FreeBSD13-x86_64
+          path: dist/Atlas-FreeBSD13-x86_64.tar.gz
+          if-no-files-found: error
+          retention-days: 14
