@@ -7,7 +7,7 @@
       <img src="https://github.com/JunimoByte/atlas/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI status">
     </a>
     <a href="https://www.python.org/">
-      <img src="https://img.shields.io/badge/python-3.8%2B-3776AB?logo=python&amp;logoColor=white" alt="Python 3.8 or later">
+      <img src="https://img.shields.io/badge/python-3.8%2B-3776AB?logo=python&amp;logoColor=white" alt="Python 3.8+">
     </a>
     <a href="LICENSE">
       <img src="https://img.shields.io/badge/license-AGPL--3.0--or--later-blue.svg" alt="License: AGPL-3.0-or-later">
@@ -15,156 +15,111 @@
   </p>
 </div>
 
-## Information
-
-Atlas creates portable ZIP backups of browser profiles while not writing to any browser directory, ever.
+Atlas creates portable, lightweight ZIP backups of browser profiles while
+never writing to any browser directory.
 
 ## Features
 
-- Supports 300+ Chromium, Gecko, and legacy browser variants.
-- Excludes caches and temporary data, often reducing a 1 GB+ profile to about 100 MB while preserving settings, history, and bookmarks.
-- Uses a strictly read-only source model and atomically creates ZIP archives in a user-selected location.
-- Supports Windows (NT), Linux, and BSD kernel platforms (Windows 7 through 11, Linux with glibc 2.31+, and FreeBSD/GhostBSD), with native Windows portable executables, Linux AppImages, Debian packages, FreeBSD pkg packages, and Python-package installs.
-- CI builds the Linux payload and runs Atlas tests in a network-disabled container; startup networking attempts fail the build.
+- **300+ Supported Browsers:** Comprehensive auto-detection for Chromium,
+  Gecko, and legacy engines (Firefox, Chrome, Brave, Zen, LibreWolf,
+  Waterfox, Floorp, Vivaldi, Arc, and 290+ more).
+- **Intelligent Cache Stripping:** Excludes caches and disposable data,
+  often shrinking 1 GB+ profiles to ~100 MB while preserving bookmarks,
+  history, extensions, and preferences.
+- **Strictly Read-Only:** Live browser folders are opened exclusively in
+  read-only mode and are never modified, written to, or altered.
+- **Headless & Automation Ready:** Full graphical interface and headless
+  CLI mode (`--cli`) with cron-safe logging.
+- **Cross-Platform:** Native support for Windows (7 through 11), Linux
+  (glibc 2.31+), and BSD (FreeBSD, GhostBSD).
 
 ## Privacy & Offline Guarantee
 
-Atlas is engineered from the ground up as an offline-first tool that respects user privacy:
+Atlas is engineered from the ground up to respect user privacy:
 
-- **100% Offline:** Zero telemetry, zero analytics, zero crash reporting, and zero cloud synchronization.
-- **Physical Network Exclusion:** Standalone executable builds physically exclude standard Python and Qt networking libraries (`socket`, `ssl`, `http`, `QtNetwork`).
-- **Read-Only Operation:** Live browser folders are opened strictly in read-only mode and are never modified, written to, or deleted.
-- **No Password Decryption:** Atlas does not decrypt DPAPI credentials, master keys, or saved browser passwords.
-- **Local Control:** All archives remain on your local drive and are completely under your ownership and control.
+- **100% Offline:** Zero telemetry, analytics, crash reporting, or cloud sync.
+- **Physical Network Exclusion:** Standalone binary builds physically exclude
+  standard networking libraries (`socket`, `ssl`, `http`, `QtNetwork`).
+- **No Credential Decryption:** Atlas never decrypts DPAPI credentials,
+  master keys, or saved browser passwords.
+- **Local Ownership:** All archives remain on your local storage under your
+  complete control.
+
+> [!NOTE]
+> CI builds the Linux payload and executes the test suite in a
+> network-disabled container. Any attempt by the application to initiate
+> a network connection immediately fails the build.
 
 For full details, see the [Privacy Policy](PRIVACY.md).
 
-## Requirements
+## Quickstart
 
-- Python 3.8+
-- PyQt6 6.0+ (PyQt5 is the fallback for Windows 7)
-- Linux builds: glibc 2.31+; Ubuntu 20.04 LTS is the preferred baseline
-- FreeBSD/GhostBSD builds require system Python and Qt packages (`py312-qt6-pyqt` etc.)
+### Prebuilt Binaries
 
-For Linux or FreeBSD builds, first run:
+Download native executables and packages from [Releases](../../releases):
 
-```bash
-# If using fish, switch to bash or zsh first: bash
-source scripts/setup_dev.sh
-```
+- **Windows:** Standalone portable `.exe` or Inno Setup installer
+- **Linux:** Standalone `.AppImage` or `.deb` package
+- **FreeBSD:** Native `.pkg` package
 
-The setup script requires a POSIX-compliant shell (`bash` or `zsh`). It checks XCB/XWayland libraries for reliable Qt startup and automatically configures safe virtual environments matching the system Python version on BSD.
-
-## Install and run
+### Install with pip
 
 ```bash
 pip install .
-atlas
+atlas         # Launch GUI
+atlas --cli   # Run headless backup (cron / scripts)
 ```
 
-For purely headless terminal usage (e.g. SSH sessions, cron jobs, or safe mode) you can bypass the graphical UI entirely:
+## How It Works
+
+1. **Auto-Detection:** Atlas scans standard locations across your system
+   to identify installed browsers and their active profiles.
+2. **Selective Archiving:** Disposable caches, crash dumps, and temporary
+   files are bypassed during archive creation.
+3. **Atomic Packaging:** Profiles are packaged into standard, non-proprietary
+   ZIP archives.
+4. **Transparent Restoration:** Because backups use standard folder layouts,
+   restoring a profile is as simple as unzipping the archive back into the
+   browser profile folder.
+
+## Development
+
+Atlas dev environment setup requires `bash` or `zsh`:
 
 ```bash
-atlas --cli
-atlas --version
+source scripts/setup_dev.sh
 ```
 
-For development:
-
-```bash
-pip install -e ".[dev]"
-python -m atlas.main
-```
-
-## Test
+### Running Tests
 
 ```bash
 pytest
-```
 
-For headless Linux or CI execution:
-
-```bash
+# Headless Linux or CI execution:
 QT_QPA_PLATFORM=offscreen pytest
 ```
 
-## Build
+### Building Releases
 
-### Windows portable executable
+| Target Platform | Command | Output Artifact |
+| :--- | :--- | :--- |
+| **Windows** | `pyinstaller main.spec` | `dist/*-Portable.exe` |
+| **Linux AppImage** | `bash scripts/build_appimage.sh` | `dist/*.AppImage` |
+| **Debian / Ubuntu** | `bash scripts/build_deb.sh` | `dist/*.deb` |
+| **FreeBSD** | `bash scripts/build_pkg.sh` | `dist/*.pkg` |
 
-```bash
-pyinstaller main.spec
-```
-
-The output is `dist/Atlas-x86_64-Portable.exe` for a 64-bit Python build or
-`dist/Atlas-x86-Portable.exe` for a 32-bit build. The Inno Setup installer
-uses the matching file automatically and installs it without `-Portable`.
-
-### Linux AppImage
-
-```bash
-bash scripts/build_appimage.sh
-```
-
-This creates `dist/Atlas-<architecture>.AppImage` from an onedir payload, avoiding PyInstaller one-file extraction at launch. If `appimagetool` is absent, the script asks before downloading it to `~/.local/bin`; declining or a failed download still leaves a ready-to-package AppDir at `dist/Atlas.AppDir`.
-
-Linux uses `assets/icons/Icon.svg` for the application and AppImage icon.
-
-### Debian/Ubuntu package
-
-```bash
-bash scripts/build_deb.sh
-```
-
-This creates an artifact such as `dist/Atlas-x86_64.deb`, matching the
-AppImage naming scheme. It reuses the same Linux onedir payload as the
-AppImage, keeps Atlas under `/opt/atlas`, and adds only the normal launcher
-and desktop-entry integration files. `dpkg-deb` is required (it is normally
-provided by the `dpkg` package).
-
-Install a built package with:
-
-```bash
-sudo apt install ./dist/Atlas-x86_64.deb
-```
-
-### FreeBSD pkg package
-
-```bash
-bash scripts/build_pkg.sh
-```
-
-This creates an artifact such as `dist/Atlas-amd64.pkg`. It extracts the same
-PyInstaller payload into a native FreeBSD package, registers the XDG
-desktop icon natively, and binds to `/usr/local/`.
-
-Install a built package with:
-
-```bash
-sudo pkg add ./dist/Atlas-amd64.pkg
-```
-
-### FreeBSD/GhostBSD portable executable
-
-If distributing a standalone portable binary, use the included installer script to bypass strict `.pkg` architecture mismatch errors across major FreeBSD releases. Package `Atlas-x86_64-Portable`, `Icon.svg`, and `scripts/install_bsd.sh` into a single zip file. Users extract it and run:
-
-```bash
-sh install_bsd.sh
-```
-
-*(Note: Do not use the `source` command to run this installer, as it replaces the current process with `sudo` and will terminate your interactive shell).*
-
-This handles dependency checks (e.g. `compat13x-amd64` for older binaries on newer operating systems) and integrates the app natively into `/usr/local/`.
+*For advanced packaging options and platform notes, see the [docs](docs/).*
 
 ## Structure
 
 | Location | Purpose |
-| --- | --- |
-| `src/atlas/` | Application code and tests |
-| `configs/` | Browser definitions and backup policy |
-| `assets/` | Application images and icons |
-| `scripts/` | Setup and build scripts |
+| :--- | :--- |
+| `src/atlas/` | Application code and unit tests |
+| `configs/` | Browser profiles, rules, and blacklist |
+| `assets/` | Application icons and graphics |
+| `scripts/` | Environment setup and build scripts |
 | `installer/` | Platform packaging metadata |
+| `docs/` | Architecture and platform documentation |
 
 ## License
 
