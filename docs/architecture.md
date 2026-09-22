@@ -22,10 +22,10 @@ All validation steps occur before any disk-intensive or long-running operations 
 
 ## Platform and Kernel Compatibility
 
-Atlas supports Windows (NT), Linux (glibc 2.31+), and BSD kernels. Ubuntu 20.04 LTS is the recommended Linux
-build baseline because its older userspace maximizes compatibility with newer
-Linux desktop systems. For BSD systems, compiling on FreeBSD 13+ or GhostBSD 22+
-is recommended.
+Atlas supports Windows (NT), Linux (glibc 2.31+), and BSD kernels.
+Ubuntu 20.04 LTS is the recommended Linux build baseline because its older
+userspace maximizes compatibility with newer Linux desktop systems. For BSD
+systems, compiling on FreeBSD 13+ or GhostBSD 22+ is recommended.
 
 `compatibility/qt.py` uses the XWayland/XCB backend on Linux for stable
 decorations and window flags, including on tiling window managers. Users may
@@ -36,13 +36,25 @@ Before Python dependencies or PyInstaller are installed,
 compatibility. Atlas selects XCB unless the user explicitly requests a
 different backend with `QT_QPA_PLATFORM`.
 
-`scripts/build_appimage.sh` turns the Linux onedir PyInstaller payload into
-an AppImage. Its payload is placed in `dist/Atlas.AppDir/usr/bin`, while the
-AppRun launcher, desktop entry, and icon are maintained under
-`installer/appimage/`. When `appimagetool` is missing, the build script asks
-before downloading it to the current user's local bin directory. A declined
-or failed download leaves a complete AppDir for manual packaging instead of
-blocking the build.
+Packaging pipelines produce standalone, platform-tailored releases:
+
+- **Linux AppImage (`scripts/build_appimage.sh`)**: Turns the Linux onedir
+  payload into a standalone AppImage. The payload resides in
+  `dist/Atlas.AppDir/usr/bin`, while the AppRun launcher, desktop entry, and
+  icon are maintained under `installer/appimage/`. When `appimagetool` is
+  missing, the build script prompts before downloading it to the user's local
+  bin directory. A declined or failed download leaves a complete AppDir ready
+  for packaging.
+- **Debian / Ubuntu Package (`scripts/build_deb.sh`)**: Reuses the onedir
+  payload staged under `/opt/atlas` to build native `.deb` packages using
+  `dpkg-deb`, with launcher and desktop metadata from `installer/debian/`.
+- **FreeBSD Package & Runner** (`scripts/build_pkg.sh`,
+  `scripts/install_bsd.sh`): Builds native `.pkg` archives registered to
+  `/usr/local/`, and provides an automated standalone installer for
+  cross-version compatibility on GhostBSD and FreeBSD.
+- **Windows Packaging (`main.spec`, Inno Setup, MSIX)**: Compiles standalone
+  portable executables via `main.spec`, traditional installers via
+  `installer/Atlas.iss`, and Windows Store MSIX packages via `installer/msix/`.
 
 `assets/icons/Icon.svg` is the Linux icon source of truth. It is used by the
 application window and installed as the AppDir root icon. Windows uses its

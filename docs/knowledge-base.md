@@ -9,7 +9,8 @@ user-controlled output location.
 
 ## Supported Environments
 
-Atlas is intended to run across Windows (NT), Linux, and BSD kernels (Windows 7 or later, Linux with glibc 2.31+, and FreeBSD/GhostBSD). The
+Atlas is intended to run across Windows (NT), Linux, and BSD kernels
+(Windows 7 or later, Linux with glibc 2.31+, and FreeBSD/GhostBSD). The
 supported runtime is Python 3.8 or newer. Qt is supplied by PyQt6 when
 available, with PyQt5 selected as a fallback. Ubuntu 20.04 LTS is the
 recommended Linux build baseline because it provides a broad compatibility
@@ -19,10 +20,14 @@ to compile on FreeBSD 13+ or GhostBSD 22+.
 Linux configuration is performed before the Qt binding is imported. Atlas uses
 XWayland/XCB for stable decorations and window flags, including on tiling
 window managers. Users may explicitly select another backend with
-`QT_QPA_PLATFORM`. Atlas does not load host-system Qt theme plugins into its
-portable runtime, because their Qt ABI may not match the bundled Ubuntu 20.04
-runtime. Frozen Linux builds also suppress incompatible system GIO modules and
-the ATK bridge warning. The UI accommodates tiling window managers by using a
+`QT_QPA_PLATFORM`. Atlas bundles Qt's GTK3 platform theme plugin
+(`libqgtk3.so`) along with the complete Ubuntu 20.04 GTK3 runtime libraries
+(`libgtk-3.so.0`, `libgdk-3.so.0`, `libcairo.so.2`, `libpango-1.0.so.0`, etc.)
+so native GTK theming (Yaru, Adwaita, dark mode, fonts, icons) applies
+smoothly across modern distros (Ubuntu 20.04–26.04) without ABI crashes.
+Frozen Linux builds also suppress incompatible host GIO modules
+(`GIO_MODULE_DIR=""`) and the ATK accessibility bridge warning
+(`NO_AT_BRIDGE=1`). The UI accommodates tiling window managers by using a
 normal resizable window; on other desktops it uses a fixed-size dialog.
 
 `scripts/setup_dev.sh` checks the XCB runtime libraries retained for X11
@@ -175,6 +180,14 @@ and license metadata. It requires the standard `dpkg-deb` tool but does not
 install build or runtime dependencies system-wide. The Debian desktop entry
 uses the bundled SVG icon directly rather than adding a separate icon-theme
 asset tree.
+
+`scripts/build_pkg.sh` packages the compiled payload into a native FreeBSD
+`.pkg` archive for system-wide installation via `pkg add`, registering XDG
+desktop entries and icons under `/usr/local/`. For systems without root
+access or spanning different major FreeBSD ABI releases,
+`scripts/install_bsd.sh` provides an automated standalone installer that
+verifies runtime compatibility (such as `compat13x`) and stages the
+application locally.
 
 Both PyInstaller specs enforce the offline packaging policy for PyQt5 and
 PyQt6 equally. They explicitly exclude Qt networking, web-engine, WebSocket,

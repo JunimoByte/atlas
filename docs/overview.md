@@ -7,6 +7,8 @@ Atlas supports over **300+** different browser variants. It detects and backs up
 *   **Development Builds** (Dev, Beta, Nightly)
 *   **Canary Channels**
 *   **Legacy Versions** & Older Engines
+*   **Headless CLI Support**: Execute backups via scripts or cron jobs
+    without GUI dependencies using `atlas --cli`.
 
 > **Disclaimer:** Due to Chromium's hardware-level encryption (DPAPI), logins must be manually exported/imported. All other data (Bookmarks, History, Settings) is fully backed up.
 
@@ -28,16 +30,22 @@ The Linux development setup checks for the required XCB libraries and asks
 before installing missing dependencies. It stops if the compatibility layer is
 unavailable, preventing a portable build that may not start on another system.
 
-### 📦 Self-Contained Architecture
-Atlas packages its Python application and Qt resources into a portable
-executable. Linux build hosts must provide the XCB/XWayland libraries checked
-by `scripts/setup_dev.sh`; this keeps release builds compatible with Atlas's
-required desktop backend.
-
-For Linux distribution, `scripts/build_appimage.sh` builds an AppImage-ready
-onedir payload. It asks before downloading `appimagetool` when the tool is not
-already available. If the download is declined or unavailable, the script
-still prepares `dist/Atlas.AppDir` for manual packaging.
+### 📦 Multi-Platform Packaging Architecture
+Atlas packages its Python application and Qt resources into self-contained
+releases tailored for each supported operating system:
+*   **Linux AppImage (`scripts/build_appimage.sh`)**: Builds an onedir payload
+    staged at `dist/Atlas.AppDir/usr/bin` and packages it into a standalone
+    AppImage using `appimagetool`.
+*   **Debian/Ubuntu (`scripts/build_deb.sh`)**: Reuses the Linux onedir payload
+    under `/opt/atlas` to create standard `.deb` packages with system desktop
+    and icon integration.
+*   **FreeBSD / GhostBSD (`scripts/build_pkg.sh` & `scripts/install_bsd.sh`)**:
+    Generates native FreeBSD `.pkg` packages bound to `/usr/local/` and
+    provides an automated standalone runner script for cross-ABI
+    compatibility.
+*   **Windows Portable & Installer (`main.spec`, Inno Setup, MSIX)**: Compiles
+    standalone portable executables (`Atlas-x86_64-Portable.exe`), Inno Setup
+    installers, and MSIX packages for Microsoft Store distribution.
 
 ## Running Atlas
 
@@ -101,8 +109,12 @@ Atlas/
 │   ├── browsers.json
 │   ├── types.json
 │   └── blacklist.json
-├── installer/             # Packaging metadata (MSIX, AppImage, Debian, Inno Setup)
+├── installer/             # Packaging metadata
+│   ├── appimage/          # AppImage launcher and desktop entry
+│   ├── debian/            # Debian control and desktop entry
+│   └── msix/              # Windows Store MSIX manifest and assets
 ├── scripts/               # Build and environment setup scripts
-└── docs/                  # Documentation
+└── docs/                  # Architecture, ADRs, and guides
+    └── adr/               # Architecture Decision Records
 ```
 
