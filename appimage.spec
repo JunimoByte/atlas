@@ -202,6 +202,11 @@ a = Analysis(
     optimize=0,
 )
 
+# Strip Qt GTK platform theme bridges (e.g. libqgtk3.so). On modern GNOME
+# desktops (Ubuntu 24.04+, GNOME 44+), qgtk3 queries deleted GSettings keys
+# (such as 'antialiasing' in xsettings), causing fatal GLib-GIO SIGTRAP aborts.
+a.binaries = [x for x in a.binaries if "libqgtk" not in x[0].lower()]
+
 enforce_offline_payload(a)
 
 pyz = PYZ(a.pure)

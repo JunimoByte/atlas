@@ -1,4 +1,14 @@
 #!/bin/sh
 # Keep Debian integration minimal while the self-contained application stays
 # under /opt/atlas.
+
+# Suppress GLib/GSettings schema mismatches and GTK3 theme bridge aborts
+# on modern GNOME desktops (GNOME 44+).
+export GIO_MODULE_DIR=""
+export NO_AT_BRIDGE=1
+if [ "$QT_QPA_PLATFORMTHEME" = "gtk3" ] \
+    || [ "$QT_QPA_PLATFORMTHEME" = "qgtk3" ]; then
+    export QT_QPA_PLATFORMTHEME=""
+fi
+
 exec /opt/atlas/atlas "$@"

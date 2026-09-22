@@ -76,6 +76,11 @@ def _configure_frozen_linux_environment() -> None:
     ``NO_AT_BRIDGE`` silences the ATK accessibility-bridge signature
     mismatch warning that appears on GNOME 46+ desktops.
 
+    On modern GNOME desktops (Ubuntu 24.04+, GNOME 44+), Qt's GTK3
+    platform theme plugin queries deleted GSettings keys (e.g.
+    'antialiasing' in xsettings), causing fatal GLib-GIO SIGTRAP aborts.
+    Clearing ``QT_QPA_PLATFORMTHEME`` ensures Qt does not invoke qgtk3.
+
     Only applied when the process is a frozen PyInstaller build so
     development runs are unaffected.
 
@@ -90,8 +95,12 @@ def _configure_frozen_linux_environment() -> None:
     try:
         os.environ.setdefault("GIO_MODULE_DIR", "")
         os.environ.setdefault("NO_AT_BRIDGE", "1")
+        theme = os.environ.get("QT_QPA_PLATFORMTHEME", "").lower()
+        if theme in ("gtk3", "qgtk3", "gnome"):
+            os.environ["QT_QPA_PLATFORMTHEME"] = ""
         LOGGER.debug(
-            "Frozen Linux: GIO_MODULE_DIR and NO_AT_BRIDGE suppressed."
+            "Frozen Linux: GIO_MODULE_DIR, NO_AT_BRIDGE, and "
+            "QT_QPA_PLATFORMTHEME sanitized."
         )
     except Exception:
         LOGGER.error(

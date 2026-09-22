@@ -122,6 +122,9 @@ find_appimagetool "$architecture"
 cd "$project_root"
 python -m PyInstaller --noconfirm --clean appimage.spec
 
+# Ensure Qt GTK theme plugins are purged from payload if collected.
+find "$appdir" -type f -name "*qgtk*" -delete 2>/dev/null || true
+
 # appimagetool discovers these conventional files at the AppDir root.
 install -Dm755 "$metadata_dir/AppRun" "$appdir/AppRun"
 install -Dm644 "$metadata_dir/atlas.desktop" "$appdir/atlas.desktop"
