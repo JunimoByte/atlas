@@ -46,7 +46,8 @@ Key Features:
 TESTER INSTRUCTIONS:
 1. Atlas is a desktop utility that detects locally installed web browsers (such as Microsoft Edge, Chrome, or Firefox) and backs up their profile folders into standard .zip files in the user's Downloads folder.
 2. No login credentials, cloud accounts, or hardware keys are required to test the application.
-3. To test:
+3. Tester Prerequisite: Please ensure Microsoft Edge (or another browser) has been launched at least once on the test VM to generate a local profile directory prior to running Atlas.
+4. To test:
    a. Launch the application.
    b. The application will scan and show the estimated backup size of detected local browsers.
    c. Click "OK" to begin backup.
@@ -55,8 +56,9 @@ TESTER INSTRUCTIONS:
 
 SECURITY & PERMISSION DISCLOSURE:
 • Restricted Capability (runFullTrust): Required to read standard user configuration directories (%APPDATA% and %LOCALAPPDATA%) where web browsers store local profiles.
-• 100% Offline Architecture: The application makes zero network requests. The binary packaging specification explicitly blocks and strips all networking libraries (socket, ssl, http, QtNetwork) from the runtime.
-• No Password Decryption: Atlas does not crack or decrypt DPAPI credentials or master passwords. Files are copied directly into standard compressed archives.
+• 100% Offline Architecture: The application declares NO network capabilities in AppxManifest.xml (no internetClient capability) and makes zero outbound network requests. Production binaries explicitly strip and exclude all networking libraries (socket, ssl, http, QtNetwork) from the runtime.
+• Airplane Mode Verification: Testers may execute this application with all network adapters disabled or in Airplane Mode — Atlas operates 100% locally with zero internet dependency.
+• No Password Decryption: Atlas does not crack, access, or decrypt DPAPI credentials or master passwords. Files are copied directly into standard compressed archives under user control.
 • Read-Only Access: Original browser directories are never written to, altered, or deleted.
 ```
 
@@ -69,7 +71,7 @@ During submission under the **App capabilities** or **Package submission** secti
 > **Question:** Why does your application require the `runFullTrust` capability?
 >
 > **Copy & Paste Answer:**
-> *"Atlas is a Win32 desktop utility packaged via Desktop Bridge. The `runFullTrust` capability is strictly required to enumerate and read standard local browser configuration directories in `%APPDATA%` and `%LOCALAPPDATA%` (e.g. `%LOCALAPPDATA%\Google\Chrome\User Data`) to generate user-initiated backup archives. The application operates strictly offline, does not modify source files, and does not perform network access."*
+> *"Atlas is a Win32 desktop utility packaged via Desktop Bridge. The `runFullTrust` capability is strictly required to enumerate and read standard local browser configuration directories in `%APPDATA%` and `%LOCALAPPDATA%` (e.g. `%LOCALAPPDATA%\Google\Chrome\User Data`) to generate user-initiated backup archives. The application declares no network capabilities (no internetClient), operates strictly offline, does not decrypt passwords, does not modify source files, and can be verified running in Airplane Mode."*
 
 ---
 
