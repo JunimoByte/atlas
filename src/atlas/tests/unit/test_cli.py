@@ -8,12 +8,15 @@ milestone tracking, TTY handling, and exit codes.
 # IMPORTS
 # =============================================================================
 
+import argparse
 import sys
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 from atlas import cli
+from atlas.backup import archive
 from atlas.backup.pipeline import PipelineResult
 
 # =============================================================================
@@ -161,3 +164,46 @@ def test_run_cli_keyboard_interrupt() -> None:
 
                 assert cli.run_cli() == 1
                 mock_inst.cancel.assert_called_once()
+
+
+def test_run_cli_custom_output_success(
+    tmp_path: Path, capsys: pytest.CaptureFixture
+) -> None:
+    """Verify run_cli configures custom output directory when requested."""
+    target_dir = tmp_path / "custom_cli_out"
+    args = argparse.Namespace(output=str(target_dir))
+
+    with patch("atlas.lib.browsers.verify_entries", return_value=True):
+        with patch("atlas.lib.permissions.is_elevated", return_value=False):
+            with patch("atlas.cli.Pipeline") as mock_pipeline_cls:
+                mock_inst = MagicMock()
+                mock_inst.run.return_value = PipelineResult.SUCCESS
+                mock_pipeline_cls.return_value = mock_inst
+
+                try:
+                    code = cli.run_cli(args)
+                    assert code == 0
+                    assert (
+                        archive.get_zip_output_dir()
+                        == target_dir.resolve()
+                    )
+                    captured = capsys.readouterr()
+                    assert "Output Directory:" in captured.out
+                finally:
+                    archive.set_zip_output_dir(None)
+
+
+def test_run_cli_invalid_output_fails(
+    tmp_path: Path, capsys: pytest.CaptureFixture
+) -> None:
+    """Verify run_cli fails fast when output directory is invalid."""
+    existing_file = tmp_path / "blocked.txt"
+    existing_file.write_text("not a dir")
+    args = argparse.Namespace(output=str(existing_file))
+
+    with patch("atlas.lib.browsers.verify_entries", return_value=True):
+        with patch("atlas.lib.permissions.is_elevated", return_value=False):
+            code = cli.run_cli(args)
+            assert code == 1
+            captured = capsys.readouterr()
+            assert "Error: Invalid output directory" in captured.out

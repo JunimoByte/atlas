@@ -330,6 +330,73 @@ def test_compress_rejects_zip_name_that_escapes_output_dir(
 
 
 # =============================================================================
+# TESTS — Output Directory Management
+# =============================================================================
+
+
+def test_get_zip_output_dir_default(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Verify get_zip_output_dir resolves <Downloads>/Backup by default."""
+    downloads = tmp_path / "Downloads"
+    monkeypatch.setattr(archive, "ZIP_OUTPUT_DIR", None)
+    monkeypatch.setattr(archive, "get_downloads_dir", lambda: downloads)
+
+    out_dir = archive.get_zip_output_dir()
+
+    assert out_dir == downloads / "Backup"
+    assert out_dir.is_dir()
+
+
+def test_set_zip_output_dir_custom_path(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Verify set_zip_output_dir sets and creates custom directory."""
+    custom_dir = tmp_path / "custom_backups"
+    assert not custom_dir.exists()
+
+    result = archive.set_zip_output_dir(custom_dir)
+
+    assert result == custom_dir.resolve()
+    assert result.is_dir()
+    assert archive.get_zip_output_dir() == custom_dir.resolve()
+
+    # Clean up
+    archive.set_zip_output_dir(None)
+
+
+def test_set_zip_output_dir_reset_to_default(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Verify set_zip_output_dir(None) resets to default directory."""
+    downloads = tmp_path / "Downloads"
+    monkeypatch.setattr(archive, "get_downloads_dir", lambda: downloads)
+
+    archive.set_zip_output_dir(tmp_path / "custom")
+    reset_dir = archive.set_zip_output_dir(None)
+
+    assert reset_dir == downloads / "Backup"
+
+
+def test_set_zip_output_dir_rejects_empty_string() -> None:
+    """Verify set_zip_output_dir rejects empty or whitespace paths."""
+    with pytest.raises(ValueError, match="cannot be empty"):
+        archive.set_zip_output_dir("")
+
+    with pytest.raises(ValueError, match="cannot be empty"):
+        archive.set_zip_output_dir("   ")
+
+
+def test_set_zip_output_dir_rejects_existing_file(tmp_path: Path) -> None:
+    """Verify set_zip_output_dir rejects an existing regular file."""
+    file_path = tmp_path / "not_a_dir.txt"
+    file_path.write_text("hello")
+
+    with pytest.raises(NotADirectoryError):
+        archive.set_zip_output_dir(file_path)
+
+
+# =============================================================================
 # TEST EXECUTION
 # =============================================================================
 

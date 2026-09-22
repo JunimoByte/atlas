@@ -132,6 +132,7 @@ def test_build_parser_options() -> None:
     parser = args.build_parser()
     actions = {action.dest for action in parser._actions}
     assert "cli" in actions
+    assert "output" in actions
     assert "help" in actions
 
 
@@ -139,6 +140,19 @@ def test_parse_args_defaults() -> None:
     """Verify default arguments when none are passed."""
     parsed = args.parse_args([])
     assert parsed.cli is False
+    assert parsed.output is None
+
+
+def test_parse_args_output_short() -> None:
+    """Verify -o flag sets custom output directory."""
+    parsed = args.parse_args(["-o", "/tmp/backup"])
+    assert parsed.output == "/tmp/backup"
+
+
+def test_parse_args_output_long() -> None:
+    """Verify --output flag sets custom output directory."""
+    parsed = args.parse_args(["--output", "/tmp/backup"])
+    assert parsed.output == "/tmp/backup"
 
 
 def test_parse_args_cli_flag() -> None:

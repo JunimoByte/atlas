@@ -73,6 +73,42 @@ def get_zip_output_dir() -> Path:
     return output_dir
 
 
+def set_zip_output_dir(path: Optional[Union[str, Path]] = None) -> Path:
+    """Override or reset the ZIP archive output directory.
+
+    Args:
+        path: Optional custom destination directory. If None, resets to
+            the default ``<Downloads>/Backup`` location.
+
+    Returns:
+        Path: The resolved, validated output directory path.
+
+    Raises:
+        ValueError: If path is an empty string or invalid.
+        NotADirectoryError: If path points to an existing regular file.
+        OSError: If directory creation fails.
+
+    """
+    global ZIP_OUTPUT_DIR  # noqa: WPS420
+
+    if path is None:
+        ZIP_OUTPUT_DIR = None
+        return get_zip_output_dir()
+
+    if isinstance(path, str) and not path.strip():
+        raise ValueError("Output directory path cannot be empty.")
+
+    resolved = Path(path).resolve()
+    if resolved.is_file():
+        raise NotADirectoryError(
+            f"Output path is an existing file: {resolved}"
+        )
+
+    resolved.mkdir(parents=True, exist_ok=True)
+    ZIP_OUTPUT_DIR = resolved
+    return ZIP_OUTPUT_DIR
+
+
 def generate_zip_name() -> str:
     """Generate a timestamped zip filename."""
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")

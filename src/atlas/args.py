@@ -118,6 +118,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--cli", action="store_true", help="Run Atlas in command-line mode."
     )
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=str,
+        default=None,
+        metavar="DIR",
+        help="Custom output directory for backup archives (CLI mode).",
+    )
     return parser
 
 

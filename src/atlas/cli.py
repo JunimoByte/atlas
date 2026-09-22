@@ -11,6 +11,7 @@ without invoking the PyQt GUI. Useful for pure terminal environments
 
 import argparse
 import sys
+from typing import Optional
 
 from atlas.backup.pipeline import Pipeline, PipelineResult
 
@@ -74,7 +75,27 @@ def _on_disk_error(required: str, available: str) -> None:
     print(f"Available: {available}")
 
 
-def run_cli(args: argparse.Namespace = None) -> int:
+def _apply_output_directory(args: Optional[argparse.Namespace]) -> bool:
+    """Apply custom output directory from CLI arguments if specified.
+
+    Returns:
+        bool: True if valid or omitted, False on invalid directory.
+    """
+    if not (args and getattr(args, "output", None)):
+        return True
+
+    from atlas.backup import archive
+
+    try:
+        out_dir = archive.set_zip_output_dir(args.output)
+        print(f"Output Directory: {out_dir}")
+        return True
+    except Exception as err:
+        print(f"Error: Invalid output directory '{args.output}': {err}")
+        return False
+
+
+def run_cli(args: Optional[argparse.Namespace] = None) -> int:
     """Execute the backup pipeline in CLI mode.
 
     Args:
@@ -98,6 +119,10 @@ def run_cli(args: argparse.Namespace = None) -> int:
     print("========================================")
     print("             ATLAS CLI MODE             ")
     print("========================================")
+
+    if not _apply_output_directory(args):
+        return 1
+
     print("Starting backup process...\n")
 
     pipeline = Pipeline(
