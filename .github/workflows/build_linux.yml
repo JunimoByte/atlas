@@ -41,41 +41,62 @@ jobs:
               set -e
               export DEBIAN_FRONTEND=noninteractive
 
-              # 1. System packages & Qt runtime dependencies
+              # 1. System packages & XCB runtime dependencies
               apt-get update
               apt-get install -y \
                 python3 \
                 python3-pip \
-                python3-pyqt5 \
-                pyqt5-dev-tools \
-                libxcb-icccm4 \
-                libxcb-image0 \
-                libxcb-keysyms1 \
-                libxcb-render-util0 \
-                libxcb-xkb1 \
-                libxkbcommon-x11-0 \
-                libxkbcommon0 \
-                libgl1 \
-                libegl1 \
+                python3-venv \
                 binutils \
                 dpkg-dev \
                 curl \
                 git \
                 file \
-                ca-certificates
+                ca-certificates \
+                libdbus-1-3 \
+                libgl1 \
+                libglib2.0-0 \
+                libglib2.0-bin \
+                gsettings-desktop-schemas \
+                dconf-gsettings-backend \
+                libfontconfig1 \
+                libxrender1 \
+                libxext6 \
+                libsm6 \
+                libx11-6 \
+                libx11-xcb1 \
+                libxkbcommon0 \
+                libegl1 \
+                libopengl0 \
+                libxcb-cursor0 \
+                libxcb1 \
+                libxcb-icccm4 \
+                libxcb-image0 \
+                libxcb-keysyms1 \
+                libxcb-randr0 \
+                libxcb-render-util0 \
+                libxcb-shape0 \
+                libxcb-xinerama0 \
+                libxcb-xkb1 \
+                libxkbcommon-x11-0
 
-              ln -sf /usr/bin/python3 /usr/local/bin/python
-
-              # 2. Python tooling
-              python3 -m pip install --upgrade pip
-              python3 -m pip install "pyinstaller>=6.0"
+              # 2. Virtual environment & Qt binding (matches setup_dev.sh)
+              python3 -m venv /opt/venv
+              . /opt/venv/bin/activate
+              pip install --upgrade pip
+              if ! pip install "PyQt6>=6.0"; then
+                pip install "PyQt5>=5.15"
+              fi
+              pip install "pyinstaller>=6.0"
 
               # 3. AppImage packaging tool
+              TOOL_BASE="https://github.com/AppImage/appimagetool/releases"
+              TOOL_FILE="appimagetool-x86_64.AppImage"
               curl -fsSL -o /usr/local/bin/appimagetool \
-                https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+                "${TOOL_BASE}/download/continuous/${TOOL_FILE}"
               chmod +x /usr/local/bin/appimagetool
 
-              # 4. Build AppImage & Debian package
+              # 4. Build AppImage & Debian package inside venv
               bash scripts/build_appimage.sh
               bash scripts/build_deb.sh
 

@@ -130,8 +130,6 @@ install -d \
 # Reuse the exact onedir payload built for AppImage. Keeping it under /opt
 # prevents application files from spreading through system directories.
 cp -a "$appdir/usr/bin/." "$package_root/opt/atlas/"
-# Ensure Qt GTK theme plugins are purged from payload if collected.
-find "$package_root" -type f -name "*qgtk*" -delete 2>/dev/null || true
 # Keep desktop integration independent of PyInstaller's private _internal
 # layout while remaining SVG-only and avoiding an icon-theme asset tree.
 install -Dm644 "$icon_source" "$package_root/opt/atlas/atlas.svg"
