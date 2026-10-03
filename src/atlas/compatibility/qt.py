@@ -110,5 +110,3 @@ except ImportError:
         ) from error
 
 LOGGER.debug("Qt binding resolved: %s", QT_API)
-
-
