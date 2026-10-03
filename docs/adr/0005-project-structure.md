@@ -16,6 +16,7 @@ All source code is organised under `src/atlas/`, following the standard
 src/
   atlas/
     backup/       # scanning, estimation, and backup pipeline
+    compatibility/# platform & Qt binding compatibility
     display/      # window, controller, and signal management
     lib/          # shared utilities (themes, integration helpers)
     tests/        # unit test suite (mirrors package structure)

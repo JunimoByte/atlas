@@ -1426,6 +1426,13 @@
                 ]
             },
             {
+                "Type": "HOME",
+                "Path": "mozilla/firefox",
+                "Signature": [
+                    "profiles.ini"
+                ]
+            },
+            {
                 "Type": "FLATPAK",
                 "Path": "org.mozilla.firefox/.mozilla/firefox",
                 "Signature": [
@@ -2149,8 +2156,29 @@
                 ]
             },
             {
+                "Type": "HOME",
+                "Path": ".librewolf",
+                "Signature": [
+                    "profiles.ini"
+                ]
+            },
+            {
+                "Type": "HOME",
+                "Path": "librewolf",
+                "Signature": [
+                    "profiles.ini"
+                ]
+            },
+            {
                 "Type": "FLATPAK",
                 "Path": "io.gitlab.librewolf-community/config/librewolf/librewolf",
+                "Signature": [
+                    "profiles.ini"
+                ]
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "io.gitlab.librewolf-community/.librewolf",
                 "Signature": [
                     "profiles.ini"
                 ]
@@ -2448,8 +2476,29 @@
                 ]
             },
             {
+                "Type": "FLATPAK",
+                "Path": "com.microsoft.EdgeDev/config/microsoft-edge-dev",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
                 "Type": "HOME",
                 "Path": "microsoft-edge",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "HOME",
+                "Path": "microsoft-edge-beta",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "HOME",
+                "Path": "microsoft-edge-dev",
                 "Signature": [
                     "Local State"
                 ]
@@ -3934,6 +3983,13 @@
             {
                 "Type": "FLATPAK",
                 "Path": "io.github.ungoogled_software.ungoogled_chromium/config/chromium",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "HOME",
+                "Path": "ungoogled-chromium",
                 "Signature": [
                     "Local State"
                 ]

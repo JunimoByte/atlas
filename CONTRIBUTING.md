@@ -2,7 +2,11 @@
 
 Thank you for your interest in Atlas.
 
-Atlas is an open-source project licensed under the **GNU AGPL v3**. Code contributions are welcome! Please note that while all contributions are reviewed, there is no guarantee that a code contribution will be accepted. Community feedback, browser support suggestions, and feature ideas are also always welcome.
+Atlas is an open-source project licensed under the **GNU AGPL v3**. Code
+contributions are welcome! Please note that while all contributions are
+reviewed, there is no guarantee that a code contribution will be accepted.
+Community feedback, browser support suggestions, and feature ideas are also
+always welcome.
 
 ## How You Can Contribute
 
@@ -71,9 +75,12 @@ These standards guide long-term maintainability.
 
 ## Development Tooling
 
-Atlas development may use AI-assisted tools, including Claude and Gemini Pro, as part of the development workflow. 
+Atlas development may use AI-assisted tools, including Claude and Gemini
+Pro, as part of the development workflow.
 
-**All AI-assisted output is treated as reference material.** It must be manually reviewed, validated, and, when necessary, modified or rewritten by the contributor before submission.
+**All AI-assisted output is treated as reference material.** It must be
+manually reviewed, validated, and, when necessary, modified or rewritten by
+the contributor before submission.
 
 These tools are limited to supportive tasks such as:
 
@@ -82,16 +89,21 @@ These tools are limited to supportive tasks such as:
 - Suggesting test scenarios or edge cases
 - Assisting with code suggestions and refactoring guidance
 
+AI tools are not used to autonomously generate, modify, or commit production
+code. All changes to the repository are created and submitted manually by the
+contributor, and then reviewed by the maintainer.
 
-AI tools are not used to autonomously generate, modify, or commit production code. All changes to the repository are created and submitted manually by the contributor, and then reviewed by the maintainer.
-
-AI-generated content does not constitute authorship. Contributors retain full responsibility for the code they submit, while the maintainer retains ultimate responsibility for what is merged into the Atlas repository.
+AI-generated content does not constitute authorship. Contributors retain full
+responsibility for the code they submit, while the maintainer retains ultimate
+responsibility for what is merged into the Atlas repository.
 
 ## Pull Requests and Human Oversight
 
-As an open-source project, it’s important to clarify how code contributions and reviews work:
+As an open-source project, it’s important to clarify how code contributions
+and reviews work:
 
-- **All changes require human review.** No AI tool or automated system can directly commit code. Every change is manually evaluated by the maintainer.
+- **All changes require human review.** No AI tool or automated system can
+  directly commit code. Every change is manually evaluated by the maintainer.
 
 - **PRs are evaluated for:**
   - Correctness and functionality
@@ -99,15 +111,28 @@ As an open-source project, it’s important to clarify how code contributions an
   - Adherence to Atlas code standards (PEP 8, PEP 257, modular architecture)
   - Maintainability and readability
 
-- **AI-assisted contributions** (unit tests, docs, test scenarios, etc.) are **treated as reference material only**. Contributors must manually validate, refine, and take ownership of all such output before submitting it for review.
+- **AI-assisted contributions** (unit tests, docs, test scenarios, etc.) are
+  **treated as reference material only**. Contributors must manually
+  validate, refine, and take ownership of all such output before submitting it
+  for review.
 
-- **Explainability and defense:** Contributors must fully understand and be able to justify every line of their code. AI-assisted output is allowed only as reference; you must be able to explain the implementation choices, reasoning, and design decisions during review. Contributions that cannot be confidently defended may be rejected, and repeated inability to explain code may result in temporary or permanent restriction from contributing.
+- **Explainability and defense:** Contributors must fully understand and be
+  able to justify every line of their code. AI-assisted output is allowed only
+  as reference; you must be able to explain the implementation choices,
+  reasoning, and design decisions during review. Contributions that cannot be
+  confidently defended may be rejected, and repeated inability to explain code
+  may result in temporary or permanent restriction from contributing.
 
-- **Human accountability:** The contributor is accountable for the code they submit, while the maintainer retains responsibility for deliberating and verifying every change before it is merged. Nothing is merged without deliberate review by the maintainer.
+- **Human accountability:** The contributor is accountable for the code they
+  submit, while the maintainer retains responsibility for deliberating and
+  verifying every change before it is merged. Nothing is merged without
+  deliberate review by the maintainer.
 
-- **No automated merges or autonomous commits** are allowed—Atlas values reliability and careful oversight over speed or automation.
+- **No automated merges or autonomous commits** are allowed—Atlas values
+  reliability and careful oversight over speed or automation.
 
-This ensures Atlas stays **stable, secure, and maintainable**, even if AI tools are used as a helpful assistant rather than a decision-maker.
+This ensures Atlas stays **stable, secure, and maintainable**, even if AI tools
+are used as a helpful assistant rather than a decision-maker.
 
 ## Design Philosophy
 
@@ -121,7 +146,8 @@ Atlas is built with the following priorities:
 
 ## Future Plans
 
-Atlas is committed to the open-source community. Future plans may include expanding the contribution model or adding new collaboration channels.
+Atlas is committed to the open-source community. Future plans may include
+expanding the contribution model or adding new collaboration channels.
 
 Atlas does not currently implement archive encryption.
 Users are responsible for securing backup storage locations.

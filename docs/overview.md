@@ -1,30 +1,38 @@
 # Overview
 
-Atlas is a comprehensive, cross-platform utility designed to safeguard your web browsing data. It provides a simple yet powerful way to back up profiles from a vast array of web browsers.
+Atlas is a comprehensive, cross-platform utility designed to safeguard your
+web browsing data. It provides a simple yet powerful way to back up profiles
+from a vast array of web browsers.
 
 ## Features
-Atlas supports over **300+** different browser variants. It detects and backs up not just standard releases, but also:
+Atlas supports over **300+** different browser variants. It detects and backs
+up not just standard releases, but also:
 *   **Development Builds** (Dev, Beta, Nightly)
 *   **Canary Channels**
 *   **Legacy Versions** & Older Engines
 *   **Headless CLI Support**: Execute backups via scripts or cron jobs
     without GUI dependencies using `atlas --cli`.
 
-> **Disclaimer:** Due to Chromium's hardware-level encryption (DPAPI), logins must be manually exported/imported. All other data (Bookmarks, History, Settings) is fully backed up.
+> **Disclaimer:** Due to Chromium's hardware-level encryption (DPAPI), logins
+> must be manually exported/imported. All other data (Bookmarks, History,
+> Settings) is fully backed up.
 
 ### 🖥️ Cross-Platform Kernel & OS Compatibility
 Engineered for maximum portability across Windows, Linux, and BSD kernels:
 *   **Windows (NT Kernel)**: 7, 8, 10, 11.
-*   **Linux (Linux Kernel / glibc 2.31+)**: Build portable releases on Ubuntu 20.04 LTS for
-    the broadest practical compatibility with newer Linux desktop systems.
-*   **BSD (FreeBSD/GhostBSD Kernels)**: Native support with automated `.pkg` generation (recommended to compile on FreeBSD 13+ or GhostBSD 22+).
+*   **Linux (Linux Kernel / glibc 2.31+)**: Build portable releases on
+    Ubuntu 20.04 LTS for the broadest practical compatibility with newer
+    Linux desktop systems.
+*   **BSD (FreeBSD/GhostBSD Kernels)**: Native support with automated `.pkg`
+    generation (recommended to compile on FreeBSD 13+ or GhostBSD 22+).
 
 ### Linux and BSD Desktop Compatibility
 
-Atlas uses Qt's XWayland/XCB backend on Unix-like platforms, including in Wayland sessions.
-This is intentional: it provides more consistent Qt theming, window
-decorations, and behavior across the desktop environments commonly used from
-Ubuntu 20.04 LTS onward, as well as on FreeBSD-based systems.
+Atlas uses Qt's XWayland/XCB backend on Unix-like platforms, including in
+Wayland sessions. This is intentional: it provides more consistent Qt
+theming, window decorations, and behavior across the desktop environments
+commonly used from Ubuntu 20.04 LTS onward, as well as on FreeBSD-based
+systems.
 
 The Linux development setup checks for the required XCB libraries and asks
 before installing missing dependencies. It stops if the compatibility layer is
@@ -53,6 +61,7 @@ releases tailored for each supported operating system:
 ```bash
 python -m atlas.main
 python -m atlas.main --cli
+python -m atlas.main --cli -o /path/to/backup
 python -m atlas.main --version
 ```
 
@@ -61,6 +70,7 @@ python -m atlas.main --version
 pip install .
 atlas
 atlas --cli
+atlas --cli -o /path/to/backup
 atlas --version
 ```
 
@@ -75,6 +85,8 @@ Atlas/
 │       ├── gui.py         # Graphical entry point
 │       ├── cli.py         # Headless entry point
 │       ├── args.py        # Command-line parser & version resolution
+│       ├── compatibility/ # Platform & Qt binding compatibility
+│       │   └── qt.py
 │       ├── lib/           # Core utilities
 │       │   ├── browsers.py
 │       │   ├── directories.py

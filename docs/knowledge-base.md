@@ -50,8 +50,9 @@ resolution to `atlas.args` and routes execution:
 **CLI Mode (`cli.py`)**:
 1. Refuse elevated/admin execution (prints warning).
 2. Load and validate browser configuration.
-3. Construct `Pipeline` with console standard output callbacks.
-4. Execute pipeline and exit.
+3. Apply custom output directory if `-o` / `--output` is specified.
+4. Construct `Pipeline` with console standard output callbacks.
+5. Execute pipeline and exit.
 
 The backup operation follows a separate staged flow:
 
@@ -123,9 +124,9 @@ caches the browser list during startup, while `backup.profile` loads and caches
 the path types. Both expose their results transparently.
 
 OS keys in these configuration files (`Windows`, `Linux`, `Macos`, `BSD`) are
-agnostic. They are mapped dynamically via `lib.system.normalize_os_key` to match
-the current platform (`platform.system()`), ensuring variants like GhostBSD or
-OpenBSD resolve correctly to `BSD`.
+agnostic. They are mapped dynamically via `lib.system.normalize_os_key`
+to match the current platform (`platform.system()`), ensuring variants like
+GhostBSD or OpenBSD resolve correctly to `BSD`.
 
 For each configured browser, `Pipeline.scan_profiles` resolves candidate
 locations for the current operating system and verifies profile signatures.
@@ -142,7 +143,7 @@ the scan and write process.
 
 ## Filesystem and OS Integration
 
-The normal archive destination is an `Atlas` directory under Downloads.
+The normal archive destination is a `Backup` directory under Downloads.
 Downloads resolution is platform specific:
 
 - Windows: known-folder API, registry, user Downloads directory, then an
@@ -152,8 +153,9 @@ Downloads resolution is platform specific:
 - macOS: user Downloads directory.
 
 After success, the interface can open the output directory using the native
-file manager (`os.startfile` on Windows and `xdg-open` on Linux). The program
-does not require network access, telemetry, or elevated permissions.
+file manager (`os.startfile` on Windows, `open` on macOS, and
+`lib.integration` on Linux/POSIX). The program does not require network access,
+telemetry, or elevated permissions.
 
 ## Themes and Packaged Resources
 
@@ -209,7 +211,9 @@ The Windows spec names releases from the Python interpreter bitness:
 `Atlas-x86_64-Portable.exe` for 64-bit Python and
 `Atlas-x86-Portable.exe` for 32-bit Python. `installer/Atlas.iss` detects the
 available portable build and installs it as the corresponding
-`Atlas-<architecture>.exe`.
+`Atlas-<architecture>.exe`. `installer/msix/` provides the AppxManifest
+template, visual assets, and submission guidance for packaging the Windows
+build into an MSIX package for Microsoft Store distribution.
 
 The Debian build uses the matching release-artifact convention, such as
 `Atlas-x86_64.deb`. Its internal Debian package metadata still uses the
@@ -223,27 +227,28 @@ separately.
 
 | Location | Responsibility |
 | --- | --- |
-| `src/atlas/main.py` | Bootstrapper router; delegates argument parsing and routes to GUI or CLI. |
+| `src/atlas/main.py` | Bootstrapper router; delegates to GUI or CLI. |
 | `src/atlas/gui.py` | Graphical entry point (Qt application launch). |
 | `src/atlas/cli.py` | Headless entry point (CLI application launch). |
-| `src/atlas/args.py` | CLI argument parser and dynamic version resolution from `pyproject.toml`. |
-| `src/atlas/compatibility/qt.py` | Qt binding selection and Linux pre-Qt setup. |
+| `src/atlas/args.py` | CLI argument parser and version resolution. |
+| `src/atlas/compatibility/qt.py` | Qt binding selection and Linux setup. |
 | `src/atlas/ui/interface.py` | Static main-dialog widgets and layout. |
-| `src/atlas/display/` | Window modes, controller, signals, controls, dialogs. |
-| `src/atlas/backup/` | Discovery, sizing, validation, filtering, and archiving. |
-| `src/atlas/lib/` | Configuration, themes, permissions, folders, OS integration. |
-| `configs/` | Browser locations, path types, and blacklist policy. |
-| `main.spec` | PyInstaller packaging definition. |
-| `appimage.spec` | Linux onedir payload definition for AppImage builds. |
+| `src/atlas/display/` | Window modes, controller, signals, dialogs. |
+| `src/atlas/backup/` | Discovery, sizing, validation, archiving. |
+| `src/atlas/lib/` | Configuration, themes, permissions, folders. |
+| `configs/` | Browser locations, types, and blacklist. |
+| `main.spec` | Windows PyInstaller packaging definition. |
+| `appimage.spec` | Linux onedir payload definition for AppImage. |
 | `installer/appimage/` | AppImage launcher and desktop entry. |
-| `scripts/build_appimage.sh` | Consent-based AppDir and AppImage build script. |
-| `installer/debian/` | Debian package control, launcher, and desktop metadata. |
-| `scripts/build_deb.sh` | Debian package build script using the Linux onedir payload. |
+| `scripts/build_appimage.sh` | AppDir and AppImage build script. |
+| `installer/debian/` | Debian package control and metadata. |
+| `scripts/build_deb.sh` | Debian package build script using onedir. |
 | `scripts/build_pkg.sh` | Native FreeBSD `.pkg` package build script. |
-| `scripts/install_bsd.sh` | Standalone FreeBSD/GhostBSD portable runner and installer. |
+| `scripts/install_bsd.sh` | FreeBSD/GhostBSD portable runner/installer. |
 | `installer/Atlas.iss` | Windows Inno Setup installer definition. |
-| `scripts/setup_dev.sh` | Linux/BSD developer environment configuration script. |
-| `scripts/setup_dev.bat` | Windows developer environment configuration script. |
+| `installer/msix/` | Windows Store MSIX manifest and assets. |
+| `scripts/setup_dev.sh` | Linux/BSD developer environment script. |
+| `scripts/setup_dev.bat` | Windows developer environment script. |
 
 ## Testing and Headless Use
 

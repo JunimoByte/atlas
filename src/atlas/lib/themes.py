@@ -27,7 +27,6 @@ from atlas.compatibility.qt import (
     QtCore,
     QtGui,
     QtWidgets,
-    _is_tiling_window_manager,
 )
 
 # =============================================================================
@@ -357,6 +356,7 @@ class WindowsThemer:
         return style + _WINDOWS_10_PROGRESS_STYLE
 
 
+
 # =============================================================================
 # RESOURCE AND IMAGE UTILITIES
 # =============================================================================
@@ -416,6 +416,7 @@ class ImageManager:
     @classmethod
     def apply_backdrop(cls, element) -> None:
         """Set a backdrop image to a widget."""
+        from atlas.lib.integration import _is_tiling_window_manager
         if _is_tiling_window_manager():
             LOGGER.info("Tiling WM detected. Backdrop disabled.")
             return
@@ -530,4 +531,5 @@ def backdrop(element) -> None:
 
 def _is_tiling_wm() -> bool:
     """Compatibility alias for UI elements."""
+    from atlas.lib.integration import _is_tiling_window_manager
     return _is_tiling_window_manager()

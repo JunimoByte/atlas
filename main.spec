@@ -12,16 +12,67 @@ PyInstaller spec file for Atlas application.
   that pkg-installed PyQt is found and bundled correctly.
 """
 
+import glob
 import importlib
+import os
 import pkgutil
 import site
 import struct
+import subprocess
 import sys
 import sysconfig
 from typing import List
 
 from PyInstaller.building.build_main import EXE, PYZ, Analysis
 from PyInstaller.utils.hooks import collect_data_files
+
+
+def _valid_lib(path: str, is_64: bool) -> bool:
+    """Validate that candidate shared library matches target bitness."""
+    if is_64 and any(
+        sub in path for sub in ("/lib32", "i386-linux-gnu", "i686-linux-gnu")
+    ):
+        return False
+    return os.path.isfile(path)
+
+
+def _find_libpython() -> List:
+    """Bundle libpython*.so for POSIX onefile builds via ldconfig/glob."""
+    if sys.platform in ("win32", "darwin"):
+        return []
+    is_64 = sys.maxsize > 2**32
+    v = f"{sys.version_info.major}.{sys.version_info.minor}"
+    try:
+        out = subprocess.check_output(
+            ["ldconfig", "-p"], text=True, stderr=subprocess.DEVNULL
+        )
+        for line in out.splitlines():
+            if f"libpython{v}" in line and "=>" in line:
+                p = os.path.realpath(line.split("=>")[-1].strip())
+                if _valid_lib(p, is_64):
+                    print(f"main.spec: libpython -> {p}")
+                    return [(p, ".")]
+    except Exception:
+        pass
+    libdir = sysconfig.get_config_var("LIBDIR") or ""
+    multiarch = (
+        [libdir, "/usr/lib64", "/usr/lib/x86_64-linux-gnu",
+         "/usr/lib/aarch64-linux-gnu", "/usr/local/lib", "/usr/lib"]
+        if is_64
+        else [libdir, "/usr/lib32", "/usr/lib/i386-linux-gnu",
+              "/usr/local/lib", "/usr/lib"]
+    )
+    for d in filter(None, multiarch):
+        for p in sorted(glob.glob(os.path.join(d, f"libpython{v}*.so*"))):
+            real = os.path.realpath(p)
+            if _valid_lib(real, is_64):
+                print(f"main.spec: libpython -> {real}")
+                return [(real, ".")]
+    return []
+
+
+_libpython_binaries = _find_libpython()
+
 
 # =============================================================================
 # BSD PATH DETECTION
@@ -225,7 +276,7 @@ def enforce_offline_payload(analysis: Analysis) -> None:
 a = Analysis(
     ['src/atlas/main.py'],
     pathex=['src'] + _bsd_extra_paths,
-    binaries=[],
+    binaries=_libpython_binaries,
     datas=datas,
     hiddenimports=hiddenimports,
     hookspath=[],

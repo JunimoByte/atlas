@@ -58,16 +58,18 @@ For full details, see the [Privacy Policy](PRIVACY.md).
 
 Download native executables and packages from [Releases](../../releases):
 
-- **Windows:** Standalone portable `.exe` or Inno Setup installer
+- **Windows:** Standalone portable `.exe`, Inno Setup installer, or MSIX
+  package
 - **Linux:** Standalone `.AppImage` or `.deb` package
-- **FreeBSD:** Native `.pkg` package
+- **FreeBSD:** Portable release bundle (`.tar` with installer) or native `.pkg`
 
 ### Install with pip
 
 ```bash
 pip install .
-atlas         # Launch GUI
-atlas --cli   # Run headless backup (cron / scripts)
+atlas                          # Launch GUI
+atlas --cli                    # Headless backup (default: Downloads/Backup)
+atlas --cli -o /mnt/backups    # Headless backup to custom directory
 ```
 
 ## How It Works
@@ -84,11 +86,16 @@ atlas --cli   # Run headless backup (cron / scripts)
 
 ## Development
 
-Atlas dev environment setup requires `bash` or `zsh`:
+### Setup Environment
 
-```bash
-source scripts/setup_dev.sh
-```
+- **Linux / macOS / BSD** (`bash` or `zsh`):
+  ```bash
+  source scripts/setup_dev.sh
+  ```
+- **Windows** (Command Prompt or PowerShell):
+  ```cmd
+  scripts\setup_dev.bat
+  ```
 
 ### Running Tests
 
