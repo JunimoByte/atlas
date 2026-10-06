@@ -33,17 +33,21 @@ jobs:
           release: '11.4-gcc'
           usesh: true
           prepare: |
-            pkg install --accept python-39 || pkg install --accept runtime/python-39 || true
-            python3 -m ensurepip || true
-            python3 -m pip install --upgrade pip || true
-            python3 -m pip install pyinstaller
+            python3 -m venv /tmp/atlas_venv || python3.9 -m venv /tmp/atlas_venv || true
+            if [ -f "/tmp/atlas_venv/bin/pip" ]; then
+              /tmp/atlas_venv/bin/pip install --upgrade pip
+              /tmp/atlas_venv/bin/pip install pyinstaller
+            else
+              python3 -m pip install --break-system-packages pyinstaller || true
+            fi
           run: |
             set -e
 
-            PYTHON_BIN=$(command -v python3.11 || command -v python3.9 || command -v python3)
-
-            # 1. Compile single-file portable binary
-            $PYTHON_BIN -m PyInstaller main.spec --noconfirm --clean
+            if [ -f "/tmp/atlas_venv/bin/pyinstaller" ]; then
+              /tmp/atlas_venv/bin/pyinstaller main.spec --noconfirm --clean
+            else
+              python3 -m PyInstaller main.spec --noconfirm --clean
+            fi
 
             # 2. Verify binary existence and permissions
             if [ ! -f "dist/Atlas-x86_64-Portable" ]; then
