@@ -30,16 +30,17 @@ jobs:
       - name: Build in Solaris 11 VM
         uses: vmactions/solaris-vm@v1
         with:
-          release: '11.4'
+          release: '11.4-gcc'
           usesh: true
           prepare: |
-            pkg install runtime/python-311 runtime/python-39 gcc-14 || pkg install runtime/python-39 gcc
-            python3.11 -m ensurepip || python3 -m ensurepip
-            python3.11 -m pip install --upgrade pip pyinstaller || python3 -m pip install --upgrade pip pyinstaller
+            pkg install --accept python-39 || pkg install --accept runtime/python-39 || true
+            python3 -m ensurepip || true
+            python3 -m pip install --upgrade pip || true
+            python3 -m pip install pyinstaller
           run: |
             set -e
 
-            PYTHON_BIN=$(command -v python3.11 || command -v python3)
+            PYTHON_BIN=$(command -v python3.11 || command -v python3.9 || command -v python3)
 
             # 1. Compile single-file portable binary
             $PYTHON_BIN -m PyInstaller main.spec --noconfirm --clean
