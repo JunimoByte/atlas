@@ -40,3 +40,9 @@ def test_get_os_key_solaris() -> None:
     """Verify get_os_key returns SOLARIS when platform.system is SunOS."""
     with patch("platform.system", return_value="SunOS"):
         assert system.get_os_key() == "SOLARIS"
+
+
+def test_get_os_key_macos() -> None:
+    """Verify get_os_key returns Macos when platform.system is Darwin."""
+    with patch("platform.system", return_value="Darwin"):
+        assert system.get_os_key() == "Macos"

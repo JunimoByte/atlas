@@ -209,6 +209,35 @@ def test_find_profile_solaris_firefox(tmp_path: Path) -> None:
     assert str(profile_dir.resolve()) in result[0]
 
 
+def test_find_profile_macos_chrome(tmp_path: Path) -> None:
+    """Verify that Chrome profiles are discovered on macOS / Darwin."""
+    profile_dir = tmp_path / "Google" / "Chrome"
+    profile_dir.mkdir(parents=True)
+    (profile_dir / "Local State").write_text("{}")
+
+    fake_browsers = {
+        "Google Chrome": {
+            "Macos": [
+                {
+                    "Path": "Google/Chrome",
+                    "Type": "APPDATA",
+                    "Signature": ["Local State"],
+                }
+            ]
+        }
+    }
+
+    with patch.object(
+        profile_module, "_expand_path_by_type", return_value=[profile_dir]
+    ):
+        result = find_profile(
+            "Google Chrome", "Darwin", browsers_data=fake_browsers
+        )
+
+    assert len(result) == 1
+    assert str(profile_dir.resolve()) in result[0]
+
+
 # =============================================================================
 # TESTS — Get browser name from path
 # =============================================================================

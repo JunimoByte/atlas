@@ -52,5 +52,13 @@
             "~",
             "~/.config"
         ]
+    },
+    "Macos": {
+        "HOME": [
+            "~"
+        ],
+        "APPDATA": [
+            "~/Library/Application Support"
+        ]
     }
 }
