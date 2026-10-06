@@ -31,7 +31,8 @@ never writing to any browser directory.
 - **Headless & Automation Ready:** Full graphical interface and headless
   CLI mode (`--cli`) with cron-safe logging.
 - **Cross-Platform:** Native support for Windows (7 through 11), Linux
-  (glibc 2.31+), and BSD (FreeBSD, GhostBSD).
+  (glibc 2.31+), BSD (FreeBSD, GhostBSD), and Solaris (Oracle Solaris 11,
+  OpenIndiana).
 
 ## Privacy & Offline Guarantee
 
@@ -62,6 +63,7 @@ Download native executables and packages from [Releases](../../releases):
   package
 - **Linux:** Standalone `.AppImage` or `.deb` package
 - **FreeBSD:** Portable release bundle (`.tar` with installer) or native `.pkg`
+- **Solaris:** Portable release bundle (`.tar` with native binary)
 
 ### Install with pip
 
@@ -88,7 +90,7 @@ atlas --cli -o /mnt/backups    # Headless backup to custom directory
 
 ### Setup Environment
 
-- **Linux / macOS / BSD** (`bash` or `zsh`):
+- **Linux / macOS / BSD / Solaris** (`bash` or `zsh`):
   ```bash
   source scripts/setup_dev.sh
   ```
@@ -114,6 +116,7 @@ QT_QPA_PLATFORM=offscreen pytest
 | **Linux AppImage** | `bash scripts/build_appimage.sh` | `dist/*.AppImage` |
 | **Debian / Ubuntu** | `bash scripts/build_deb.sh` | `dist/*.deb` |
 | **FreeBSD** | `bash scripts/build_pkg.sh` | `dist/*.pkg` |
+| **Solaris** | `pyinstaller main.spec` | `dist/*-Solaris*.tar` |
 
 *For advanced packaging options and platform notes, see the [docs](docs/).*
 
