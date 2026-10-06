@@ -1462,6 +1462,22 @@
                     "profiles.ini"
                 ]
             }
+        ],
+        "SOLARIS": [
+            {
+                "Type": "HOME",
+                "Path": ".mozilla/firefox",
+                "Signature": [
+                    "profiles.ini"
+                ]
+            },
+            {
+                "Type": "HOME",
+                "Path": "mozilla/firefox",
+                "Signature": [
+                    "profiles.ini"
+                ]
+            }
         ]
     },
     "Flash Browser": {
@@ -3446,6 +3462,15 @@
             }
         ],
         "BSD": [
+            {
+                "Type": "HOME",
+                "Path": ".mozilla/seamonkey",
+                "Signature": [
+                    "profiles.ini"
+                ]
+            }
+        ],
+        "SOLARIS": [
             {
                 "Type": "HOME",
                 "Path": ".mozilla/seamonkey",

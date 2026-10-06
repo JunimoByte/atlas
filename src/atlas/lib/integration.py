@@ -50,7 +50,7 @@ _LINUX_SESSION_VARIABLES = (
 def _is_tiling_window_manager() -> bool:
     """Return True if the current Linux session is a known tiling WM."""
     if not sys.platform.startswith(
-        ("linux", "freebsd", "openbsd", "netbsd", "dragonfly")
+        ("linux", "freebsd", "openbsd", "netbsd", "dragonfly", "sunos")
     ):
         return False
     if "SWAYSOCK" in os.environ:

@@ -1,0 +1,70 @@
+name: Build Solaris Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - alpha
+      - beta
+      - main
+    tags:
+      - 'v*'
+    paths:
+      - 'src/**'
+      - 'assets/**'
+      - 'configs/**'
+      - 'main.spec'
+      - 'pyproject.toml'
+      - '.github/workflows/build_solaris.yml'
+
+jobs:
+  build-solaris:
+    name: Build Solaris 11 x86_64
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Build in Solaris 11 VM
+        uses: vmactions/solaris-vm@v1
+        with:
+          release: '11.4'
+          usesh: true
+          prepare: |
+            pkg install runtime/python-311 runtime/python-39 gcc-14 || pkg install runtime/python-39 gcc
+            python3.11 -m ensurepip || python3 -m ensurepip
+            python3.11 -m pip install --upgrade pip pyinstaller || python3 -m pip install --upgrade pip pyinstaller
+          run: |
+            set -e
+
+            PYTHON_BIN=$(command -v python3.11 || command -v python3)
+
+            # 1. Compile single-file portable binary
+            $PYTHON_BIN -m PyInstaller main.spec --noconfirm --clean
+
+            # 2. Verify binary existence and permissions
+            if [ ! -f "dist/Atlas-x86_64-Portable" ]; then
+              echo "Build failure: dist/Atlas-x86_64-Portable was not generated." >&2
+              exit 1
+            fi
+            chmod +x dist/Atlas-x86_64-Portable
+
+            # 3. Stage the portable release bundle
+            rm -rf dist/Solaris_Release
+            mkdir -p dist/Solaris_Release
+            cp -p dist/Atlas-x86_64-Portable dist/Solaris_Release/
+            cp -p assets/icons/Icon.svg dist/Solaris_Release/
+
+            # 4. Package as tar archive
+            cd dist
+            tar -cvf Atlas-Solaris11-x86_64.tar Solaris_Release/
+
+      - name: Upload Solaris Release Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Atlas-Solaris11-x86_64
+          path: dist/Atlas-Solaris11-x86_64.tar
+          if-no-files-found: error
+          retention-days: 14

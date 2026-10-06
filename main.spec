@@ -84,7 +84,7 @@ _libpython_binaries = _find_libpython()
 
 _bsd_extra_paths: List[str] = []
 if sys.platform.startswith(
-    ("freebsd", "openbsd", "netbsd", "dragonfly")
+    ("freebsd", "openbsd", "netbsd", "dragonfly", "sunos")
 ):
     for _scheme in ("posix_prefix", "posix_user"):
         _candidate = sysconfig.get_path("platlib", _scheme)

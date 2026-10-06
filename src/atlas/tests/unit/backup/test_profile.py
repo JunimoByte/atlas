@@ -182,6 +182,33 @@ def test_find_profile_deduplicates_paths(tmp_path: Path) -> None:
     assert len(result) == len(set(r.lower() for r in result))
 
 
+def test_find_profile_solaris_firefox(tmp_path: Path) -> None:
+    """Verify that Firefox profiles are discovered on Solaris / SunOS."""
+    profile_dir = tmp_path / ".mozilla" / "firefox"
+    profile_dir.mkdir(parents=True)
+    (profile_dir / "profiles.ini").write_text("[Profile0]\nName=default\n")
+
+    fake_browsers = {
+        "Firefox": {
+            "SOLARIS": [
+                {
+                    "Path": ".mozilla/firefox",
+                    "Type": "HOME",
+                    "Signature": ["profiles.ini"],
+                }
+            ]
+        }
+    }
+
+    with patch.object(
+        profile_module, "_expand_path_by_type", return_value=[profile_dir]
+    ):
+        result = find_profile("Firefox", "SunOS", browsers_data=fake_browsers)
+
+    assert len(result) == 1
+    assert str(profile_dir.resolve()) in result[0]
+
+
 # =============================================================================
 # TESTS — Get browser name from path
 # =============================================================================

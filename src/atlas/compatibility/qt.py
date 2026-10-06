@@ -50,7 +50,7 @@ def _configure_frozen_linux_environment() -> None:
 
     """
     if not sys.platform.startswith(
-        ("linux", "freebsd", "openbsd", "netbsd", "dragonfly")
+        ("linux", "freebsd", "openbsd", "netbsd", "dragonfly", "sunos")
     ):
         return
     if not getattr(sys, "frozen", False):
@@ -75,7 +75,7 @@ def _configure_linux_environment() -> None:
     tiling window managers. ``QT_QPA_PLATFORM`` always takes precedence.
     """
     if not sys.platform.startswith(
-        ("linux", "freebsd", "openbsd", "netbsd", "dragonfly")
+        ("linux", "freebsd", "openbsd", "netbsd", "dragonfly", "sunos")
     ) or os.environ.get("QT_QPA_PLATFORM"):
         return
 
