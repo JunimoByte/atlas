@@ -386,6 +386,89 @@ def test_is_tiling_window_manager_non_linux(
     assert integration._is_tiling_window_manager() is False
 
 
+def test_run_linux_open_timeout_fallback(
+    temp_folder: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Verify timeout on xdg-open falls back to next candidate."""
+    monkeypatch.setenv("XDG_CURRENT_DESKTOP", "KDE")
+
+    def fake_which(
+        cmd: str, path: Optional[str] = None
+    ) -> Optional[str]:
+        if cmd == "dolphin":
+            return "/usr/bin/dolphin"
+        return None
+
+    monkeypatch.setattr("shutil.which", fake_which)
+
+    calls = []
+
+    def fake_run(
+        cmd: List[str], **kwargs: object
+    ) -> subprocess.CompletedProcess:
+        calls.append(cmd)
+        if cmd[0] == "xdg-open":
+            raise subprocess.TimeoutExpired(cmd=cmd, timeout=3)
+        return subprocess.CompletedProcess(
+            args=cmd, returncode=0, stdout="", stderr=""
+        )
+
+    monkeypatch.setattr("subprocess.run", fake_run)
+
+    result = integration._run_linux_open(temp_folder)
+    assert result is True
+    assert len(calls) == 2
+    assert calls[0][0] == "xdg-open"
+    assert calls[1][0] == "dolphin"
+
+
+def test_build_terminal_command() -> None:
+    """Verify terminal command generation for various emulators."""
+    assert integration._build_terminal_command(
+        "foot", "ranger", "/path"
+    ) == ["foot", "ranger", "/path"]
+    assert integration._build_terminal_command(
+        "wezterm", "ranger", "/path"
+    ) == ["wezterm", "start", "--", "ranger", "/path"]
+    assert integration._build_terminal_command(
+        "gnome-terminal", "ranger", "/path"
+    ) == ["gnome-terminal", "--", "ranger", "/path"]
+    assert integration._build_terminal_command(
+        "alacritty", "ranger", "/path"
+    ) == ["alacritty", "-e", "ranger", "/path"]
+
+
+def test_get_terminal_file_manager_candidates(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Verify terminal FM candidates returned when tools exist."""
+    def fake_which(
+        cmd: str, path: Optional[str] = None
+    ) -> Optional[str]:
+        if cmd in ("foot", "ranger"):
+            return f"/usr/bin/{cmd}"
+        return None
+
+    monkeypatch.setattr("shutil.which", fake_which)
+    candidates = integration._get_terminal_file_manager_candidates(
+        "/test/path", env={"PATH": "/usr/bin"}
+    )
+    assert len(candidates) >= 1
+    assert candidates[0] == ["foot", "ranger", "/test/path"]
+
+
+def test_dispatch_open_folder_warning(
+    temp_folder: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Verify _dispatch_open_folder_warning invokes warning dialog."""
+    mock_failed = MagicMock()
+    monkeypatch.setattr(
+        "atlas.lib.integration._show_open_folder_failed", mock_failed
+    )
+    integration._dispatch_open_folder_warning(temp_folder)
+    mock_failed.assert_called_once_with(temp_folder)
+
+
 # =============================================================================
 # TEST EXECUTION
 # =============================================================================

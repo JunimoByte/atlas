@@ -74,6 +74,68 @@ def _is_kde() -> bool:
 
 
 # =============================================================================
+# FILE OPENER TIMEOUT & TERMINAL FILE MANAGERS
+# =============================================================================
+
+OPENER_TIMEOUT_SECONDS = 3
+"""Timeout in seconds for folder openers to avoid D-Bus/portal hangs."""
+
+_TERMINAL_FILE_MANAGERS = ("ranger", "yazi", "nnn", "lf", "mc")
+
+_TERMINAL_EMULATORS = (
+    "foot",
+    "alacritty",
+    "kitty",
+    "wezterm",
+    "ghostty",
+    "x-terminal-emulator",
+    "xfce4-terminal",
+    "konsole",
+    "gnome-terminal",
+    "xterm",
+    "urxvt",
+)
+
+
+def _build_terminal_command(term: str, fm: str, path: str) -> List[str]:
+    """Build command to run a terminal file manager inside an emulator."""
+    if term in ("foot", "kitty"):
+        return [term, fm, path]
+    if term == "wezterm":
+        return ["wezterm", "start", "--", fm, path]
+    if term in ("xfce4-terminal", "ghostty"):
+        return [term, "-e", f"{fm} {path}"]
+    if term == "gnome-terminal":
+        return ["gnome-terminal", "--", fm, path]
+    return [term, "-e", fm, path]
+
+
+def _get_terminal_file_manager_candidates(
+    target: str, env: Optional[Dict[str, str]] = None
+) -> List[List[str]]:
+    """Return command candidates for terminal-based file managers."""
+    path_env = env.get("PATH") if env else None
+    available_fms = [
+        fm for fm in _TERMINAL_FILE_MANAGERS
+        if shutil.which(fm, path=path_env)
+    ]
+    if not available_fms:
+        return []
+
+    available_terms = [
+        t for t in _TERMINAL_EMULATORS
+        if shutil.which(t, path=path_env)
+    ]
+    if not available_terms:
+        return []
+
+    term = available_terms[0]
+    return [
+        _build_terminal_command(term, fm, target) for fm in available_fms
+    ]
+
+
+# =============================================================================
 # FUNCTIONS
 # =============================================================================
 
@@ -210,14 +272,17 @@ def _get_clean_desktop_environment() -> Dict[str, str]:
 
 def _get_linux_file_manager_candidates(
     folder_path: Path,
+    env: Optional[Dict[str, str]] = None,
 ) -> List[List[str]]:
     """Return ordered command candidates to open a folder on Linux.
 
     Detects the active desktop session (prioritizing KDE Plasma tools
-    when running on KDE) and appends generic desktop handlers.
+    when running on KDE) and appends generic desktop handlers and
+    terminal-based file managers for minimal/tiling setups.
 
     Args:
         folder_path (Path): Path to the folder to open.
+        env (Optional[Dict[str, str]]): Cleaned environment dictionary.
 
     Returns:
         List[List[str]]: Candidate command arguments.
@@ -225,7 +290,7 @@ def _get_linux_file_manager_candidates(
     """
     target = str(folder_path)
     if _is_kde():
-        return [
+        candidates = [
             ["xdg-open", target],
             ["dolphin", target],
             ["kde-open6", target],
@@ -233,26 +298,38 @@ def _get_linux_file_manager_candidates(
             ["kde-open", target],
             ["kioclient6", "exec", target],
             ["kioclient5", "exec", target],
+            ["krusader", target],
             ["gio", "open", target],
         ]
+    else:
+        candidates = [
+            ["xdg-open", target],
+            ["gio", "open", target],
+            ["dolphin", target],
+            ["nautilus", target],
+            ["thunar", target],
+            ["pcmanfm-qt", target],
+            ["pcmanfm", target],
+            ["caja", target],
+            ["nemo", target],
+            ["spacefm", target],
+            ["cosmic-files", target],
+            ["pantheon-files", target],
+            ["doublecmd", target],
+        ]
 
-    return [
-        ["xdg-open", target],
-        ["gio", "open", target],
-        ["dolphin", target],
-        ["nautilus", target],
-        ["thunar", target],
-        ["pcmanfm", target],
-        ["caja", target],
-        ["nemo", target],
-    ]
+    candidates.extend(
+        _get_terminal_file_manager_candidates(target, env=env)
+    )
+    return candidates
 
 
 def _run_linux_open(folder_path: Path) -> bool:
     """Execute candidate commands to open a folder on Linux/POSIX.
 
     Iterates through candidate file openers, executing each with a
-    sanitized desktop environment until one exits successfully.
+    sanitized desktop environment and timeout to prevent D-Bus
+    hangs, until one exits successfully.
 
     Args:
         folder_path (Path): Path to the folder to open.
@@ -263,7 +340,7 @@ def _run_linux_open(folder_path: Path) -> bool:
 
     """
     env = _get_clean_desktop_environment()
-    candidates = _get_linux_file_manager_candidates(folder_path)
+    candidates = _get_linux_file_manager_candidates(folder_path, env=env)
 
     for cmd in candidates:
         exe = cmd[0]
@@ -281,6 +358,7 @@ def _run_linux_open(folder_path: Path) -> bool:
                 check=False,
                 capture_output=True,
                 text=True,
+                timeout=OPENER_TIMEOUT_SECONDS,
             )
             returncode = getattr(result, "returncode", None)
             if returncode == 0 or (
@@ -296,6 +374,13 @@ def _run_linux_open(folder_path: Path) -> bool:
                 returncode,
                 stderr_msg,
             )
+        except subprocess.TimeoutExpired:
+            LOGGER.warning(
+                "Opener '%s' timed out after %ds (likely D-Bus/portal hang); "
+                "trying next candidate",
+                exe,
+                OPENER_TIMEOUT_SECONDS,
+            )
         except Exception as exc:
             LOGGER.debug("Failed to execute '%s': %s", exe, exc)
 
@@ -304,6 +389,39 @@ def _run_linux_open(folder_path: Path) -> bool:
         folder_path,
     )
     return False
+
+
+def _show_open_folder_failed(folder_path: Path) -> None:
+    """Display warning when no file manager could open the folder."""
+    show_warning(
+        title="Caution",
+        message="Failed to Open Folder",
+        details=(
+            "Atlas could not find a supported file manager to open:\n\n"
+            f"{folder_path}\n\n"
+            "Please open this folder manually."
+        ),
+    )
+
+
+def _dispatch_open_folder_warning(folder_path: Path) -> None:
+    """Safely dispatch open folder warning to the main Qt thread."""
+    try:
+        from atlas.compatibility.qt import QtCore, QtWidgets
+
+        app = QtWidgets.QApplication.instance()
+        if app is not None:
+            QtCore.QTimer.singleShot(
+                0, app, lambda: _show_open_folder_failed(folder_path)
+            )
+            return
+    except Exception:
+        pass
+
+    try:
+        _show_open_folder_failed(folder_path)
+    except Exception as exc:
+        LOGGER.debug("Could not show open folder failure dialog: %s", exc)
 
 
 def _open_folder_platform(folder_path: Path) -> None:
@@ -334,7 +452,8 @@ def _open_folder_platform(folder_path: Path) -> None:
         LOGGER.info("Opened folder: %s", folder_path)
     else:
         # Linux and other POSIX systems.
-        def _run_open() -> bool:
-            return _run_linux_open(folder_path)
+        def _run_open() -> None:
+            if not _run_linux_open(folder_path):
+                _dispatch_open_folder_warning(folder_path)
 
         threading.Thread(target=_run_open, daemon=True).start()
