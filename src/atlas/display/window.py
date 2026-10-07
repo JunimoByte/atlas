@@ -272,8 +272,16 @@ class Window(QtWidgets.QDialog):
     def scan(self) -> None:
         """Initiate the backup scan process.
 
+        On macOS, check for TCC restrictions first.  If the user
+        chooses to open System Preferences the scan is deferred.
+
         Delegate to the controller to start the worker thread.
         """
+        from atlas.lib import permissions
+
+        if permissions.needs_full_disk_access():
+            if permissions.show_full_disk_access_dialog():
+                return
         self.controller.start_backup()
 
     def _on_backup_started(self) -> None:

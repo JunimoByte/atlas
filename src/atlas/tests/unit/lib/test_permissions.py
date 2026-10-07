@@ -9,6 +9,7 @@ Unit tests for cross-platform permission validation in Atlas.
 
 import platform
 import sys
+from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
@@ -139,6 +140,91 @@ def test_show_elevated_permissions_dialog_fallback(
 
     permissions.show_elevated_permissions_dialog()
     mock_exit.assert_called_once_with(1)
+
+
+# =============================================================================
+# TESTS — macOS TCC / Full Disk Access
+# =============================================================================
+
+
+def test_needs_fda_returns_false_on_non_darwin(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """needs_full_disk_access returns False on non-macOS."""
+    monkeypatch.setattr(platform, "system", lambda: "Windows")
+    assert permissions.needs_full_disk_access() is False
+
+
+def test_needs_fda_returns_false_when_dir_missing(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    """needs_full_disk_access returns False when Safari dir absent."""
+    monkeypatch.setattr(platform, "system", lambda: "Darwin")
+    monkeypatch.setattr(
+        permissions,
+        "_TCC_TEST_PATH",
+        str(tmp_path / "nonexistent"),
+    )
+    assert permissions.needs_full_disk_access() is False
+
+
+def test_needs_fda_returns_false_when_readable(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    """needs_full_disk_access returns False when dir is readable."""
+    safari = tmp_path / "Safari"
+    safari.mkdir()
+    monkeypatch.setattr(platform, "system", lambda: "Darwin")
+    monkeypatch.setattr(
+        permissions, "_TCC_TEST_PATH", str(safari)
+    )
+    assert permissions.needs_full_disk_access() is False
+
+
+def test_needs_fda_returns_true_when_permission_denied(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    """needs_full_disk_access returns True on PermissionError."""
+    from unittest.mock import patch
+
+    safari = tmp_path / "Safari"
+    safari.mkdir()
+    monkeypatch.setattr(platform, "system", lambda: "Darwin")
+    monkeypatch.setattr(
+        permissions, "_TCC_TEST_PATH", str(safari)
+    )
+    with patch.object(
+        permissions.os,
+        "listdir",
+        side_effect=PermissionError("TCC"),
+    ):
+        assert permissions.needs_full_disk_access() is True
+
+
+def test_show_fda_dialog_returns_true_on_yes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """show_full_disk_access_dialog returns True when user clicks Yes."""
+    monkeypatch.setattr(
+        "atlas.display.popup.show_question", lambda **kw: True
+    )
+    mock_open = MagicMock()
+    monkeypatch.setattr(
+        permissions, "_open_fda_preferences", mock_open
+    )
+    assert permissions.show_full_disk_access_dialog() is True
+    mock_open.assert_called_once()
+
+
+def test_show_fda_dialog_returns_false_on_no(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """show_full_disk_access_dialog returns False when user clicks No."""
+    monkeypatch.setattr(
+        "atlas.display.popup.show_question",
+        lambda **kw: False,
+    )
+    assert permissions.show_full_disk_access_dialog() is False
 
 
 # =============================================================================

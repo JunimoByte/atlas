@@ -324,14 +324,22 @@ class Pipeline:
 
                 if size is not None:
                     total_size += size
-            except (ScanTimeoutError, ScanError) as error:
+            except ScanTimeoutError as error:
                 LOGGER.error(
-                    "Size scan failed for %s: %s. "
-                    "Estimate is unreliable, blocking disk check.",
+                    "Size scan timed out for %s: %s. "
+                    "Estimate is unreliable, blocking "
+                    "disk check.",
                     path_str,
                     error,
                 )
                 return -1
+            except ScanError as error:
+                LOGGER.warning(
+                    "Size scan incomplete for %s: %s. "
+                    "Skipping this path.",
+                    path_str,
+                    error,
+                )
             except Exception as error:
                 LOGGER.error(
                     "Could not calculate size for %s: %s", path_str, error

@@ -238,6 +238,36 @@ def test_find_profile_macos_chrome(tmp_path: Path) -> None:
     assert str(profile_dir.resolve()) in result[0]
 
 
+def test_find_profile_skips_unreadable_directory(tmp_path: Path) -> None:
+    """Verify that unreadable directories (e.g. TCC) are skipped."""
+    profile_dir = tmp_path / "Safari"
+    profile_dir.mkdir(parents=True)
+
+    fake_browsers = {
+        "Safari": {
+            "Macos": [
+                {
+                    "Path": "Safari",
+                    "Type": "HOME",
+                    "Signature": False,
+                }
+            ]
+        }
+    }
+
+    with patch.object(
+        profile_module, "_expand_path_by_type", return_value=[profile_dir]
+    ):
+        with patch(
+            "os.scandir", side_effect=PermissionError("TCC locked")
+        ):
+            result = find_profile(
+                "Safari", "Darwin", browsers_data=fake_browsers
+            )
+
+    assert result == []
+
+
 # =============================================================================
 # TESTS — Get browser name from path
 # =============================================================================
