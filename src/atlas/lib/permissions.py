@@ -156,13 +156,10 @@ def show_full_disk_access_dialog() -> bool:
             title="Atlas",
             message="Full Disk Access Requested",
             details=(
-                "macOS protects Safari data with Full Disk Access. "
-                "This permission is optional—all other browsers will "
-                "still back up normally without it.\n\n"
-                "Click Yes to open System Preferences and enable "
-                "access for Safari (requires restarting Atlas).\n"
-                "Click No to skip Safari and back up all other "
-                "browsers now."
+                "Full Disk Access is optional. Other browsers "
+                "will back up normally without it.\n\n"
+                "Click Yes to open System Preferences for Safari, "
+                "or No to skip Safari and continue."
             ),
         )
 
