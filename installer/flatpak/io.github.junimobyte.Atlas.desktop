@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Atlas
+Comment=Creates ZIP backups of browser profiles
+Exec=atlas
+Icon=io.github.junimobyte.Atlas
+Categories=Utility;Archiving;
+Terminal=false
+StartupNotify=true
+StartupWMClass=atlas

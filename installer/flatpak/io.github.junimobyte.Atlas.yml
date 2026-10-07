@@ -1,7 +1,9 @@
 app-id: io.github.junimobyte.Atlas
 runtime: org.kde.Platform
-runtime-version: '6.7'
+runtime-version: '6.8'
 sdk: org.kde.Sdk
+base: com.riverbankcomputing.PyQt.BaseApp
+base-version: '6.8'
 command: atlas
 
 finish-args:
@@ -15,19 +17,25 @@ finish-args:
   # Write access to the user's Downloads directory for backup archives
   - --filesystem=xdg-download
 
+cleanup-commands:
+  - /app/cleanup-BaseApp.sh
+
+build-options:
+  env:
+    BASEAPP_REMOVE_WEBENGINE: '1'
+
 modules:
   - name: atlas
     buildsystem: simple
     build-commands:
       - pip3 install --no-build-isolation --no-deps --prefix=/app .
-      - install -Dm755 installer/debian/atlas /app/bin/atlas
       - install -Dm644 assets/icons/Icon.svg
         /app/share/icons/hicolor/scalable/apps/io.github.junimobyte.Atlas.svg
-      - install -Dm644 installer/debian/atlas.desktop
+      - install -Dm644 installer/flatpak/io.github.junimobyte.Atlas.desktop
         /app/share/applications/io.github.junimobyte.Atlas.desktop
       - install -Dm644
         installer/flatpak/io.github.junimobyte.Atlas.metainfo.xml
         /app/share/metainfo/io.github.junimobyte.Atlas.metainfo.xml
     sources:
       - type: dir
-        path: .
+        path: ../..

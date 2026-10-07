@@ -156,6 +156,9 @@ jobs:
   build-flatpak:
     name: Build Linux x86_64 (Flatpak)
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6.8
+      options: --privileged
     timeout-minutes: 25
 
     steps:
@@ -167,6 +170,8 @@ jobs:
         with:
           bundle: Atlas-x86_64.flatpak
           manifest-path: io.github.junimobyte.Atlas.yml
+          repository-name: flathub
+          repository-url: https://dl.flathub.org/repo/flathub.flatpakrepo
           run-tests: false
 
       - name: Upload Flatpak Release Artifact
