@@ -14,6 +14,7 @@ finish-args:
 
   # Filesystem permissions to discover and back up browser profiles
   - --filesystem=host:ro
+  - --filesystem=home:ro
   # Write access to the user's Downloads directory for backup archives
   - --filesystem=xdg-download
 

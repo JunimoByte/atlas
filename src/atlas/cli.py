@@ -95,6 +95,84 @@ def _apply_output_directory(args: Optional[argparse.Namespace]) -> bool:
         return False
 
 
+def run_list(args: Optional[argparse.Namespace] = None) -> int:
+    """List detected browser profiles without performing a backup.
+
+    Args:
+        args: Parsed command-line arguments.
+
+    Returns:
+        Exit code (0 for success, 1 on error).
+    """
+    from atlas.backup import size
+    from atlas.lib import browsers, permissions
+
+    if permissions.is_elevated():
+        print("WARNING: Running with elevated privileges is not recommended.")
+
+    if not browsers.verify_entries():
+        print("Error: Failed to load browser configuration.")
+        return 1
+
+    pipeline = Pipeline()
+    try:
+        matches = pipeline.scan_profiles()
+    except KeyboardInterrupt:
+        print("\nScan cancelled by user.")
+        return 1
+
+    if not matches:
+        print("No supported browser profiles found on this system.")
+        return 0
+
+    print("========================================")
+    print("       DETECTED BROWSER PROFILES        ")
+    print("========================================")
+
+    total_profiles = 0
+    for browser in sorted(matches.keys()):
+        paths = matches[browser]
+        if not paths:
+            continue
+        print(f"[{browser}]")
+        for path in sorted(paths):
+            total_profiles += 1
+            print(f"  - {path}")
+        print()
+
+    try:
+        total_bytes = pipeline.estimate_size(matches)
+        formatted_size = size.format_size(total_bytes)
+    except KeyboardInterrupt:
+        print("\nSize estimation cancelled by user.")
+        return 1
+
+    print("----------------------------------------")
+    print(f"Total Profiles: {total_profiles}")
+    print(f"Estimated Size: {formatted_size}")
+    print("========================================")
+    return 0
+
+
+def _handle_pipeline_result(result: PipelineResult) -> int:
+    """Format and return exit code for pipeline execution outcome."""
+    if result == PipelineResult.SUCCESS:
+        print("========================================")
+        print("Backup completed successfully.")
+        print("========================================")
+        return 0
+    if result == PipelineResult.CANCELLED:
+        print("Backup was cancelled.")
+        return 1
+    if result in (
+        PipelineResult.NO_BROWSERS_FOUND,
+        PipelineResult.INSUFFICIENT_DISK_SPACE,
+    ):
+        return 1
+    print(f"Backup failed. Reason: {result.name}")
+    return 1
+
+
 def run_cli(args: Optional[argparse.Namespace] = None) -> int:
     """Execute the backup pipeline in CLI mode.
 
@@ -104,6 +182,9 @@ def run_cli(args: Optional[argparse.Namespace] = None) -> int:
     Returns:
         Exit code (0 for success, 1 for failure).
     """
+    if args and getattr(args, "list", False):
+        return run_list(args)
+
     from atlas.lib import browsers, permissions
 
     # Reset per-run state so repeated calls (e.g. in tests) log correctly
@@ -147,18 +228,4 @@ def run_cli(args: Optional[argparse.Namespace] = None) -> int:
 
     print()  # Final newline after progress completes
 
-    if result == PipelineResult.SUCCESS:
-        print("========================================")
-        print("Backup completed successfully.")
-        print("========================================")
-        return 0
-    elif result == PipelineResult.CANCELLED:
-        print("Backup was cancelled.")
-        return 1
-    elif result == PipelineResult.NO_BROWSERS_FOUND:
-        return 1
-    elif result == PipelineResult.INSUFFICIENT_DISK_SPACE:
-        return 1
-    else:
-        print(f"Backup failed. Reason: {result.name}")
-        return 1
+    return _handle_pipeline_result(result)

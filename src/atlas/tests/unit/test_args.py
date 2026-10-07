@@ -133,6 +133,7 @@ def test_build_parser_options() -> None:
     actions = {action.dest for action in parser._actions}
     assert "cli" in actions
     assert "output" in actions
+    assert "list" in actions
     assert "help" in actions
 
 
@@ -141,6 +142,7 @@ def test_parse_args_defaults() -> None:
     parsed = args.parse_args([])
     assert parsed.cli is False
     assert parsed.output is None
+    assert parsed.list is False
 
 
 def test_parse_args_output_short() -> None:
@@ -153,6 +155,18 @@ def test_parse_args_output_long() -> None:
     """Verify --output flag sets custom output directory."""
     parsed = args.parse_args(["--output", "/tmp/backup"])
     assert parsed.output == "/tmp/backup"
+
+
+def test_parse_args_list_short() -> None:
+    """Verify -l flag enables list mode."""
+    parsed = args.parse_args(["-l"])
+    assert parsed.list is True
+
+
+def test_parse_args_list_long() -> None:
+    """Verify --list flag enables list mode."""
+    parsed = args.parse_args(["--list"])
+    assert parsed.list is True
 
 
 def test_parse_args_cli_flag() -> None:

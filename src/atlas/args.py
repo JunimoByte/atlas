@@ -126,6 +126,12 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="DIR",
         help="Custom output directory for backup archives (CLI mode).",
     )
+    parser.add_argument(
+        "-l",
+        "--list",
+        action="store_true",
+        help="List detected browser profiles without performing a backup.",
+    )
     return parser
 
 

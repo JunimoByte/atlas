@@ -36,7 +36,7 @@ def main() -> None:
     """
     args = parse_args()
 
-    if args.cli:
+    if getattr(args, "cli", False) or getattr(args, "list", False):
         from atlas.cli import run_cli
 
         sys.exit(run_cli(args))

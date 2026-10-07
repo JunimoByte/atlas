@@ -207,3 +207,110 @@ def test_run_cli_invalid_output_fails(
             assert code == 1
             captured = capsys.readouterr()
             assert "Error: Invalid output directory" in captured.out
+
+
+def test_run_list_with_matches(capsys: pytest.CaptureFixture) -> None:
+    """Verify run_list prints detected profiles and total size."""
+    args = argparse.Namespace(list=True)
+    matches = {
+        "Brave": ["/home/user/.config/BraveSoftware"],
+        "Chrome": ["/home/user/.config/google-chrome"],
+    }
+    with patch("atlas.lib.browsers.verify_entries", return_value=True):
+        with patch("atlas.lib.permissions.is_elevated", return_value=False):
+            with patch("atlas.cli.Pipeline") as mock_pipeline_cls:
+                mock_inst = MagicMock()
+                mock_inst.scan_profiles.return_value = matches
+                mock_inst.estimate_size.return_value = 1048576
+                mock_pipeline_cls.return_value = mock_inst
+
+                assert cli.run_list(args) == 0
+                captured = capsys.readouterr()
+                assert "[Brave]" in captured.out
+                assert "[Chrome]" in captured.out
+                assert "Total Profiles: 2" in captured.out
+                assert "Estimated Size: 1 MB" in captured.out
+
+
+def test_run_list_no_matches(capsys: pytest.CaptureFixture) -> None:
+    """Verify run_list prints message when no profiles are found."""
+    args = argparse.Namespace(list=True)
+    with patch("atlas.lib.browsers.verify_entries", return_value=True):
+        with patch("atlas.lib.permissions.is_elevated", return_value=False):
+            with patch("atlas.cli.Pipeline") as mock_pipeline_cls:
+                mock_inst = MagicMock()
+                mock_inst.scan_profiles.return_value = {}
+                mock_pipeline_cls.return_value = mock_inst
+
+                assert cli.run_list(args) == 0
+                captured = capsys.readouterr()
+                assert "No supported browser profiles found" in captured.out
+
+
+def test_run_list_verify_fails(capsys: pytest.CaptureFixture) -> None:
+    """Verify run_list returns 1 when browser verification fails."""
+    args = argparse.Namespace(list=True)
+    with patch("atlas.lib.browsers.verify_entries", return_value=False):
+        assert cli.run_list(args) == 1
+        captured = capsys.readouterr()
+        assert "Error: Failed to load browser configuration." in captured.out
+
+
+def test_run_list_keyboard_interrupt_scan(
+    capsys: pytest.CaptureFixture,
+) -> None:
+    """Verify run_list handles KeyboardInterrupt during scanning cleanly."""
+    args = argparse.Namespace(list=True)
+    with patch("atlas.lib.browsers.verify_entries", return_value=True):
+        with patch("atlas.lib.permissions.is_elevated", return_value=False):
+            with patch("atlas.cli.Pipeline") as mock_pipeline_cls:
+                mock_inst = MagicMock()
+                mock_inst.scan_profiles.side_effect = KeyboardInterrupt
+                mock_pipeline_cls.return_value = mock_inst
+
+                assert cli.run_list(args) == 1
+                captured = capsys.readouterr()
+                assert "Scan cancelled by user." in captured.out
+
+
+def test_run_list_keyboard_interrupt_size(
+    capsys: pytest.CaptureFixture,
+) -> None:
+    """Verify run_list handles KeyboardInterrupt during size estimation."""
+    args = argparse.Namespace(list=True)
+    with patch("atlas.lib.browsers.verify_entries", return_value=True):
+        with patch("atlas.lib.permissions.is_elevated", return_value=False):
+            with patch("atlas.cli.Pipeline") as mock_pipeline_cls:
+                mock_inst = MagicMock()
+                mock_inst.scan_profiles.return_value = {"Brave": ["/path"]}
+                mock_inst.estimate_size.side_effect = KeyboardInterrupt
+                mock_pipeline_cls.return_value = mock_inst
+
+                assert cli.run_list(args) == 1
+                captured = capsys.readouterr()
+                assert "Size estimation cancelled by user." in captured.out
+
+
+def test_run_list_elevated_warning(capsys: pytest.CaptureFixture) -> None:
+    """Verify run_list warns when executed with elevated privileges."""
+    args = argparse.Namespace(list=True)
+    with patch("atlas.lib.browsers.verify_entries", return_value=True):
+        with patch("atlas.lib.permissions.is_elevated", return_value=True):
+            with patch("atlas.cli.Pipeline") as mock_pipeline_cls:
+                mock_inst = MagicMock()
+                mock_inst.scan_profiles.return_value = {}
+                mock_pipeline_cls.return_value = mock_inst
+
+                cli.run_list(args)
+                captured = capsys.readouterr()
+                assert "WARNING: Running with elevated privileges" in (
+                    captured.out
+                )
+
+
+def test_run_cli_dispatches_to_run_list() -> None:
+    """Verify run_cli routes to run_list when args.list is True."""
+    args = argparse.Namespace(list=True)
+    with patch("atlas.cli.run_list", return_value=0) as mock_list:
+        assert cli.run_cli(args) == 0
+        mock_list.assert_called_once_with(args)

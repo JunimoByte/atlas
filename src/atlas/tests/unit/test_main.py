@@ -39,6 +39,16 @@ def test_main_routes_to_cli() -> None:
             mock_cli.assert_called_once()
 
 
+def test_main_routes_to_cli_on_list() -> None:
+    """Verify --list flag routes execution to run_cli."""
+    with patch.object(sys, "argv", ["atlas", "--list"]):
+        with patch("atlas.cli.run_cli", return_value=0) as mock_cli:
+            with pytest.raises(SystemExit) as exc_info:
+                main.main()
+            assert exc_info.value.code == 0
+            mock_cli.assert_called_once()
+
+
 def test_main_routes_to_gui() -> None:
     """Verify default invocation routes execution to run_gui."""
     with patch.object(sys, "argv", ["atlas"]):

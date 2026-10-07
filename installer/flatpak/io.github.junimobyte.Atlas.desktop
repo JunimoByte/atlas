@@ -1,10 +1,12 @@
 [Desktop Entry]
 Type=Application
 Name=Atlas
+GenericName=Browser Profile Backup Utility
 Comment=Creates ZIP backups of browser profiles
 Exec=atlas
 Icon=io.github.junimobyte.Atlas
 Categories=Utility;Archiving;
+Keywords=backup;browser;archive;snapshot;profile;
 Terminal=false
 StartupNotify=true
 StartupWMClass=atlas
