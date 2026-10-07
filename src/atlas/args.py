@@ -142,3 +142,20 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         argv = raw[1:] if raw is not None else []
     args, _ = build_parser().parse_known_args(argv)
     return args
+
+
+CLI_FLAGS = frozenset({"cli", "list"})
+
+
+def is_cli_mode(args: Optional[argparse.Namespace]) -> bool:
+    """Return True if any CLI-specific action or flag was requested.
+
+    Args:
+        args: Parsed command-line arguments.
+
+    Returns:
+        bool: True if execution should run in CLI mode.
+    """
+    if not args:
+        return False
+    return any(getattr(args, flag, False) for flag in CLI_FLAGS)

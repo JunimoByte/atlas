@@ -314,3 +314,22 @@ def test_run_cli_dispatches_to_run_list() -> None:
     with patch("atlas.cli.run_list", return_value=0) as mock_list:
         assert cli.run_cli(args) == 0
         mock_list.assert_called_once_with(args)
+
+
+def test_run_cli_dispatches_to_run_backup() -> None:
+    """Verify run_cli routes to run_backup by default."""
+    args = argparse.Namespace(list=False)
+    with patch("atlas.cli.run_backup", return_value=0) as mock_backup:
+        assert cli.run_cli(args) == 0
+        mock_backup.assert_called_once_with(args)
+
+
+def test_print_banner(capsys: pytest.CaptureFixture) -> None:
+    """Verify _print_banner renders centered title with ASCII borders."""
+    cli._print_banner("TEST TITLE")
+    captured = capsys.readouterr()
+    lines = captured.out.strip().splitlines()
+    assert len(lines) == 3
+    assert lines[0] == "=" * 40
+    assert "TEST TITLE" in lines[1]
+    assert lines[2] == "=" * 40

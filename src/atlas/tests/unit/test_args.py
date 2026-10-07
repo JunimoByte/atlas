@@ -175,6 +175,15 @@ def test_parse_args_cli_flag() -> None:
     assert parsed.cli is True
 
 
+def test_is_cli_mode() -> None:
+    """Verify is_cli_mode correctly detects CLI execution flags."""
+    assert args.is_cli_mode(None) is False
+    assert args.is_cli_mode(args.parse_args([])) is False
+    assert args.is_cli_mode(args.parse_args(["--cli"])) is True
+    assert args.is_cli_mode(args.parse_args(["-l"])) is True
+    assert args.is_cli_mode(args.parse_args(["--list"])) is True
+
+
 def test_parse_args_ignores_unknown_flags() -> None:
     """Verify parse_args tolerates unknown options gracefully."""
     parsed = args.parse_args(["--unknown-option", "--cli"])

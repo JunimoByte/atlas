@@ -95,16 +95,12 @@ def _apply_output_directory(args: Optional[argparse.Namespace]) -> bool:
         return False
 
 
-def run_list(args: Optional[argparse.Namespace] = None) -> int:
-    """List detected browser profiles without performing a backup.
-
-    Args:
-        args: Parsed command-line arguments.
+def _verify_environment() -> bool:
+    """Validate system configuration and issue privilege warnings.
 
     Returns:
-        Exit code (0 for success, 1 on error).
+        bool: True if configuration is valid, False otherwise.
     """
-    from atlas.backup import size
     from atlas.lib import browsers, permissions
 
     if permissions.is_elevated():
@@ -112,46 +108,17 @@ def run_list(args: Optional[argparse.Namespace] = None) -> int:
 
     if not browsers.verify_entries():
         print("Error: Failed to load browser configuration.")
-        return 1
+        return False
 
-    pipeline = Pipeline()
-    try:
-        matches = pipeline.scan_profiles()
-    except KeyboardInterrupt:
-        print("\nScan cancelled by user.")
-        return 1
+    return True
 
-    if not matches:
-        print("No supported browser profiles found on this system.")
-        return 0
 
-    print("========================================")
-    print("       DETECTED BROWSER PROFILES        ")
-    print("========================================")
-
-    total_profiles = 0
-    for browser in sorted(matches.keys()):
-        paths = matches[browser]
-        if not paths:
-            continue
-        print(f"[{browser}]")
-        for path in sorted(paths):
-            total_profiles += 1
-            print(f"  - {path}")
-        print()
-
-    try:
-        total_bytes = pipeline.estimate_size(matches)
-        formatted_size = size.format_size(total_bytes)
-    except KeyboardInterrupt:
-        print("\nSize estimation cancelled by user.")
-        return 1
-
-    print("----------------------------------------")
-    print(f"Total Profiles: {total_profiles}")
-    print(f"Estimated Size: {formatted_size}")
-    print("========================================")
-    return 0
+def _print_banner(title: str) -> None:
+    """Print a standardized ASCII header banner."""
+    separator = "=" * 40
+    print(separator)
+    print(title.center(40).rstrip())
+    print(separator)
 
 
 def _handle_pipeline_result(result: PipelineResult) -> int:
@@ -173,33 +140,73 @@ def _handle_pipeline_result(result: PipelineResult) -> int:
     return 1
 
 
-def run_cli(args: Optional[argparse.Namespace] = None) -> int:
+def run_list(args: Optional[argparse.Namespace] = None) -> int:
+    """List detected browser profiles without performing a backup.
+
+    Args:
+        args: Parsed command-line arguments.
+
+    Returns:
+        Exit code (0 for success, 1 on error).
+    """
+    from atlas.backup import size
+
+    if not _verify_environment():
+        return 1
+
+    pipeline = Pipeline()
+    try:
+        matches = pipeline.scan_profiles()
+    except KeyboardInterrupt:
+        print("\nScan cancelled by user.")
+        return 1
+
+    if not matches:
+        print("No supported browser profiles found on this system.")
+        return 0
+
+    _print_banner("DETECTED BROWSER PROFILES")
+
+    total_profiles = 0
+    for browser in sorted(matches.keys()):
+        paths = matches[browser]
+        if not paths:
+            continue
+        print(f"[{browser}]")
+        for path in sorted(paths):
+            total_profiles += 1
+            print(f"  - {path}")
+        print()
+
+    try:
+        total_bytes = pipeline.estimate_size(matches)
+        formatted_size = size.format_size(total_bytes)
+    except KeyboardInterrupt:
+        print("\nSize estimation cancelled by user.")
+        return 1
+
+    print("-" * 40)
+    print(f"Total Profiles: {total_profiles}")
+    print(f"Estimated Size: {formatted_size}")
+    print("=" * 40)
+    return 0
+
+
+def run_backup(args: Optional[argparse.Namespace] = None) -> int:
     """Execute the backup pipeline in CLI mode.
 
     Args:
-        args: Parsed command-line arguments for future expandability.
+        args: Parsed command-line arguments.
 
     Returns:
         Exit code (0 for success, 1 for failure).
     """
-    if args and getattr(args, "list", False):
-        return run_list(args)
-
-    from atlas.lib import browsers, permissions
-
-    # Reset per-run state so repeated calls (e.g. in tests) log correctly
     _LOGGED_MILESTONES.clear()
 
-    if permissions.is_elevated():
-        print("WARNING: Running with elevated privileges is not recommended.")
-
-    if not browsers.verify_entries():
-        print("Error: Failed to load browser configuration.")
+    if not _verify_environment():
         return 1
 
-    print("========================================")
-    print("             ATLAS CLI MODE             ")
-    print("========================================")
+    _print_banner("ATLAS CLI MODE")
 
     if not _apply_output_directory(args):
         return 1
@@ -221,11 +228,27 @@ def run_cli(args: Optional[argparse.Namespace] = None) -> int:
         clear_line()
         print("\nBackup cancelled by user.")
         return 1
-    except Exception as e:
+    except Exception as err:
         clear_line()
-        print(f"\nAn unexpected error occurred: {e}")
+        print(f"\nAn unexpected error occurred: {err}")
         return 1
 
     print()  # Final newline after progress completes
-
     return _handle_pipeline_result(result)
+
+
+def run_cli(args: Optional[argparse.Namespace] = None) -> int:
+    """Execute the requested command in CLI mode.
+
+    Routes execution to the appropriate command handler based on parsed
+    command-line arguments, defaulting to standard profile backup.
+
+    Args:
+        args: Parsed command-line arguments for future expandability.
+
+    Returns:
+        Exit code (0 for success, 1 for failure).
+    """
+    if args and getattr(args, "list", False):
+        return run_list(args)
+    return run_backup(args)

@@ -11,7 +11,7 @@ Handles initialization, configuration verification, UI setup, and execution.
 import logging
 import sys
 
-from atlas.args import parse_args
+from atlas.args import is_cli_mode, parse_args
 
 # =============================================================================
 # LOGGING
@@ -36,7 +36,7 @@ def main() -> None:
     """
     args = parse_args()
 
-    if getattr(args, "cli", False) or getattr(args, "list", False):
+    if is_cli_mode(args):
         from atlas.cli import run_cli
 
         sys.exit(run_cli(args))
