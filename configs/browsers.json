@@ -822,6 +822,13 @@
                 "Signature": [
                     "Local State"
                 ]
+            },
+            {
+                "Type": "SNAP",
+                "Path": "chromium/current/.config/chromium",
+                "Signature": [
+                    "Local State"
+                ]
             }
         ],
         "BSD": [

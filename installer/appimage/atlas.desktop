@@ -7,3 +7,4 @@ Icon=atlas
 Categories=Utility;Archiving;
 Terminal=false
 StartupNotify=true
+StartupWMClass=atlas

@@ -56,6 +56,9 @@ def run_gui(args: argparse.Namespace = None) -> int:
         )
 
     app = QtWidgets.QApplication(sys.argv)
+    app.setApplicationName("atlas")
+    if hasattr(app, "setDesktopFileName"):
+        app.setDesktopFileName("atlas.desktop")
     win = window.Window()
     themes.initialize(win)
 

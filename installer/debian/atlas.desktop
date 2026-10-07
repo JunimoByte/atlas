@@ -7,3 +7,4 @@ Icon=/opt/atlas/atlas.svg
 Categories=Utility;Archiving;
 Terminal=false
 StartupNotify=true
+StartupWMClass=atlas

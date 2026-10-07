@@ -268,6 +268,40 @@ def test_find_profile_skips_unreadable_directory(tmp_path: Path) -> None:
     assert result == []
 
 
+def test_find_profile_linux_chromium_snap_current(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Verify Chromium profile discovered via snap current path."""
+    snap_dir = tmp_path / "snap" / "chromium" / "current" / ".config"
+    profile_dir = snap_dir / "chromium"
+    profile_dir.mkdir(parents=True)
+    (profile_dir / "Local State").write_text("{}")
+
+    fake_browsers = {
+        "Chromium": {
+            "Linux": [
+                {
+                    "Type": "SNAP",
+                    "Path": "chromium/current/.config/chromium",
+                    "Signature": ["Local State"],
+                }
+            ]
+        }
+    }
+
+    fake_types = {
+        "Linux": {
+            "SNAP": [str(tmp_path / "snap")]
+        }
+    }
+
+    monkeypatch.setattr(profile_module, "PATH_TYPES", fake_types)
+    result = find_profile(
+        "Chromium", "Linux", browsers_data=fake_browsers
+    )
+    assert any(str(profile_dir.resolve()) in p for p in result)
+
+
 # =============================================================================
 # TESTS — Get browser name from path
 # =============================================================================
