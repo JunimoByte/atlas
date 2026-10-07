@@ -63,6 +63,16 @@ is_bsd() {
        "$OSTYPE" == netbsd*    || "$OSTYPE" == dragonfly* ]]
 }
 
+is_macos() {
+    [[ "$OSTYPE" == darwin* ]]
+}
+
+_macos_major_version() {
+    if command -v sw_vers >/dev/null 2>&1; then
+        sw_vers -productVersion 2>/dev/null | cut -d. -f1
+    fi
+}
+
 run_privileged() {
     # Run a command as root, using sudo when not already root.
     if [ "$(id -u)" -eq 0 ]; then
@@ -271,7 +281,19 @@ install_qt_binding() {
 }
 
 _install_qt_pip() {
-    if ! python -m pip install --quiet "PyQt6>=6.0"; then
+    local qt_pkgs=("PyQt6>=6.0")
+
+    # macOS 12 (Monterey) and older are not supported by Qt 6.8+.
+    # Cap PyQt6 < 6.8 to install the latest compatible Qt 6.7 release.
+    if is_macos; then
+        local mac_ver
+        mac_ver=$(_macos_major_version)
+        if [[ -n "$mac_ver" && "$mac_ver" -lt 13 ]]; then
+            qt_pkgs=("PyQt6>=6.0,<6.8" "PyQt6-Qt6>=6.0,<6.8")
+        fi
+    fi
+
+    if ! python -m pip install --quiet "${qt_pkgs[@]}"; then
         echo "PyQt6 unavailable, trying PyQt5..."
         python -m pip install --quiet "PyQt5>=5.15" || {
             echo "ERROR: Failed to install PyQt5 fallback."
