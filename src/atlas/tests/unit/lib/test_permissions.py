@@ -205,8 +205,14 @@ def test_show_fda_dialog_returns_true_on_yes(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """show_full_disk_access_dialog returns True when user clicks Yes."""
+    captured = {}
+
+    def mock_question(**kw):
+        captured.update(kw)
+        return True
+
     monkeypatch.setattr(
-        "atlas.display.popup.show_question", lambda **kw: True
+        "atlas.display.popup.show_question", mock_question
     )
     mock_open = MagicMock()
     monkeypatch.setattr(
@@ -214,6 +220,8 @@ def test_show_fda_dialog_returns_true_on_yes(
     )
     assert permissions.show_full_disk_access_dialog() is True
     mock_open.assert_called_once()
+    assert captured.get("message") == "Full Disk Access Requested"
+    assert "optional" in captured.get("details", "")
 
 
 def test_show_fda_dialog_returns_false_on_no(
