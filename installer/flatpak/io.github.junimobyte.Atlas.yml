@@ -25,6 +25,9 @@ modules:
         /app/share/icons/hicolor/scalable/apps/io.github.junimobyte.Atlas.svg
       - install -Dm644 installer/debian/atlas.desktop
         /app/share/applications/io.github.junimobyte.Atlas.desktop
+      - install -Dm644
+        installer/flatpak/io.github.junimobyte.Atlas.metainfo.xml
+        /app/share/metainfo/io.github.junimobyte.Atlas.metainfo.xml
     sources:
       - type: dir
         path: .

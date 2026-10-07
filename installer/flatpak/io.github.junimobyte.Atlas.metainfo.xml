@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.junimobyte.Atlas</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>AGPL-3.0-or-later</project_license>
+  <name>Atlas</name>
+  <summary>Browser profile backup utility</summary>
+  <description>
+    <p>
+      Atlas is an offline desktop utility that backs up browser
+      profiles into ZIP archives across Linux, Windows, and BSD.
+    </p>
+  </description>
+  <launchable type="desktop-id">
+    io.github.junimobyte.Atlas.desktop
+  </launchable>
+  <url type="homepage">https://github.com/JunimoByte/atlas</url>
+  <url type="bugtracker">https://github.com/JunimoByte/atlas/issues</url>
+  <provides>
+    <binary>atlas</binary>
+  </provides>
+  <content_rating type="oars-1.1" />
+</component>

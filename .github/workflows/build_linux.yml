@@ -17,6 +17,9 @@ on:
       - 'installer/debian/**'
       - 'scripts/build_appimage.sh'
       - 'scripts/build_deb.sh'
+      - 'scripts/build_flatpak.sh'
+      - 'installer/flatpak/**'
+      - 'io.github.junimobyte.Atlas.yml'
       - 'appimage.spec'
       - 'pyproject.toml'
       - '.github/workflows/build_linux.yml'
@@ -149,3 +152,28 @@ jobs:
             dist/Atlas-x86_64.deb
           if-no-files-found: error
           retention-days: 14
+
+  build-flatpak:
+    name: Build Linux x86_64 (Flatpak)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Build Flatpak bundle
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: Atlas-x86_64.flatpak
+          manifest-path: io.github.junimobyte.Atlas.yml
+          run-tests: false
+
+      - name: Upload Flatpak Release Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Atlas-Linux-Flatpak
+          path: Atlas-x86_64.flatpak
+          if-no-files-found: error
+          retention-days: 14
+
