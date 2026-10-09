@@ -349,6 +349,36 @@ def test_run_returns_insufficient_disk_space_when_check_fails(
     assert result == PipelineResult.INSUFFICIENT_DISK_SPACE
 
 
+def test_pipeline_target_browser_exact() -> None:
+    """Verify target_browser matches exact browser name case-insensitively."""
+    browser_data = {"Google Chrome": {}, "Firefox": {}, "Brave": {}}
+    with patch(
+        "atlas.backup.pipeline.browsers.grab", return_value=browser_data
+    ):
+        p = Pipeline(target_browser="firefox")
+        assert list(p.browsers.keys()) == ["Firefox"]
+
+
+def test_pipeline_target_browser_substring() -> None:
+    """Verify target_browser falls back to substring match."""
+    browser_data = {"Google Chrome": {}, "Firefox": {}, "Brave Browser": {}}
+    with patch(
+        "atlas.backup.pipeline.browsers.grab", return_value=browser_data
+    ):
+        p = Pipeline(target_browser="brave")
+        assert list(p.browsers.keys()) == ["Brave Browser"]
+
+
+def test_pipeline_target_browser_unknown() -> None:
+    """Verify target_browser sets empty browsers mapping when no match."""
+    browser_data = {"Google Chrome": {}, "Firefox": {}}
+    with patch(
+        "atlas.backup.pipeline.browsers.grab", return_value=browser_data
+    ):
+        p = Pipeline(target_browser="nonexistent")
+        assert p.browsers == {}
+
+
 # =============================================================================
 # TEST EXECUTION
 # =============================================================================

@@ -333,3 +333,92 @@ def test_print_banner(capsys: pytest.CaptureFixture) -> None:
     assert lines[0] == "=" * 40
     assert "TEST TITLE" in lines[1]
     assert lines[2] == "=" * 40
+
+
+def test_print_banner_quiet(capsys: pytest.CaptureFixture) -> None:
+    """Verify _print_banner outputs nothing when quiet is True."""
+    cli._print_banner("TEST TITLE", quiet=True)
+    captured = capsys.readouterr()
+    assert captured.out == ""
+
+
+def test_is_quiet_helper() -> None:
+    """Verify _is_quiet correctly evaluates Namespace quiet attribute."""
+    assert cli._is_quiet(None) is False
+    assert cli._is_quiet(argparse.Namespace()) is False
+    assert cli._is_quiet(argparse.Namespace(quiet=False)) is False
+    assert cli._is_quiet(argparse.Namespace(quiet=True)) is True
+
+
+def test_run_backup_quiet_success(capsys: pytest.CaptureFixture) -> None:
+    """Verify run_backup produces no stdout output in quiet mode."""
+    args = argparse.Namespace(quiet=True, list=False)
+    with patch("atlas.lib.browsers.verify_entries", return_value=True):
+        with patch("atlas.lib.permissions.is_elevated", return_value=False):
+            with patch("atlas.cli.Pipeline") as mock_pipeline_cls:
+                mock_inst = MagicMock()
+                mock_inst.browsers = {"Firefox": {}}
+                mock_inst.run.return_value = PipelineResult.SUCCESS
+                mock_pipeline_cls.return_value = mock_inst
+
+                assert cli.run_backup(args) == 0
+                captured = capsys.readouterr()
+                assert captured.out == ""
+                assert captured.err == ""
+
+
+def test_run_backup_target_browser_not_found(
+    capsys: pytest.CaptureFixture,
+) -> None:
+    """Verify run_backup fails fast when requested browser is unknown."""
+    args = argparse.Namespace(browser="nonexistent", quiet=False, list=False)
+    with patch("atlas.lib.browsers.verify_entries", return_value=True):
+        with patch("atlas.lib.permissions.is_elevated", return_value=False):
+            with patch("atlas.cli.Pipeline") as mock_pipeline_cls:
+                mock_inst = MagicMock()
+                mock_inst.browsers = {}
+                mock_pipeline_cls.return_value = mock_inst
+
+                assert cli.run_backup(args) == 1
+                captured = capsys.readouterr()
+                assert "Error: No browser found matching 'nonexistent'." in (
+                    captured.out
+                )
+
+
+def test_run_list_target_browser_not_found(
+    capsys: pytest.CaptureFixture,
+) -> None:
+    """Verify run_list fails fast when requested browser is unknown."""
+    args = argparse.Namespace(browser="nonexistent", quiet=False, list=True)
+    with patch("atlas.lib.browsers.verify_entries", return_value=True):
+        with patch("atlas.lib.permissions.is_elevated", return_value=False):
+            with patch("atlas.cli.Pipeline") as mock_pipeline_cls:
+                mock_inst = MagicMock()
+                mock_inst.browsers = {}
+                mock_pipeline_cls.return_value = mock_inst
+
+                assert cli.run_list(args) == 1
+                captured = capsys.readouterr()
+                assert "Error: No browser found matching 'nonexistent'." in (
+                    captured.out
+                )
+
+
+def test_run_list_quiet(capsys: pytest.CaptureFixture) -> None:
+    """Verify run_list suppresses ASCII banners when quiet is True."""
+    args = argparse.Namespace(quiet=True, list=True, browser=None)
+    matches = {"Firefox": ["/path/to/profile"]}
+    with patch("atlas.lib.browsers.verify_entries", return_value=True):
+        with patch("atlas.lib.permissions.is_elevated", return_value=False):
+            with patch("atlas.cli.Pipeline") as mock_pipeline_cls:
+                mock_inst = MagicMock()
+                mock_inst.browsers = {"Firefox": {}}
+                mock_inst.scan_profiles.return_value = matches
+                mock_inst.estimate_size.return_value = 1048576
+                mock_pipeline_cls.return_value = mock_inst
+
+                assert cli.run_list(args) == 0
+                captured = capsys.readouterr()
+                assert "[Firefox]" in captured.out
+                assert "=" * 40 not in captured.out

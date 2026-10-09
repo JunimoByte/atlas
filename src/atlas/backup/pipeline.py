@@ -66,6 +66,7 @@ class Pipeline:
         estimated_callback: Optional[Callable[[str], None]] = None,
         no_browsers_found_callback: Optional[Callable[[], None]] = None,
         disk_space_error_callback: Optional[Callable[[str, str], None]] = None,
+        target_browser: Optional[str] = None,
     ) -> None:
         """Initialize the Pipeline.
 
@@ -75,6 +76,7 @@ class Pipeline:
             estimated_callback: Callback for estimated size.
             no_browsers_found_callback: Callback when no profiles are found.
             disk_space_error_callback: Callback for insufficient disk space.
+            target_browser: Optional specific browser name filter.
 
         """
         self._cancelled = False
@@ -84,7 +86,25 @@ class Pipeline:
         self.estimated_callback = estimated_callback
         self.no_browsers_found_callback = no_browsers_found_callback
         self.disk_space_error_callback = disk_space_error_callback
-        self.browsers = browsers.grab()
+        self.target_browser = target_browser
+
+        all_browsers = browsers.grab()
+        if target_browser:
+            normalized = target_browser.strip().casefold()
+            matched = {
+                k: v
+                for k, v in all_browsers.items()
+                if k.casefold() == normalized
+            }
+            if not matched:
+                matched = {
+                    k: v
+                    for k, v in all_browsers.items()
+                    if normalized in k.casefold()
+                }
+            self.browsers = matched
+        else:
+            self.browsers = all_browsers
 
     def __repr__(self) -> str:
         """Return a string representation of the Pipeline."""

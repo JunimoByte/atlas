@@ -175,6 +175,30 @@ def test_parse_args_cli_flag() -> None:
     assert parsed.cli is True
 
 
+def test_parse_args_browser_short() -> None:
+    """Verify -b flag sets target browser."""
+    parsed = args.parse_args(["-b", "firefox"])
+    assert parsed.browser == "firefox"
+
+
+def test_parse_args_browser_long() -> None:
+    """Verify --browser flag sets target browser."""
+    parsed = args.parse_args(["--browser", "brave"])
+    assert parsed.browser == "brave"
+
+
+def test_parse_args_quiet_short() -> None:
+    """Verify -q flag enables quiet mode."""
+    parsed = args.parse_args(["-q"])
+    assert parsed.quiet is True
+
+
+def test_parse_args_quiet_long() -> None:
+    """Verify --quiet flag enables quiet mode."""
+    parsed = args.parse_args(["--quiet"])
+    assert parsed.quiet is True
+
+
 def test_is_cli_mode() -> None:
     """Verify is_cli_mode correctly detects CLI execution flags."""
     assert args.is_cli_mode(None) is False
@@ -182,6 +206,10 @@ def test_is_cli_mode() -> None:
     assert args.is_cli_mode(args.parse_args(["--cli"])) is True
     assert args.is_cli_mode(args.parse_args(["-l"])) is True
     assert args.is_cli_mode(args.parse_args(["--list"])) is True
+    assert args.is_cli_mode(args.parse_args(["-b", "firefox"])) is True
+    assert args.is_cli_mode(args.parse_args(["--browser", "brave"])) is True
+    assert args.is_cli_mode(args.parse_args(["-q"])) is True
+    assert args.is_cli_mode(args.parse_args(["--quiet"])) is True
 
 
 def test_parse_args_ignores_unknown_flags() -> None:

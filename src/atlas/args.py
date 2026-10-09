@@ -132,6 +132,20 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="List detected browser profiles without performing a backup.",
     )
+    parser.add_argument(
+        "-b",
+        "--browser",
+        type=str,
+        default=None,
+        metavar="NAME",
+        help="Filter backup or inspection to a specific browser by name.",
+    )
+    parser.add_argument(
+        "-q",
+        "--quiet",
+        action="store_true",
+        help="Suppress banner, progress indicators, and non-error output.",
+    )
     return parser
 
 
@@ -144,7 +158,7 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     return args
 
 
-CLI_FLAGS = frozenset({"cli", "list"})
+CLI_FLAGS = frozenset({"cli", "list", "browser", "quiet"})
 
 
 def is_cli_mode(args: Optional[argparse.Namespace]) -> bool:

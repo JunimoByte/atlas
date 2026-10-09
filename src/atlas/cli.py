@@ -11,7 +11,7 @@ without invoking the PyQt GUI. Useful for pure terminal environments
 
 import argparse
 import sys
-from typing import Optional
+from typing import Dict, List, Optional
 
 from atlas.backup.pipeline import Pipeline, PipelineResult
 
@@ -28,6 +28,11 @@ def clear_line() -> None:
 
 
 _LOGGED_MILESTONES: set = set()
+
+
+def _is_quiet(args: Optional[argparse.Namespace]) -> bool:
+    """Return True if quiet execution was requested."""
+    return bool(args and getattr(args, "quiet", False))
 
 
 def _on_progress(current: int, total: int) -> None:
@@ -63,19 +68,36 @@ def _on_estimated(size: str) -> None:
         print()
 
 
-def _on_no_browsers() -> None:
+def _on_no_browsers(
+    target: Optional[str] = None, quiet: bool = False
+) -> None:
     clear_line()
-    print("Error: No supported browser profiles found on this system.")
+    out = sys.stderr if quiet else sys.stdout
+    if target:
+        print(
+            f"Error: No profiles found on this system for '{target}'.",
+            file=out,
+        )
+    else:
+        print(
+            "Error: No supported browser profiles found on this system.",
+            file=out,
+        )
 
 
-def _on_disk_error(required: str, available: str) -> None:
+def _on_disk_error(
+    required: str, available: str, quiet: bool = False
+) -> None:
     clear_line()
-    print("Error: Insufficient disk space.")
-    print(f"Required:  {required}")
-    print(f"Available: {available}")
+    out = sys.stderr if quiet else sys.stdout
+    print("Error: Insufficient disk space.", file=out)
+    print(f"Required:  {required}", file=out)
+    print(f"Available: {available}", file=out)
 
 
-def _apply_output_directory(args: Optional[argparse.Namespace]) -> bool:
+def _apply_output_directory(
+    args: Optional[argparse.Namespace], quiet: bool = False
+) -> bool:
     """Apply custom output directory from CLI arguments if specified.
 
     Returns:
@@ -88,14 +110,19 @@ def _apply_output_directory(args: Optional[argparse.Namespace]) -> bool:
 
     try:
         out_dir = archive.set_zip_output_dir(args.output)
-        print(f"Output Directory: {out_dir}")
+        if not quiet:
+            print(f"Output Directory: {out_dir}")
         return True
     except Exception as err:
-        print(f"Error: Invalid output directory '{args.output}': {err}")
+        out = sys.stderr if quiet else sys.stdout
+        print(
+            f"Error: Invalid output directory '{args.output}': {err}",
+            file=out,
+        )
         return False
 
 
-def _verify_environment() -> bool:
+def _verify_environment(quiet: bool = False) -> bool:
     """Validate system configuration and issue privilege warnings.
 
     Returns:
@@ -103,41 +130,73 @@ def _verify_environment() -> bool:
     """
     from atlas.lib import browsers, permissions
 
-    if permissions.is_elevated():
+    if permissions.is_elevated() and not quiet:
         print("WARNING: Running with elevated privileges is not recommended.")
 
     if not browsers.verify_entries():
-        print("Error: Failed to load browser configuration.")
+        out = sys.stderr if quiet else sys.stdout
+        print("Error: Failed to load browser configuration.", file=out)
         return False
 
     return True
 
 
-def _print_banner(title: str) -> None:
+def _print_banner(title: str, quiet: bool = False) -> None:
     """Print a standardized ASCII header banner."""
+    if quiet:
+        return
     separator = "=" * 40
     print(separator)
     print(title.center(40).rstrip())
     print(separator)
 
 
-def _handle_pipeline_result(result: PipelineResult) -> int:
+def _handle_pipeline_result(
+    result: PipelineResult, quiet: bool = False
+) -> int:
     """Format and return exit code for pipeline execution outcome."""
+    out = sys.stderr if quiet else sys.stdout
     if result == PipelineResult.SUCCESS:
-        print("========================================")
-        print("Backup completed successfully.")
-        print("========================================")
+        if not quiet:
+            print("=" * 40)
+            print("Backup completed successfully.")
+            print("=" * 40)
         return 0
     if result == PipelineResult.CANCELLED:
-        print("Backup was cancelled.")
+        print("Backup was cancelled.", file=out)
         return 1
     if result in (
         PipelineResult.NO_BROWSERS_FOUND,
         PipelineResult.INSUFFICIENT_DISK_SPACE,
     ):
         return 1
-    print(f"Backup failed. Reason: {result.name}")
+    print(f"Backup failed. Reason: {result.name}", file=out)
     return 1
+
+
+def _print_matches(
+    matches: Dict[str, List[str]], formatted_size: str, quiet: bool
+) -> None:
+    """Format and display detected browser profile matches."""
+    if not quiet:
+        _print_banner("DETECTED BROWSER PROFILES")
+
+    total_profiles = 0
+    for browser in sorted(matches.keys()):
+        paths = matches[browser]
+        if not paths:
+            continue
+        print(f"[{browser}]")
+        for path in sorted(paths):
+            total_profiles += 1
+            print(f"  - {path}")
+        print()
+
+    if not quiet:
+        print("-" * 40)
+        print(f"Total Profiles: {total_profiles}")
+        print(f"Estimated Size: {formatted_size}")
+        print("=" * 40)
 
 
 def run_list(args: Optional[argparse.Namespace] = None) -> int:
@@ -151,44 +210,49 @@ def run_list(args: Optional[argparse.Namespace] = None) -> int:
     """
     from atlas.backup import size
 
-    if not _verify_environment():
+    quiet = _is_quiet(args)
+    if quiet:
+        import logging
+
+        logging.getLogger().setLevel(logging.ERROR)
+
+    if not _verify_environment(quiet=quiet):
         return 1
 
-    pipeline = Pipeline()
+    target = getattr(args, "browser", None) if args else None
+    pipeline = Pipeline(target_browser=target)
+
+    if target and not pipeline.browsers:
+        out = sys.stderr if quiet else sys.stdout
+        print(f"Error: No browser found matching '{target}'.", file=out)
+        return 1
+
     try:
         matches = pipeline.scan_profiles()
     except KeyboardInterrupt:
-        print("\nScan cancelled by user.")
+        out = sys.stderr if quiet else sys.stdout
+        print("\nScan cancelled by user.", file=out)
         return 1
 
     if not matches:
-        print("No supported browser profiles found on this system.")
-        return 0
-
-    _print_banner("DETECTED BROWSER PROFILES")
-
-    total_profiles = 0
-    for browser in sorted(matches.keys()):
-        paths = matches[browser]
-        if not paths:
-            continue
-        print(f"[{browser}]")
-        for path in sorted(paths):
-            total_profiles += 1
-            print(f"  - {path}")
-        print()
+        out = sys.stderr if quiet else sys.stdout
+        msg = (
+            f"No profiles found on this system for '{target}'."
+            if target
+            else "No supported browser profiles found on this system."
+        )
+        print(msg, file=out)
+        return 1 if quiet else 0
 
     try:
         total_bytes = pipeline.estimate_size(matches)
         formatted_size = size.format_size(total_bytes)
     except KeyboardInterrupt:
-        print("\nSize estimation cancelled by user.")
+        out = sys.stderr if quiet else sys.stdout
+        print("\nSize estimation cancelled by user.", file=out)
         return 1
 
-    print("-" * 40)
-    print(f"Total Profiles: {total_profiles}")
-    print(f"Estimated Size: {formatted_size}")
-    print("=" * 40)
+    _print_matches(matches, formatted_size, quiet=quiet)
     return 0
 
 
@@ -201,40 +265,58 @@ def run_backup(args: Optional[argparse.Namespace] = None) -> int:
     Returns:
         Exit code (0 for success, 1 for failure).
     """
+    quiet = _is_quiet(args)
+    if quiet:
+        import logging
+
+        logging.getLogger().setLevel(logging.ERROR)
+
     _LOGGED_MILESTONES.clear()
 
-    if not _verify_environment():
+    if not _verify_environment(quiet=quiet):
         return 1
 
-    _print_banner("ATLAS CLI MODE")
+    _print_banner("ATLAS CLI MODE", quiet=quiet)
 
-    if not _apply_output_directory(args):
+    if not _apply_output_directory(args, quiet=quiet):
         return 1
 
-    print("Starting backup process...\n")
+    target = getattr(args, "browser", None) if args else None
 
     pipeline = Pipeline(
-        progress_callback=_on_progress,
-        scanned_callback=_on_scanned,
-        estimated_callback=_on_estimated,
-        no_browsers_found_callback=_on_no_browsers,
-        disk_space_error_callback=_on_disk_error,
+        progress_callback=None if quiet else _on_progress,
+        scanned_callback=None if quiet else _on_scanned,
+        estimated_callback=None if quiet else _on_estimated,
+        no_browsers_found_callback=lambda: _on_no_browsers(target, quiet),
+        disk_space_error_callback=lambda r, a: _on_disk_error(r, a, quiet),
+        target_browser=target,
     )
+
+    if target and not pipeline.browsers:
+        out = sys.stderr if quiet else sys.stdout
+        print(f"Error: No browser found matching '{target}'.", file=out)
+        return 1
+
+    if not quiet:
+        print("Starting backup process...\n")
 
     try:
         result = pipeline.run()
     except KeyboardInterrupt:
         pipeline.cancel()
         clear_line()
-        print("\nBackup cancelled by user.")
+        out = sys.stderr if quiet else sys.stdout
+        print("\nBackup cancelled by user.", file=out)
         return 1
     except Exception as err:
         clear_line()
-        print(f"\nAn unexpected error occurred: {err}")
+        out = sys.stderr if quiet else sys.stdout
+        print(f"\nAn unexpected error occurred: {err}", file=out)
         return 1
 
-    print()  # Final newline after progress completes
-    return _handle_pipeline_result(result)
+    if not quiet:
+        print()  # Final newline after progress completes
+    return _handle_pipeline_result(result, quiet=quiet)
 
 
 def run_cli(args: Optional[argparse.Namespace] = None) -> int:

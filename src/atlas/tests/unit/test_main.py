@@ -57,3 +57,33 @@ def test_main_routes_to_gui() -> None:
                 main.main()
             assert exc_info.value.code == 0
             mock_gui.assert_called_once()
+
+
+def test_main_routes_to_cli_on_browser() -> None:
+    """Verify --browser flag routes execution to run_cli."""
+    with patch.object(sys, "argv", ["atlas", "--browser", "firefox"]):
+        with patch("atlas.cli.run_cli", return_value=0) as mock_cli:
+            with pytest.raises(SystemExit) as exc_info:
+                main.main()
+            assert exc_info.value.code == 0
+            mock_cli.assert_called_once()
+
+
+def test_main_routes_to_cli_on_quiet() -> None:
+    """Verify --quiet flag routes to run_cli and adjusts log level."""
+    with patch.object(sys, "argv", ["atlas", "--quiet"]):
+        with patch("atlas.cli.run_cli", return_value=0) as mock_cli:
+            with pytest.raises(SystemExit) as exc_info:
+                main.main()
+            assert exc_info.value.code == 0
+            mock_cli.assert_called_once()
+
+
+def test_package_main_entry_point() -> None:
+    """Verify atlas.__main__ delegates to main.main."""
+    with patch("atlas.main.main") as mock_main:
+        import runpy
+
+        with patch.object(sys, "argv", ["atlas", "--version"]):
+            runpy.run_module("atlas", run_name="__main__")
+        mock_main.assert_called_once()

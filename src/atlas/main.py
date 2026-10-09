@@ -36,6 +36,9 @@ def main() -> None:
     """
     args = parse_args()
 
+    if getattr(args, "quiet", False):
+        logging.getLogger().setLevel(logging.ERROR)
+
     if is_cli_mode(args):
         from atlas.cli import run_cli
 
