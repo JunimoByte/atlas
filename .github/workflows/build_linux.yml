@@ -39,7 +39,7 @@ jobs:
           docker run --rm \
             -v "$PWD:/workspace" \
             -w /workspace \
-            ubuntu:20.04 \
+            public.ecr.aws/ubuntu/ubuntu:20.04 \
             bash -c '
               set -e
               export DEBIAN_FRONTEND=noninteractive
