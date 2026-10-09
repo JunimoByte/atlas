@@ -158,7 +158,7 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     return args
 
 
-CLI_FLAGS = frozenset({"cli", "list", "browser", "quiet"})
+CLI_FLAGS = frozenset({"cli", "list", "browser"})
 
 
 def is_cli_mode(args: Optional[argparse.Namespace]) -> bool:

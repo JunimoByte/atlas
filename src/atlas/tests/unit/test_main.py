@@ -70,8 +70,8 @@ def test_main_routes_to_cli_on_browser() -> None:
 
 
 def test_main_routes_to_cli_on_quiet() -> None:
-    """Verify --quiet flag routes to run_cli and adjusts log level."""
-    with patch.object(sys, "argv", ["atlas", "--quiet"]):
+    """Verify --quiet with --cli routes to run_cli and adjusts log level."""
+    with patch.object(sys, "argv", ["atlas", "--cli", "--quiet"]):
         with patch("atlas.cli.run_cli", return_value=0) as mock_cli:
             with pytest.raises(SystemExit) as exc_info:
                 main.main()
