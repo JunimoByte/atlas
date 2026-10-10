@@ -9,6 +9,7 @@ milestone tracking, TTY handling, and exit codes.
 # =============================================================================
 
 import argparse
+import json
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -422,3 +423,230 @@ def test_run_list_quiet(capsys: pytest.CaptureFixture) -> None:
                 captured = capsys.readouterr()
                 assert "[Firefox]" in captured.out
                 assert "=" * 40 not in captured.out
+
+
+def test_run_list_json(capsys: pytest.CaptureFixture) -> None:
+    """Verify run_list outputs structured JSON when requested."""
+    args = argparse.Namespace(json=True, quiet=False, list=True, browser=None)
+    matches = {"Firefox": ["/path/to/profile"]}
+    with patch("atlas.lib.browsers.verify_entries", return_value=True):
+        with patch("atlas.lib.permissions.is_elevated", return_value=False):
+            with patch("atlas.cli.Pipeline") as mock_pipeline_cls:
+                mock_inst = MagicMock()
+                mock_inst.browsers = {"Firefox": {}}
+                mock_inst.scan_profiles.return_value = matches
+                mock_inst.estimate_size.return_value = 1048576
+                mock_pipeline_cls.return_value = mock_inst
+
+                assert cli.run_list(args) == 0
+                captured = capsys.readouterr()
+                data = json.loads(captured.out)
+                assert data["status"] == "success"
+                assert data["total_profiles"] == 1
+                assert data["total_bytes"] == 1048576
+                assert data["browsers"] == matches
+
+
+def test_run_list_json_empty(capsys: pytest.CaptureFixture) -> None:
+    """Verify run_list outputs no_browsers_found JSON when empty."""
+    args = argparse.Namespace(json=True, quiet=False, list=True, browser=None)
+    with patch("atlas.lib.browsers.verify_entries", return_value=True):
+        with patch("atlas.lib.permissions.is_elevated", return_value=False):
+            with patch("atlas.cli.Pipeline") as mock_pipeline_cls:
+                mock_inst = MagicMock()
+                mock_inst.browsers = {"Firefox": {}}
+                mock_inst.scan_profiles.return_value = {}
+                mock_pipeline_cls.return_value = mock_inst
+
+                assert cli.run_list(args) == 0
+                captured = capsys.readouterr()
+                data = json.loads(captured.out)
+                assert data["status"] == "no_browsers_found"
+                assert data["browsers"] == {}
+
+
+def test_run_list_json_unknown_browser(capsys: pytest.CaptureFixture) -> None:
+    """Verify run_list outputs JSON error for unknown browser."""
+    args = argparse.Namespace(
+        json=True, quiet=False, list=True, browser="unknown"
+    )
+    with patch("atlas.lib.browsers.verify_entries", return_value=True):
+        with patch("atlas.lib.permissions.is_elevated", return_value=False):
+            with patch("atlas.cli.Pipeline") as mock_pipeline_cls:
+                mock_inst = MagicMock()
+                mock_inst.browsers = {}
+                mock_pipeline_cls.return_value = mock_inst
+
+                assert cli.run_list(args) == 1
+                captured = capsys.readouterr()
+                data = json.loads(captured.out)
+                assert data["status"] == "error"
+                assert "No browser found" in data["message"]
+
+
+def test_run_backup_json(
+    tmp_path: Path, capsys: pytest.CaptureFixture
+) -> None:
+    """Verify run_backup outputs structured JSON summary."""
+    arc_file = tmp_path / "Firefox.zip"
+    arc_file.write_bytes(b"PK\x05\x06" + b"\x00" * 18)
+    args = argparse.Namespace(
+        json=True,
+        verify=False,
+        quiet=False,
+        list=False,
+        browser=None,
+        output=None,
+    )
+    with patch("atlas.lib.browsers.verify_entries", return_value=True):
+        with patch("atlas.lib.permissions.is_elevated", return_value=False):
+            with patch("atlas.cli.Pipeline") as mock_pipeline_cls:
+                mock_inst = MagicMock()
+                mock_inst.browsers = {"Firefox": {}}
+                mock_inst.run.return_value = PipelineResult.SUCCESS
+                mock_inst.created_archives = [arc_file]
+                mock_pipeline_cls.return_value = mock_inst
+
+                assert cli.run_backup(args) == 0
+                captured = capsys.readouterr()
+                data = json.loads(captured.out)
+                assert data["status"] == "success"
+                assert data["total_archives"] == 1
+                assert data["archives"][0]["name"] == "Firefox.zip"
+
+
+def test_run_backup_verify_success(
+    tmp_path: Path, capsys: pytest.CaptureFixture
+) -> None:
+    """Verify run_backup with -C/--verify succeeds on valid archive."""
+    arc_file = tmp_path / "Firefox.zip"
+    arc_file.write_bytes(b"content")
+    args = argparse.Namespace(
+        json=False,
+        verify=True,
+        quiet=False,
+        list=False,
+        browser=None,
+        output=None,
+    )
+    with patch("atlas.lib.browsers.verify_entries", return_value=True):
+        with patch("atlas.lib.permissions.is_elevated", return_value=False):
+            with patch("atlas.cli.Pipeline") as mock_pipeline_cls:
+                mock_inst = MagicMock()
+                mock_inst.browsers = {"Firefox": {}}
+                mock_inst.run.return_value = PipelineResult.SUCCESS
+                mock_inst.created_archives = [arc_file]
+                mock_pipeline_cls.return_value = mock_inst
+
+                with patch(
+                    "atlas.backup.archive.verify_archive",
+                    return_value=(True, None, 5),
+                ):
+                    assert cli.run_backup(args) == 0
+                    captured = capsys.readouterr()
+                    assert "[Verify] Firefox.zip: OK" in captured.out
+                    assert "Backup completed successfully." in captured.out
+
+
+def test_run_backup_verify_failure(
+    tmp_path: Path, capsys: pytest.CaptureFixture
+) -> None:
+    """Verify run_backup with -C/--verify fails when archive is corrupt."""
+    arc_file = tmp_path / "Corrupt.zip"
+    arc_file.write_bytes(b"bad")
+    args = argparse.Namespace(
+        json=False,
+        verify=True,
+        quiet=False,
+        list=False,
+        browser=None,
+        output=None,
+    )
+    with patch("atlas.lib.browsers.verify_entries", return_value=True):
+        with patch("atlas.lib.permissions.is_elevated", return_value=False):
+            with patch("atlas.cli.Pipeline") as mock_pipeline_cls:
+                mock_inst = MagicMock()
+                mock_inst.browsers = {"Firefox": {}}
+                mock_inst.run.return_value = PipelineResult.SUCCESS
+                mock_inst.created_archives = [arc_file]
+                mock_pipeline_cls.return_value = mock_inst
+
+                with patch(
+                    "atlas.backup.archive.verify_archive",
+                    return_value=(False, "Bad CRC-32", 1),
+                ):
+                    assert cli.run_backup(args) == 1
+                    captured = capsys.readouterr()
+                    assert "[Verify] Corrupt.zip: FAILED" in (
+                        captured.out + captured.err
+                    )
+
+
+def test_run_backup_json_with_verify(
+    tmp_path: Path, capsys: pytest.CaptureFixture
+) -> None:
+    """Verify run_backup with --json and --verify includes verify status."""
+    arc_file = tmp_path / "Firefox.zip"
+    arc_file.write_bytes(b"zipdata")
+    args = argparse.Namespace(
+        json=True,
+        verify=True,
+        quiet=False,
+        list=False,
+        browser=None,
+        output=None,
+    )
+    with patch("atlas.lib.browsers.verify_entries", return_value=True):
+        with patch("atlas.lib.permissions.is_elevated", return_value=False):
+            with patch("atlas.cli.Pipeline") as mock_pipeline_cls:
+                mock_inst = MagicMock()
+                mock_inst.browsers = {"Firefox": {}}
+                mock_inst.run.return_value = PipelineResult.SUCCESS
+                mock_inst.created_archives = [arc_file]
+                mock_pipeline_cls.return_value = mock_inst
+
+                with patch(
+                    "atlas.backup.archive.verify_archive",
+                    return_value=(True, None, 10),
+                ):
+                    assert cli.run_backup(args) == 0
+                    captured = capsys.readouterr()
+                    data = json.loads(captured.out)
+                    assert data["status"] == "success"
+                    assert data["archives"][0]["verified"] is True
+                    assert data["archives"][0]["file_count"] == 10
+
+
+def test_run_backup_json_with_verify_failure(
+    tmp_path: Path, capsys: pytest.CaptureFixture
+) -> None:
+    """Verify run_backup with --json and verify failure returns code 1."""
+    arc_file = tmp_path / "Firefox.zip"
+    arc_file.write_bytes(b"badzip")
+    args = argparse.Namespace(
+        json=True,
+        verify=True,
+        quiet=False,
+        list=False,
+        browser=None,
+        output=None,
+    )
+    with patch("atlas.lib.browsers.verify_entries", return_value=True):
+        with patch("atlas.lib.permissions.is_elevated", return_value=False):
+            with patch("atlas.cli.Pipeline") as mock_pipeline_cls:
+                mock_inst = MagicMock()
+                mock_inst.browsers = {"Firefox": {}}
+                mock_inst.run.return_value = PipelineResult.SUCCESS
+                mock_inst.created_archives = [arc_file]
+                mock_pipeline_cls.return_value = mock_inst
+
+                with patch(
+                    "atlas.backup.archive.verify_archive",
+                    return_value=(False, "CRC mismatch", 3),
+                ):
+                    assert cli.run_backup(args) == 1
+                    captured = capsys.readouterr()
+                    data = json.loads(captured.out)
+                    assert data["status"] == "verification_failed"
+                    assert data["archives"][0]["verified"] is False
+                    assert data["archives"][0]["error"] == "CRC mismatch"

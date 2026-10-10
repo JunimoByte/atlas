@@ -397,6 +397,51 @@ def test_set_zip_output_dir_rejects_existing_file(tmp_path: Path) -> None:
 
 
 # =============================================================================
+# TESTS — Archive Verification
+# =============================================================================
+
+
+def test_verify_archive_valid(tmp_path: Path) -> None:
+    """Verify verify_archive returns True for a valid zip archive."""
+    zip_path = tmp_path / "valid.zip"
+    with zipfile.ZipFile(zip_path, "w") as zf:
+        zf.writestr("file1.txt", "hello world")
+        zf.writestr("file2.txt", "second file")
+
+    is_valid, corrupt_name, count = archive.verify_archive(zip_path)
+    assert is_valid is True
+    assert corrupt_name is None
+    assert count == 2
+
+
+def test_verify_archive_corrupted(tmp_path: Path) -> None:
+    """Verify verify_archive detects CRC mismatch in a corrupted archive."""
+    zip_path = tmp_path / "corrupt.zip"
+    with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_STORED) as zf:
+        zf.writestr("entry.txt", b"AAAA" * 100)
+
+    data = bytearray(zip_path.read_bytes())
+    idx = data.find(b"AAAA")
+    assert idx != -1
+    data[idx: idx + 4] = b"BBBB"
+    zip_path.write_bytes(data)
+
+    is_valid, corrupt_name, count = archive.verify_archive(zip_path)
+    assert is_valid is False
+    assert corrupt_name == "entry.txt"
+    assert count == 1
+
+
+def test_verify_archive_nonexistent_file(tmp_path: Path) -> None:
+    """Verify verify_archive returns False for a nonexistent file."""
+    nonexistent = tmp_path / "does_not_exist.zip"
+    is_valid, error, count = archive.verify_archive(nonexistent)
+    assert is_valid is False
+    assert error is not None
+    assert count == 0
+
+
+# =============================================================================
 # TEST EXECUTION
 # =============================================================================
 

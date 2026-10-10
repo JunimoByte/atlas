@@ -211,6 +211,27 @@ def test_is_cli_mode() -> None:
     assert args.is_cli_mode(args.parse_args(["--list"])) is True
     assert args.is_cli_mode(args.parse_args(["-b", "firefox"])) is True
     assert args.is_cli_mode(args.parse_args(["--browser", "brave"])) is True
+    assert args.is_cli_mode(args.parse_args(["--json"])) is True
+    assert args.is_cli_mode(args.parse_args(["-C"])) is True
+    assert args.is_cli_mode(args.parse_args(["--verify"])) is True
+
+
+def test_parse_args_json() -> None:
+    """Verify --json argument parsing."""
+    parsed = args.parse_args(["--json"])
+    assert parsed.json is True
+
+    parsed_default = args.parse_args([])
+    assert parsed_default.json is False
+
+
+def test_parse_args_verify() -> None:
+    """Verify -C and --verify argument parsing."""
+    assert args.parse_args(["-C"]).verify is True
+    assert args.parse_args(["--verify"]).verify is True
+
+    parsed_default = args.parse_args([])
+    assert parsed_default.verify is False
 
 
 def test_parse_args_ignores_unknown_flags() -> None:

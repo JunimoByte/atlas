@@ -10,8 +10,10 @@ without invoking the PyQt GUI. Useful for pure terminal environments
 # =============================================================================
 
 import argparse
+import json
 import sys
-from typing import Dict, List, Optional
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 from atlas.backup.pipeline import Pipeline, PipelineResult
 
@@ -33,6 +35,16 @@ _LOGGED_MILESTONES: set = set()
 def _is_quiet(args: Optional[argparse.Namespace]) -> bool:
     """Return True if quiet execution was requested."""
     return bool(args and getattr(args, "quiet", False))
+
+
+def _is_json(args: Optional[argparse.Namespace]) -> bool:
+    """Return True if JSON output was requested."""
+    return bool(args and getattr(args, "json", False))
+
+
+def _is_verify(args: Optional[argparse.Namespace]) -> bool:
+    """Return True if archive verification was requested."""
+    return bool(args and getattr(args, "verify", False))
 
 
 def _on_progress(current: int, total: int) -> None:
@@ -199,6 +211,191 @@ def _print_matches(
         print("=" * 40)
 
 
+def _emit_json(data: Dict[str, Any]) -> None:
+    """Print structured JSON payload to standard output."""
+    print(json.dumps(data, indent=2))
+
+
+def _emit_json_error(status: str, message: str) -> None:
+    """Print error payload in JSON format."""
+    _emit_json({"status": status, "message": message})
+
+
+def _emit_list_json(
+    matches: Dict[str, List[str]],
+    total_bytes: int,
+    formatted_size: str,
+    status: str = "success",
+) -> None:
+    """Format and display detected browser profiles as JSON."""
+    data = {
+        "status": status,
+        "total_profiles": sum(len(p) for p in matches.values()),
+        "total_bytes": total_bytes,
+        "formatted_size": formatted_size,
+        "browsers": {
+            browser: sorted(paths)
+            for browser, paths in sorted(matches.items())
+            if paths
+        },
+    }
+    _emit_json(data)
+
+
+def _verify_archives(
+    archives: List[Path],
+    quiet: bool = False,
+    silent: bool = False,
+) -> Tuple[bool, Dict[Path, Tuple[bool, Optional[str], int]]]:
+    """Verify integrity of created archives via CRC-32 checksums.
+
+    Returns:
+        Tuple of (all_valid, results_dict).
+    """
+    from atlas.backup.archive import verify_archive
+
+    results: Dict[Path, Tuple[bool, Optional[str], int]] = {}
+    all_valid = True
+
+    for archive_path in archives:
+        is_valid, corrupt, count = verify_archive(archive_path)
+        results[archive_path] = (is_valid, corrupt, count)
+        if not is_valid:
+            all_valid = False
+            if not silent:
+                out = sys.stderr if quiet else sys.stdout
+                err_msg = corrupt or "Corrupted archive"
+                print(
+                    f"[Verify] {archive_path.name}: FAILED ({err_msg})",
+                    file=out,
+                )
+        elif not quiet and not silent:
+            print(
+                f"[Verify] {archive_path.name}: "
+                f"OK (CRC-32 verified, {count} files)"
+            )
+
+    return all_valid, results
+
+
+def _emit_backup_json(
+    archives: List[Path],
+    status: str,
+    verified_results: Optional[
+        Dict[Path, Tuple[bool, Optional[str], int]]
+    ] = None,
+) -> None:
+    """Format and emit backup execution results as JSON."""
+    from atlas.backup import size
+
+    archives_data = []
+    for arc in archives:
+        size_bytes = arc.stat().st_size if arc.is_file() else 0
+        arc_info: Dict[str, Any] = {
+            "archive": str(arc),
+            "name": arc.name,
+            "size_bytes": size_bytes,
+            "formatted_size": size.format_size(size_bytes),
+        }
+        if verified_results is not None and arc in verified_results:
+            is_valid, corrupt, count = verified_results[arc]
+            arc_info["verified"] = is_valid
+            arc_info["file_count"] = count
+            if not is_valid:
+                arc_info["error"] = corrupt
+        archives_data.append(arc_info)
+
+    data = {
+        "status": status,
+        "total_archives": len(archives_data),
+        "archives": archives_data,
+    }
+    _emit_json(data)
+
+
+def _report_error(
+    msg: str,
+    status: str = "error",
+    is_json: bool = False,
+    quiet: bool = False,
+) -> None:
+    """Report an error message to JSON output or standard output."""
+    if is_json:
+        _emit_json_error(status, msg)
+    else:
+        out = sys.stderr if quiet else sys.stdout
+        print(msg, file=out)
+
+
+def _init_cli_env(is_json: bool, quiet: bool) -> bool:
+    """Initialize logging and verify system browser environment."""
+    if quiet:
+        import logging
+
+        logging.getLogger().setLevel(logging.ERROR)
+    if not _verify_environment(quiet=quiet):
+        if is_json:
+            _emit_json_error(
+                "error", "Failed to load browser configuration."
+            )
+        return False
+    return True
+
+
+def _scan_profiles(
+    pipeline: Pipeline, is_json: bool, quiet: bool
+) -> Optional[Dict[str, List[str]]]:
+    """Scan browser profiles with interrupt handling."""
+    try:
+        return pipeline.scan_profiles()
+    except KeyboardInterrupt:
+        _report_error(
+            "\nScan cancelled by user.",
+            status="cancelled",
+            is_json=is_json,
+            quiet=quiet,
+        )
+        return None
+
+
+def _handle_empty_matches(
+    target: Optional[str], is_json: bool, quiet: bool
+) -> int:
+    """Handle empty profile match results."""
+    if is_json:
+        _emit_list_json({}, 0, "0 B", status="no_browsers_found")
+        return 0
+    msg = (
+        f"No profiles found on this system for '{target}'."
+        if target
+        else "No supported browser profiles found on this system."
+    )
+    _report_error(msg, is_json=False, quiet=quiet)
+    return 1 if quiet else 0
+
+
+def _estimate_matches_size(
+    pipeline: Pipeline,
+    matches: Dict[str, List[str]],
+    is_json: bool,
+    quiet: bool,
+) -> Optional[Tuple[int, str]]:
+    """Estimate total size of matched profiles with interrupt handling."""
+    from atlas.backup import size
+
+    try:
+        total_bytes = pipeline.estimate_size(matches)
+        return total_bytes, size.format_size(total_bytes)
+    except KeyboardInterrupt:
+        _report_error(
+            "\nSize estimation cancelled by user.",
+            status="cancelled",
+            is_json=is_json,
+            quiet=quiet,
+        )
+        return None
+
+
 def run_list(args: Optional[argparse.Namespace] = None) -> int:
     """List detected browser profiles without performing a backup.
 
@@ -208,52 +405,118 @@ def run_list(args: Optional[argparse.Namespace] = None) -> int:
     Returns:
         Exit code (0 for success, 1 on error).
     """
-    from atlas.backup import size
-
-    quiet = _is_quiet(args)
-    if quiet:
-        import logging
-
-        logging.getLogger().setLevel(logging.ERROR)
-
-    if not _verify_environment(quiet=quiet):
+    is_json = _is_json(args)
+    quiet = _is_quiet(args) or is_json
+    if not _init_cli_env(is_json, quiet):
         return 1
 
     target = getattr(args, "browser", None) if args else None
     pipeline = Pipeline(target_browser=target)
-
     if target and not pipeline.browsers:
-        out = sys.stderr if quiet else sys.stdout
-        print(f"Error: No browser found matching '{target}'.", file=out)
-        return 1
-
-    try:
-        matches = pipeline.scan_profiles()
-    except KeyboardInterrupt:
-        out = sys.stderr if quiet else sys.stdout
-        print("\nScan cancelled by user.", file=out)
-        return 1
-
-    if not matches:
-        out = sys.stderr if quiet else sys.stdout
-        msg = (
-            f"No profiles found on this system for '{target}'."
-            if target
-            else "No supported browser profiles found on this system."
+        _report_error(
+            f"Error: No browser found matching '{target}'.",
+            is_json=is_json,
+            quiet=quiet,
         )
-        print(msg, file=out)
-        return 1 if quiet else 0
-
-    try:
-        total_bytes = pipeline.estimate_size(matches)
-        formatted_size = size.format_size(total_bytes)
-    except KeyboardInterrupt:
-        out = sys.stderr if quiet else sys.stdout
-        print("\nSize estimation cancelled by user.", file=out)
         return 1
 
-    _print_matches(matches, formatted_size, quiet=quiet)
+    matches = _scan_profiles(pipeline, is_json, quiet)
+    if matches is None:
+        return 1
+    if not matches:
+        return _handle_empty_matches(target, is_json, quiet)
+
+    est = _estimate_matches_size(pipeline, matches, is_json, quiet)
+    if est is None:
+        return 1
+
+    total_bytes, formatted_size = est
+    if is_json:
+        _emit_list_json(matches, total_bytes, formatted_size)
+    else:
+        _print_matches(matches, formatted_size, quiet=quiet)
     return 0
+
+
+def _create_backup_pipeline(
+    target: Optional[str], quiet: bool, is_json: bool
+) -> Pipeline:
+    """Construct Pipeline instance with appropriate CLI callbacks."""
+    return Pipeline(
+        progress_callback=None if quiet else _on_progress,
+        scanned_callback=None if quiet else _on_scanned,
+        estimated_callback=None if quiet else _on_estimated,
+        no_browsers_found_callback=(
+            None if is_json else (lambda: _on_no_browsers(target, quiet))
+        ),
+        disk_space_error_callback=(
+            None if is_json else (lambda r, a: _on_disk_error(r, a, quiet))
+        ),
+        target_browser=target,
+    )
+
+
+def _execute_pipeline_safely(
+    pipeline: Pipeline, is_json: bool, quiet: bool
+) -> Optional[PipelineResult]:
+    """Execute pipeline run catching interrupts and unexpected errors."""
+    try:
+        return pipeline.run()
+    except KeyboardInterrupt:
+        pipeline.cancel()
+        clear_line()
+        _report_error(
+            "\nBackup cancelled by user.",
+            status="cancelled",
+            is_json=is_json,
+            quiet=quiet,
+        )
+        return None
+    except Exception as err:
+        clear_line()
+        _report_error(
+            f"\nAn unexpected error occurred: {err}",
+            status="error",
+            is_json=is_json,
+            quiet=quiet,
+        )
+        return None
+
+
+def _finalize_backup(
+    pipeline: Pipeline,
+    result: PipelineResult,
+    is_verify: bool,
+    is_json: bool,
+    quiet: bool,
+) -> int:
+    """Validate archives if requested and emit final output."""
+    verified_results = None
+    verify_ok = True
+    if is_verify and pipeline.created_archives:
+        verify_ok, verified_results = _verify_archives(
+            pipeline.created_archives,
+            quiet=quiet,
+            silent=is_json,
+        )
+
+    if is_json:
+        status = result.value
+        if result == PipelineResult.SUCCESS and not verify_ok:
+            status = "verification_failed"
+        _emit_backup_json(
+            pipeline.created_archives,
+            status=status,
+            verified_results=verified_results,
+        )
+        return 0 if (result == PipelineResult.SUCCESS and verify_ok) else 1
+
+    if result == PipelineResult.SUCCESS and not verify_ok:
+        out = sys.stderr if quiet else sys.stdout
+        print("Error: Post-backup verification failed.", file=out)
+        return 1
+
+    return _handle_pipeline_result(result, quiet=quiet)
 
 
 def run_backup(args: Optional[argparse.Namespace] = None) -> int:
@@ -265,58 +528,46 @@ def run_backup(args: Optional[argparse.Namespace] = None) -> int:
     Returns:
         Exit code (0 for success, 1 for failure).
     """
-    quiet = _is_quiet(args)
-    if quiet:
-        import logging
-
-        logging.getLogger().setLevel(logging.ERROR)
+    is_json = _is_json(args)
+    is_verify = _is_verify(args)
+    quiet = _is_quiet(args) or is_json
 
     _LOGGED_MILESTONES.clear()
-
-    if not _verify_environment(quiet=quiet):
+    if not _init_cli_env(is_json, quiet):
         return 1
 
     _print_banner("ATLAS CLI MODE", quiet=quiet)
-
     if not _apply_output_directory(args, quiet=quiet):
+        if is_json:
+            out_arg = getattr(args, "output", "")
+            _emit_json_error(
+                "error", f"Invalid output directory '{out_arg}'."
+            )
         return 1
 
     target = getattr(args, "browser", None) if args else None
-
-    pipeline = Pipeline(
-        progress_callback=None if quiet else _on_progress,
-        scanned_callback=None if quiet else _on_scanned,
-        estimated_callback=None if quiet else _on_estimated,
-        no_browsers_found_callback=lambda: _on_no_browsers(target, quiet),
-        disk_space_error_callback=lambda r, a: _on_disk_error(r, a, quiet),
-        target_browser=target,
-    )
-
+    pipeline = _create_backup_pipeline(target, quiet, is_json)
     if target and not pipeline.browsers:
-        out = sys.stderr if quiet else sys.stdout
-        print(f"Error: No browser found matching '{target}'.", file=out)
+        _report_error(
+            f"Error: No browser found matching '{target}'.",
+            is_json=is_json,
+            quiet=quiet,
+        )
         return 1
 
     if not quiet:
         print("Starting backup process...\n")
 
-    try:
-        result = pipeline.run()
-    except KeyboardInterrupt:
-        pipeline.cancel()
-        clear_line()
-        out = sys.stderr if quiet else sys.stdout
-        print("\nBackup cancelled by user.", file=out)
-        return 1
-    except Exception as err:
-        clear_line()
-        out = sys.stderr if quiet else sys.stdout
-        print(f"\nAn unexpected error occurred: {err}", file=out)
+    result = _execute_pipeline_safely(pipeline, is_json, quiet)
+    if result is None:
         return 1
 
     if not quiet:
-        print()  # Final newline after progress completes
-    return _handle_pipeline_result(result, quiet=quiet)
+        print()
+
+    return _finalize_backup(
+        pipeline, result, is_verify, is_json, _is_quiet(args)
+    )
 
 
 def run_cli(args: Optional[argparse.Namespace] = None) -> int:

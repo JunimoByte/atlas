@@ -79,6 +79,26 @@ def test_main_routes_to_cli_on_quiet() -> None:
             mock_cli.assert_called_once()
 
 
+def test_main_routes_to_cli_on_json() -> None:
+    """Verify --json flag routes execution to run_cli."""
+    with patch.object(sys, "argv", ["atlas", "--json"]):
+        with patch("atlas.cli.run_cli", return_value=0) as mock_cli:
+            with pytest.raises(SystemExit) as exc_info:
+                main.main()
+            assert exc_info.value.code == 0
+            mock_cli.assert_called_once()
+
+
+def test_main_routes_to_cli_on_verify() -> None:
+    """Verify --verify flag routes execution to run_cli."""
+    with patch.object(sys, "argv", ["atlas", "--verify"]):
+        with patch("atlas.cli.run_cli", return_value=0) as mock_cli:
+            with pytest.raises(SystemExit) as exc_info:
+                main.main()
+            assert exc_info.value.code == 0
+            mock_cli.assert_called_once()
+
+
 def test_package_main_entry_point() -> None:
     """Verify atlas.__main__ delegates to main.main."""
     with patch("atlas.main.main") as mock_main:

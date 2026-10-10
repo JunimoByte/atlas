@@ -439,3 +439,23 @@ def compress(  # noqa: C901
         temp_zip_path = zip_path.with_suffix(".zip.tmp")
         safe_unlink(temp_zip_path)
         return None
+
+
+def verify_archive(archive_path: Path) -> Tuple[bool, Optional[str], int]:
+    """Verify CRC-32 checksums of all files in a ZIP archive.
+
+    Args:
+        archive_path: Path to the ZIP archive to test.
+
+    Returns:
+        Tuple[bool, Optional[str], int]: (is_valid, corrupt_entry, file_count)
+    """
+    try:
+        with zipfile.ZipFile(archive_path, "r") as zf:
+            corrupt = zf.testzip()
+            count = len(zf.infolist())
+            if corrupt is not None:
+                return False, corrupt, count
+            return True, None, count
+    except Exception as err:
+        return False, str(err), 0

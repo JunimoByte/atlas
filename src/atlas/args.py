@@ -146,6 +146,17 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Suppress banner, progress indicators, and non-error output.",
     )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Output results in machine-readable JSON format.",
+    )
+    parser.add_argument(
+        "-C",
+        "--verify",
+        action="store_true",
+        help="Verify CRC-32 integrity of archives after backup.",
+    )
     return parser
 
 
@@ -158,7 +169,7 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     return args
 
 
-CLI_FLAGS = frozenset({"cli", "list", "browser"})
+CLI_FLAGS = frozenset({"cli", "list", "browser", "json", "verify"})
 
 
 def is_cli_mode(args: Optional[argparse.Namespace]) -> bool:

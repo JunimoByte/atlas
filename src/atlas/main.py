@@ -36,7 +36,7 @@ def main() -> None:
     """
     args = parse_args()
 
-    if getattr(args, "quiet", False):
+    if getattr(args, "quiet", False) or getattr(args, "json", False):
         logging.getLogger().setLevel(logging.ERROR)
 
     if is_cli_mode(args):

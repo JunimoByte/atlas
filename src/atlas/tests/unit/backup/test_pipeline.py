@@ -10,6 +10,7 @@ Covers scan, estimate, backup phases, cancellation, and retry logic.
 
 import os
 import sys
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -377,6 +378,17 @@ def test_pipeline_target_browser_unknown() -> None:
     ):
         p = Pipeline(target_browser="nonexistent")
         assert p.browsers == {}
+
+
+def test_pipeline_tracks_created_archives(pipeline: Pipeline) -> None:
+    """Verify perform_backup populates created_archives list."""
+    with patch(
+        "atlas.backup.pipeline.archive.compress",
+        return_value=Path("/tmp/Chrome.zip"),
+    ):
+        result = pipeline.perform_backup({"Chrome": ["/p1"]})
+        assert result is True
+        assert pipeline.created_archives == [Path("/tmp/Chrome.zip")]
 
 
 # =============================================================================

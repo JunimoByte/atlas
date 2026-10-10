@@ -16,6 +16,7 @@ import platform
 import time
 from collections import defaultdict
 from enum import Enum
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
 from atlas.backup import archive
@@ -87,6 +88,7 @@ class Pipeline:
         self.no_browsers_found_callback = no_browsers_found_callback
         self.disk_space_error_callback = disk_space_error_callback
         self.target_browser = target_browser
+        self.created_archives: List[Path] = []
 
         all_browsers = browsers.grab()
         if target_browser:
@@ -394,6 +396,7 @@ class Pipeline:
             bool: True if every archive is created successfully.
 
         """
+        self.created_archives = []
         total = len(browser_matches)
         completed = 0
         backup_succeeded = True
@@ -421,6 +424,7 @@ class Pipeline:
                 gc.collect()
 
                 if result is not None:
+                    self.created_archives.append(result)
                     LOGGER.info("Archive created: %s", zip_name)
                 elif not self._cancelled:
                     backup_succeeded = False
