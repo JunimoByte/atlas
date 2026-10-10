@@ -35,10 +35,14 @@ jobs:
 
       - name: Build AppImage and DEB in Ubuntu 20.04
         run: |
+          IMAGE="public.ecr.aws/ubuntu/ubuntu:20.04"
+          for i in 1 2 3; do
+            docker pull "$IMAGE" && break || sleep 5
+          done
           docker run --rm \
             -v "$PWD:/workspace" \
             -w /workspace \
-            public.ecr.aws/ubuntu/ubuntu:20.04 \
+            "$IMAGE" \
             bash -c '
               set -e
               export DEBIAN_FRONTEND=noninteractive
@@ -128,7 +132,8 @@ jobs:
               # 3. AppImage packaging tool
               TOOL_BASE="https://github.com/AppImage/appimagetool/releases"
               TOOL_FILE="appimagetool-x86_64.AppImage"
-              curl -fsSL -o /usr/local/bin/appimagetool \
+              curl -fsSL --retry 3 --retry-delay 2 \
+                -o /usr/local/bin/appimagetool \
                 "${TOOL_BASE}/download/continuous/${TOOL_FILE}"
               chmod +x /usr/local/bin/appimagetool
 
