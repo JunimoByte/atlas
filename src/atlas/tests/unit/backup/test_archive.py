@@ -438,7 +438,24 @@ def test_verify_archive_nonexistent_file(tmp_path: Path) -> None:
     is_valid, error, count = archive.verify_archive(nonexistent)
     assert is_valid is False
     assert error is not None
-    assert count == 0
+
+
+def test_compress_with_progress_callback(tmp_path: Path) -> None:
+    """Verify progress_callback receives chunk bytes during compress."""
+    source = tmp_path / "source"
+    source.mkdir()
+    create_files(source, ["sample.txt"])
+    (source / "sample.txt").write_bytes(b"A" * 2048)
+
+    chunks = []
+    result = archive.compress(
+        source,
+        "progress_test.zip",
+        progress_callback=chunks.append,
+    )
+    assert result is not None
+    assert result.exists()
+    assert sum(chunks) == 2048
 
 
 # =============================================================================

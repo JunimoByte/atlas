@@ -166,6 +166,7 @@ def _write_file_to_zip(
     file_path: Path,
     zip_info: zipfile.ZipInfo,
     cancel_callback: Optional[Callable[[], bool]] = None,
+    chunk_callback: Optional[Callable[[int], None]] = None,
 ) -> bool:
     """Write a single file to the ZIP archive.
 
@@ -174,6 +175,7 @@ def _write_file_to_zip(
         file_path: Path to the source file.
         zip_info: ZipInfo object for the file.
         cancel_callback: Optional cancellation check.
+        chunk_callback: Optional callback receiving bytes written per chunk.
 
     Returns:
         bool: True if written successfully, False if cancelled or skipped
@@ -195,6 +197,8 @@ def _write_file_to_zip(
                     if cancel_callback and cancel_callback():
                         return False
                     dest_file.write(chunk)
+                    if chunk_callback:
+                        chunk_callback(len(chunk))
         return True
     except OSError as error:
         # If disk is full, we must abort the backup completely.
@@ -268,6 +272,7 @@ def write_zip(
     zip_path: Path,
     cancel_callback: Optional[Callable[[], bool]] = None,
     archive_root_names: Optional[Dict[Path, str]] = None,
+    progress_callback: Optional[Callable[[int], None]] = None,
 ) -> None:
     """Write files to a ZIP archive safely.
 
@@ -282,6 +287,8 @@ def write_zip(
             check for cancellation.
         archive_root_names (Optional[Dict[Path, str]]): Archive directory
             name assigned to each source root.
+        progress_callback (Optional[Callable[[int], None]]): Callback
+            receiving chunk bytes written.
 
     Raises:
         RuntimeError: If a file cannot be written safely to the archive.
@@ -324,9 +331,21 @@ def write_zip(
                     # Write file contents to ZIP.
                     # Returns False only for cancellation or access errors
                     # (both are safe to skip). Unexpected failures raise.
-                    did_write = _write_file_to_zip(
-                        zip_file, file_path, zip_info, cancel_callback
-                    )
+                    if progress_callback:
+                        did_write = _write_file_to_zip(
+                            zip_file,
+                            file_path,
+                            zip_info,
+                            cancel_callback,
+                            progress_callback,
+                        )
+                    else:
+                        did_write = _write_file_to_zip(
+                            zip_file,
+                            file_path,
+                            zip_info,
+                            cancel_callback,
+                        )
                     if not did_write:
                         if cancel_callback and cancel_callback():
                             return
@@ -363,6 +382,7 @@ def compress(  # noqa: C901
     source: Union[str, Path, list],
     zip_name: Optional[str] = None,
     cancel_callback: Optional[Callable[[], bool]] = None,
+    progress_callback: Optional[Callable[[int], None]] = None,
 ) -> Optional[Path]:
     """Compress one or multiple directories into a ZIP archive safely.
 
@@ -371,6 +391,8 @@ def compress(  # noqa: C901
         zip_name (Optional[str]): Name of the output ZIP file.
         cancel_callback (Optional[Callable[[], bool]]): Function to
             check for cancellation.
+        progress_callback (Optional[Callable[[int], None]]): Callback
+            receiving chunk bytes written.
 
     Returns:
         Optional[Path]: Path to the created ZIP archive, or None if failed.
@@ -422,6 +444,7 @@ def compress(  # noqa: C901
             zip_path,
             cancel_callback,
             _archive_root_names(sources),
+            progress_callback=progress_callback,
         )
 
         if cancel_callback and cancel_callback():

@@ -103,6 +103,7 @@ class Window(QtWidgets.QDialog):
         self.formatted_size: str = ""
         self._last_elapsed_text: str = ""
         self.latest_scanned_info: str = ""
+        self._progress_anim: Optional[QtCore.QPropertyAnimation] = None
 
         self.signals = Signals()
         self.controller = Controller(self.signals)
@@ -223,6 +224,8 @@ class Window(QtWidgets.QDialog):
     ) -> None:
         """Handle state mutation specific to certain UI modes."""
         if mode == UIMode.SCANNING:
+            if getattr(self, "_progress_anim", None) is not None:
+                self._progress_anim.stop()
             self.interface.progress_bar.setValue(0)
         elif mode == UIMode.ERROR and error_text:
             self.interface.cancel_description.setText(error_text)
@@ -250,12 +253,36 @@ class Window(QtWidgets.QDialog):
     # PROGRESS & TIME
     # =========================================================================
 
-    def _update_progress(self, current: int, total: int) -> None:
-        """Update the progress bar as percentage."""
+    def _update_progress(
+        self, current: int, total: int, animate: bool = True
+    ) -> None:
+        """Update the progress bar smoothly without regressions."""
         if total <= 0:
             return
-        percentage = min(100, max(0, int((current / total) * 100)))
-        self.interface.progress_bar.setValue(percentage)
+        target = min(100, max(0, int((current / total) * 100)))
+        current_val = self.interface.progress_bar.value()
+
+        if target < current_val:
+            return
+
+        if animate and self.isVisible():
+            if getattr(self, "_progress_anim", None) is not None:
+                self._progress_anim.stop()
+
+            anim = QtCore.QPropertyAnimation(
+                self.interface.progress_bar, b"value", self
+            )
+            anim.setDuration(300)
+            anim.setStartValue(current_val)
+            anim.setEndValue(target)
+            curve = getattr(QtCore.QEasingCurve, "OutQuad", None)
+            if curve is None:
+                curve = QtCore.QEasingCurve.Type.OutQuad
+            anim.setEasingCurve(curve)
+            anim.start()
+            self._progress_anim = anim
+        else:
+            self.interface.progress_bar.setValue(target)
 
     def _update_elapsed_time(self, elapsed: int) -> None:
         """Update elapsed time display only if changed."""
@@ -377,6 +404,8 @@ class Window(QtWidgets.QDialog):
     def closeEvent(self, event: Any) -> None:  # noqa: N802
         """Handle cleanup on close."""
         LOGGER.debug("Window closing")
+        if getattr(self, "_progress_anim", None) is not None:
+            self._progress_anim.stop()
         self.controller.cleanup()
         LOGGER.debug("Event accepted")
         event.accept()

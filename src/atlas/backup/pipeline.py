@@ -17,7 +17,7 @@ import time
 from collections import defaultdict
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from atlas.backup import archive
 from atlas.backup import profile as Profile  # noqa: N812
@@ -38,6 +38,74 @@ LOGGER = logging.getLogger(__name__)
 MAX_RETRIES = 3
 RETRY_DELAY = 1.0
 SIGNAL_BATCH_INTERVAL = 0.5
+PROGRESS_BATCH_INTERVAL = 0.25
+
+
+class _ProgressTracker:
+    """Rate-limited byte progress calculator for backup archives."""
+
+    def __init__(
+        self,
+        total_bytes: int,
+        emit_fn: Callable[[int, int], None],
+        interval: float = PROGRESS_BATCH_INTERVAL,
+    ) -> None:
+        self.total_bytes = total_bytes
+        self.emit_fn = emit_fn
+        self.interval = interval
+        self.bytes_base = 0
+        self.current_browser_bytes = 0
+        self.last_emit_time = 0.0
+        self.last_emit_pct = -1
+
+    def make_chunk_callback(self) -> Optional[Callable[[int], None]]:
+        """Return a chunk callback for an archive compression attempt."""
+        if self.total_bytes <= 0:
+            return None
+
+        self.current_browser_bytes = 0
+
+        def on_chunk(chunk_len: int) -> None:
+            self.current_browser_bytes += chunk_len
+            now = time.monotonic()
+            if now - self.last_emit_time < self.interval:
+                return
+            total_so_far = self.bytes_base + self.current_browser_bytes
+            pct = min(
+                99, max(0, int((total_so_far / self.total_bytes) * 100))
+            )
+            if pct > self.last_emit_pct:
+                self.last_emit_time = now
+                self.last_emit_pct = pct
+                self.emit_fn(pct, 100)
+
+        return on_chunk
+
+    def on_browser_finished(
+        self, completed: int, total: int
+    ) -> Optional[Tuple[int, int]]:
+        """Commit browser bytes and compute monotonic progress update."""
+        self.bytes_base += self.current_browser_bytes
+        self.current_browser_bytes = 0
+
+        if self.total_bytes <= 0:
+            return (completed, total)
+
+        if completed == total:
+            return (completed, total)
+
+        pct = min(
+            99,
+            max(
+                self.last_emit_pct,
+                int((self.bytes_base / self.total_bytes) * 100),
+            ),
+        )
+        if pct > self.last_emit_pct:
+            self.last_emit_pct = pct
+            return (pct, 100)
+        return None
+
 
 # =============================================================================
 # CLASSES
@@ -89,6 +157,7 @@ class Pipeline:
         self.disk_space_error_callback = disk_space_error_callback
         self.target_browser = target_browser
         self.created_archives: List[Path] = []
+        self._total_bytes: int = 0
 
         all_browsers = browsers.grab()
         if target_browser and target_browser.strip():
@@ -384,6 +453,7 @@ class Pipeline:
 
         LOGGER.info("Estimated total size: %s", formatted_size)
         self._emit(self.estimated_callback, formatted_size)
+        self._total_bytes = max(0, total_size)
 
         return total_size
 
@@ -400,6 +470,10 @@ class Pipeline:
         total = len(browser_matches)
         completed = 0
         backup_succeeded = True
+        tracker = _ProgressTracker(
+            getattr(self, "_total_bytes", 0),
+            lambda cur, tot: self._emit(self.progress_callback, cur, tot),
+        )
 
         for browser_name, paths in browser_matches.items():
             if self.is_cancelled():
@@ -420,6 +494,7 @@ class Pipeline:
                     paths,
                     zip_name,
                     cancel_callback=self.is_cancelled,
+                    progress_callback=tracker.make_chunk_callback(),
                 )
                 gc.collect()
 
@@ -438,6 +513,8 @@ class Pipeline:
                 LOGGER.exception("Error zipping %s", browser_name)
             finally:
                 completed += 1
-                self._emit(self.progress_callback, completed, total)
+                prog = tracker.on_browser_finished(completed, total)
+                if prog is not None:
+                    self._emit(self.progress_callback, prog[0], prog[1])
 
         return backup_succeeded

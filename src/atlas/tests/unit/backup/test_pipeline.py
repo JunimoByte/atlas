@@ -15,7 +15,11 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from atlas.backup.pipeline import Pipeline, PipelineResult
+from atlas.backup.pipeline import (
+    Pipeline,
+    PipelineResult,
+    _ProgressTracker,
+)
 
 # =============================================================================
 # FIXTURES
@@ -389,6 +393,91 @@ def test_pipeline_tracks_created_archives(pipeline: Pipeline) -> None:
         result = pipeline.perform_backup({"Chrome": ["/p1"]})
         assert result is True
         assert pipeline.created_archives == [Path("/tmp/Chrome.zip")]
+
+
+def test_progress_tracker_emits_rate_limited_monotonic() -> None:
+    """Verify _ProgressTracker emits monotonically and rate-limits."""
+    emitted = []
+    tracker = _ProgressTracker(
+        total_bytes=1000,
+        emit_fn=lambda cur, tot: emitted.append((cur, tot)),
+        interval=0.1,
+    )
+
+    cb = tracker.make_chunk_callback()
+    assert cb is not None
+
+    # First chunk: 200 bytes -> 20%
+    cb(200)
+    assert emitted == [(20, 100)]
+
+    # Immediate second chunk: rate limited (time has not elapsed)
+    cb(100)
+    assert len(emitted) == 1
+
+    # Simulate time elapsed
+    tracker.last_emit_time -= 0.2
+    cb(300)  # total 600 bytes -> 60%
+    assert emitted[-1] == (60, 100)
+
+    # Monotonicity: smaller or same percent does not emit
+    tracker.last_emit_time -= 0.2
+    cb(0)
+    assert len(emitted) == 2
+
+
+def test_progress_tracker_caps_at_99() -> None:
+    """Verify _ProgressTracker caps intermediate progress at 99%."""
+    emitted = []
+    tracker = _ProgressTracker(
+        total_bytes=100,
+        emit_fn=lambda cur, tot: emitted.append((cur, tot)),
+        interval=0.0,
+    )
+    cb = tracker.make_chunk_callback()
+    assert cb is not None
+    cb(200)  # Exceeds total
+    assert emitted == [(99, 100)]
+
+
+def test_progress_tracker_zero_total_bytes() -> None:
+    """Verify _ProgressTracker returns None callback when total_bytes <= 0."""
+    tracker = _ProgressTracker(
+        total_bytes=0,
+        emit_fn=lambda c, t: None,
+    )
+    assert tracker.make_chunk_callback() is None
+
+
+def test_progress_tracker_multi_browser_accumulation() -> None:
+    """Verify _ProgressTracker accumulates bytes across multiple browsers."""
+    emitted = []
+    tracker = _ProgressTracker(
+        total_bytes=1000,
+        emit_fn=lambda cur, tot: emitted.append((cur, tot)),
+        interval=0.0,
+    )
+    cb1 = tracker.make_chunk_callback()
+    assert cb1 is not None
+    cb1(300)  # 30%
+    prog1 = tracker.on_browser_finished(1, 2)
+    assert prog1 is None  # Already at 30%, does not regress
+
+    cb2 = tracker.make_chunk_callback()
+    assert cb2 is not None
+    cb2(400)  # 300 + 400 = 70%
+    assert emitted[-1] == (70, 100)
+    prog2 = tracker.on_browser_finished(2, 2)
+    assert prog2 == (2, 2)
+
+
+def test_progress_tracker_on_browser_finished_no_total_bytes() -> None:
+    """Verify on_browser_finished returns (completed, total) when <= 0."""
+    tracker = _ProgressTracker(
+        total_bytes=0,
+        emit_fn=lambda c, t: None,
+    )
+    assert tracker.on_browser_finished(1, 3) == (1, 3)
 
 
 # =============================================================================

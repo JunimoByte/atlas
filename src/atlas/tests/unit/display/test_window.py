@@ -130,6 +130,61 @@ def test_update_progress_states(
     assert window.interface.progress_bar.value() == expected
 
 
+def test_update_progress_never_regresses(window: Window) -> None:
+    """Verify that progress bar value never decreases during an update."""
+    window.interface.progress_bar.setValue(50)
+    window._update_progress(3, 10)
+    assert window.interface.progress_bar.value() == 50
+
+
+def test_update_progress_animates_when_visible(window: Window) -> None:
+    """Verify QPropertyAnimation is initiated when window is visible."""
+    window.setVisible(True)
+    window.interface.progress_bar.setValue(10)
+    window._update_progress(5, 10)
+    assert window._progress_anim is not None
+    assert window._progress_anim.startValue() == 10
+    assert window._progress_anim.endValue() == 50
+    assert window._progress_anim.duration() == 300
+    window._progress_anim.stop()
+    window.setVisible(False)
+
+
+def test_update_progress_pyqt5_easing_curve_compatibility(
+    window: Window, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Verify easing curve resolution with PyQt5-style OutQuad."""
+    from atlas.compatibility.qt import QtCore
+
+    curve_val = QtCore.QEasingCurve.Type.OutQuad
+    monkeypatch.setattr(
+        QtCore.QEasingCurve, "OutQuad", curve_val, raising=False
+    )
+    window.setVisible(True)
+    window.interface.progress_bar.setValue(10)
+    window._update_progress(5, 10)
+    assert window._progress_anim is not None
+    assert window._progress_anim.endValue() == 50
+    window._progress_anim.stop()
+    window.setVisible(False)
+
+
+def test_close_event_stops_active_animation(window: Window) -> None:
+    """Verify that closeEvent stops any in-flight progress animation."""
+    from unittest.mock import MagicMock, patch
+
+    window.setVisible(True)
+    window.interface.progress_bar.setValue(10)
+    window._update_progress(5, 10)
+    assert window._progress_anim is not None
+
+    anim = window._progress_anim
+    with patch.object(anim, "stop") as mock_stop:
+        window.closeEvent(MagicMock())
+        mock_stop.assert_called_once()
+    window.setVisible(False)
+
+
 # =============================================================================
 # TESTS — Update Elapsed Time
 # =============================================================================
