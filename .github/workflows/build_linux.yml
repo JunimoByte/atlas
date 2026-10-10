@@ -19,7 +19,6 @@ on:
       - 'scripts/build_deb.sh'
       - 'scripts/build_flatpak.sh'
       - 'installer/flatpak/**'
-      - 'io.github.junimobyte.Atlas.yml'
       - 'appimage.spec'
       - 'pyproject.toml'
       - '.github/workflows/build_linux.yml'
@@ -169,7 +168,7 @@ jobs:
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
           bundle: Atlas-x86_64.flatpak
-          manifest-path: io.github.junimobyte.Atlas.yml
+          manifest-path: installer/flatpak/io.github.junimobyte.Atlas.yml
           repository-name: flathub
           repository-url: https://dl.flathub.org/repo/flathub.flatpakrepo
           run-tests: false
