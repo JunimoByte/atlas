@@ -650,3 +650,58 @@ def test_run_backup_json_with_verify_failure(
                     assert data["status"] == "verification_failed"
                     assert data["archives"][0]["verified"] is False
                     assert data["archives"][0]["error"] == "CRC mismatch"
+
+
+def test_run_list_scan_unexpected_exception(
+    capsys: pytest.CaptureFixture,
+) -> None:
+    """Verify run_list catches unexpected scan exception safely."""
+    args = argparse.Namespace(
+        list=True, quiet=False, json=False, browser=None
+    )
+    with patch("atlas.lib.browsers.verify_entries", return_value=True):
+        with patch("atlas.lib.permissions.is_elevated", return_value=False):
+            with patch("atlas.cli.Pipeline") as mock_pipeline_cls:
+                mock_inst = MagicMock()
+                mock_inst.browsers = {"Firefox": {}}
+                mock_inst.scan_profiles.side_effect = RuntimeError("I/O error")
+                mock_pipeline_cls.return_value = mock_inst
+
+                assert cli.run_list(args) == 1
+                captured = capsys.readouterr()
+                assert "unexpected error occurred during scan" in captured.out
+
+
+def test_run_list_size_unexpected_exception(
+    capsys: pytest.CaptureFixture,
+) -> None:
+    """Verify run_list catches unexpected size estimation exception safely."""
+    args = argparse.Namespace(
+        list=True, quiet=False, json=False, browser=None
+    )
+    with patch("atlas.lib.browsers.verify_entries", return_value=True):
+        with patch("atlas.lib.permissions.is_elevated", return_value=False):
+            with patch("atlas.cli.Pipeline") as mock_pipeline_cls:
+                mock_inst = MagicMock()
+                mock_inst.browsers = {"Firefox": {}}
+                mock_inst.scan_profiles.return_value = {"Firefox": ["/p"]}
+                mock_inst.estimate_size.side_effect = OSError("Access denied")
+                mock_pipeline_cls.return_value = mock_inst
+
+                assert cli.run_list(args) == 1
+                captured = capsys.readouterr()
+                assert (
+                    "unexpected error occurred during sizing" in captured.out
+                )
+
+
+def test_emit_backup_json_oserror_on_stat(
+    tmp_path: Path, capsys: pytest.CaptureFixture
+) -> None:
+    """Verify _emit_backup_json tolerates stat OSError on missing file."""
+    ghost_file = tmp_path / "ghost.zip"
+    cli._emit_backup_json([ghost_file], status="success")
+    captured = capsys.readouterr()
+    data = json.loads(captured.out)
+    assert data["status"] == "success"
+    assert data["archives"][0]["size_bytes"] == 0

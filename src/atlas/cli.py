@@ -258,20 +258,25 @@ def _verify_archives(
     all_valid = True
 
     for archive_path in archives:
-        is_valid, corrupt, count = verify_archive(archive_path)
-        results[archive_path] = (is_valid, corrupt, count)
+        arc = (
+            Path(archive_path)
+            if not isinstance(archive_path, Path)
+            else archive_path
+        )
+        is_valid, corrupt, count = verify_archive(arc)
+        results[arc] = (is_valid, corrupt, count)
         if not is_valid:
             all_valid = False
             if not silent:
                 out = sys.stderr if quiet else sys.stdout
                 err_msg = corrupt or "Corrupted archive"
                 print(
-                    f"[Verify] {archive_path.name}: FAILED ({err_msg})",
+                    f"[Verify] {arc.name}: FAILED ({err_msg})",
                     file=out,
                 )
         elif not quiet and not silent:
             print(
-                f"[Verify] {archive_path.name}: "
+                f"[Verify] {arc.name}: "
                 f"OK (CRC-32 verified, {count} files)"
             )
 
@@ -290,19 +295,27 @@ def _emit_backup_json(
 
     archives_data = []
     for arc in archives:
-        size_bytes = arc.stat().st_size if arc.is_file() else 0
+        arc_path = Path(arc) if not isinstance(arc, Path) else arc
+        try:
+            size_bytes = (
+                arc_path.stat().st_size if arc_path.is_file() else 0
+            )
+        except OSError:
+            size_bytes = 0
         arc_info: Dict[str, Any] = {
-            "archive": str(arc),
-            "name": arc.name,
+            "archive": str(arc_path),
+            "name": arc_path.name,
             "size_bytes": size_bytes,
             "formatted_size": size.format_size(size_bytes),
         }
-        if verified_results is not None and arc in verified_results:
-            is_valid, corrupt, count = verified_results[arc]
-            arc_info["verified"] = is_valid
-            arc_info["file_count"] = count
-            if not is_valid:
-                arc_info["error"] = corrupt
+        if verified_results is not None:
+            res = verified_results.get(arc_path) or verified_results.get(arc)
+            if res is not None:
+                is_valid, corrupt, count = res
+                arc_info["verified"] = is_valid
+                arc_info["file_count"] = count
+                if not is_valid:
+                    arc_info["error"] = corrupt
         archives_data.append(arc_info)
 
     data = {
@@ -321,7 +334,7 @@ def _report_error(
 ) -> None:
     """Report an error message to JSON output or standard output."""
     if is_json:
-        _emit_json_error(status, msg)
+        _emit_json_error(status, msg.strip())
     else:
         out = sys.stderr if quiet else sys.stdout
         print(msg, file=out)
@@ -352,6 +365,14 @@ def _scan_profiles(
         _report_error(
             "\nScan cancelled by user.",
             status="cancelled",
+            is_json=is_json,
+            quiet=quiet,
+        )
+        return None
+    except Exception as err:
+        _report_error(
+            f"\nAn unexpected error occurred during scan: {err}",
+            status="error",
             is_json=is_json,
             quiet=quiet,
         )
@@ -394,6 +415,14 @@ def _estimate_matches_size(
             quiet=quiet,
         )
         return None
+    except Exception as err:
+        _report_error(
+            f"\nAn unexpected error occurred during sizing: {err}",
+            status="error",
+            is_json=is_json,
+            quiet=quiet,
+        )
+        return None
 
 
 def run_list(args: Optional[argparse.Namespace] = None) -> int:
@@ -410,7 +439,8 @@ def run_list(args: Optional[argparse.Namespace] = None) -> int:
     if not _init_cli_env(is_json, quiet):
         return 1
 
-    target = getattr(args, "browser", None) if args else None
+    raw_target = getattr(args, "browser", None) if args else None
+    target = raw_target.strip() if raw_target else None
     pipeline = Pipeline(target_browser=target)
     if target and not pipeline.browsers:
         _report_error(
@@ -493,7 +523,11 @@ def _finalize_backup(
     """Validate archives if requested and emit final output."""
     verified_results = None
     verify_ok = True
-    if is_verify and pipeline.created_archives:
+    if (
+        is_verify
+        and result == PipelineResult.SUCCESS
+        and pipeline.created_archives
+    ):
         verify_ok, verified_results = _verify_archives(
             pipeline.created_archives,
             quiet=quiet,
@@ -545,7 +579,8 @@ def run_backup(args: Optional[argparse.Namespace] = None) -> int:
             )
         return 1
 
-    target = getattr(args, "browser", None) if args else None
+    raw_target = getattr(args, "browser", None) if args else None
+    target = raw_target.strip() if raw_target else None
     pipeline = _create_backup_pipeline(target, quiet, is_json)
     if target and not pipeline.browsers:
         _report_error(

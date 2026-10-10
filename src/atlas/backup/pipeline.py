@@ -91,7 +91,7 @@ class Pipeline:
         self.created_archives: List[Path] = []
 
         all_browsers = browsers.grab()
-        if target_browser:
+        if target_browser and target_browser.strip():
             normalized = target_browser.strip().casefold()
             matched = {
                 k: v
