@@ -22,9 +22,18 @@ from atlas.backup.pipeline import Pipeline, PipelineResult
 # =============================================================================
 
 
+def _is_atty() -> bool:
+    """Return True if sys.stdout is an active TTY stream."""
+    return bool(
+        sys.stdout
+        and getattr(sys.stdout, "isatty", None)
+        and sys.stdout.isatty()
+    )
+
+
 def clear_line() -> None:
     """Clear the current terminal line cross-platform."""
-    if sys.stdout.isatty():
+    if _is_atty():
         sys.stdout.write("\r" + " " * 79 + "\r")
         sys.stdout.flush()
 
@@ -52,19 +61,21 @@ def _on_progress(current: int, total: int) -> None:
         return
     percent = int((current / total) * 100)
     text = f"[Backup] Progress: {percent}% ({current}/{total} files)"
-    if sys.stdout.isatty():
+    if _is_atty():
         # Keep visible width at 78 cols to avoid wrap on 80-col terminals
         sys.stdout.write(f"\r{text[:78].ljust(78)}")
         sys.stdout.flush()
     else:
         # Only log every 10% to prevent massive log files in cron jobs
-        if percent % 10 == 0 and percent not in _LOGGED_MILESTONES:
-            _LOGGED_MILESTONES.add(percent)
-            print(text)
+        milestone = (percent // 10) * 10
+        if milestone > 0 and milestone not in _LOGGED_MILESTONES:
+            _LOGGED_MILESTONES.add(milestone)
+            msg = f"[Backup] Progress: {milestone}% ({current}/{total} files)"
+            print(msg)
 
 
 def _on_scanned(msg: str) -> None:
-    if sys.stdout.isatty():
+    if _is_atty():
         # 78 visible columns max: "[Scanning] " is 11 chars -> 67 chars for msg
         text = f"[Scanning] {msg[:67]}"
         sys.stdout.write(f"\r{text.ljust(78)}")
@@ -76,7 +87,7 @@ def _on_scanned(msg: str) -> None:
 def _on_estimated(size: str) -> None:
     clear_line()
     print(f"Estimated Backup Size: {size}")
-    if sys.stdout.isatty():
+    if _is_atty():
         print()
 
 

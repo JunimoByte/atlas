@@ -122,6 +122,16 @@ class PipelineResult(Enum):
     FAILED = "failed"
 
 
+def _is_disk_full(error: OSError) -> bool:
+    """Return True if error represents ENOSPC or WinError 112."""
+    import errno
+
+    return bool(
+        error.errno == errno.ENOSPC
+        or getattr(error, "winerror", None) == 112
+    )
+
+
 class Pipeline:
     """Executes the scanning, size estimation, and backup workflow.
 
@@ -251,7 +261,10 @@ class Pipeline:
                 )
                 raise
             except OSError as error:
-                if isinstance(error, (PermissionError, FileNotFoundError)):
+                if (
+                    isinstance(error, (PermissionError, FileNotFoundError))
+                    or _is_disk_full(error)
+                ):
                     LOGGER.debug(
                         "Non-retryable OSError on attempt %d: %s",
                         attempt + 1,
@@ -425,12 +438,14 @@ class Pipeline:
                 )
                 return -1
             except ScanError as error:
-                LOGGER.warning(
+                LOGGER.error(
                     "Size scan incomplete for %s: %s. "
-                    "Skipping this path.",
+                    "Estimate is unreliable, blocking "
+                    "disk check.",
                     path_str,
                     error,
                 )
+                return -1
             except Exception as error:
                 LOGGER.error(
                     "Could not calculate size for %s: %s", path_str, error
@@ -457,7 +472,9 @@ class Pipeline:
 
         return total_size
 
-    def perform_backup(self, browser_matches: Dict[str, List[str]]) -> bool:
+    def perform_backup(  # noqa: C901
+        self, browser_matches: Dict[str, List[str]]
+    ) -> bool:
         """Compress profiles into ZIP archives.
 
         Note: browser_matches keys are unique browser names.
@@ -508,6 +525,12 @@ class Pipeline:
             except FileNotFoundError as error:
                 backup_succeeded = False
                 LOGGER.warning("Skipped archive %s: %s", zip_name, error)
+            except OSError as error:
+                if _is_disk_full(error):
+                    LOGGER.critical("Disk full during backup: %s", error)
+                    return False
+                backup_succeeded = False
+                LOGGER.exception("Error zipping %s", browser_name)
             except Exception:
                 backup_succeeded = False
                 LOGGER.exception("Error zipping %s", browser_name)

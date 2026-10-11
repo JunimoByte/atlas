@@ -214,6 +214,8 @@ def test_is_cli_mode() -> None:
     assert args.is_cli_mode(args.parse_args(["--json"])) is True
     assert args.is_cli_mode(args.parse_args(["-C"])) is True
     assert args.is_cli_mode(args.parse_args(["--verify"])) is True
+    assert args.is_cli_mode(args.parse_args(["-o", "/tmp/out"])) is True
+    assert args.is_cli_mode(args.parse_args(["--output", "/tmp/out"])) is True
 
 
 def test_parse_args_json() -> None:

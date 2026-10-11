@@ -197,6 +197,21 @@ def test_run_emits_failed_when_pipeline_reports_failure(
     assert failures == ["The backup process could not complete successfully."]
 
 
+def test_cancel_before_run_aborts_startup(
+    worker: Worker, mock_pipeline_cls: MagicMock
+) -> None:
+    """Verify calling cancel before run emits cancelled and does not run."""
+    cancelled_calls = []
+    worker.cancelled.connect(lambda: cancelled_calls.append(True))
+
+    worker.cancel()
+    assert len(cancelled_calls) == 1
+
+    worker.run()
+    assert len(cancelled_calls) == 2
+    mock_pipeline_cls.assert_not_called()
+
+
 # =============================================================================
 # TEST EXECUTION
 # =============================================================================

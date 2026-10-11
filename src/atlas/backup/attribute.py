@@ -108,6 +108,7 @@ def create_zip_info(file_path: Path) -> zipfile.ZipInfo:
 
     """
     zi = zipfile.ZipInfo()
+    zi.compress_type = zipfile.ZIP_DEFLATED
     try:
         st = file_path.stat()
         zi.date_time = safe_zipinfo_date(file_path, st.st_mtime)

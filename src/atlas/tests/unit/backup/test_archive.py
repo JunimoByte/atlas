@@ -12,6 +12,7 @@ import sys
 import zipfile
 from pathlib import Path
 from typing import List
+from unittest.mock import patch
 
 import pytest
 
@@ -456,6 +457,34 @@ def test_compress_with_progress_callback(tmp_path: Path) -> None:
     assert result is not None
     assert result.exists()
     assert sum(chunks) == 2048
+
+
+def test_compress_rejects_empty_archive_when_files_fail(
+    tmp_path: Path,
+) -> None:
+    """Verify compress returns None when all files fail to write."""
+    source = tmp_path / "source"
+    source.mkdir()
+    create_files(source, ["locked.txt"])
+
+    with patch.object(archive, "_write_file_to_zip", return_value=False):
+        result = archive.compress(source, "empty_fail.zip")
+        assert result is None
+
+
+def test_compress_reraises_enospc(tmp_path: Path) -> None:
+    """Verify compress re-raises ENOSPC disk full errors."""
+    import errno
+
+    source = tmp_path / "source"
+    source.mkdir()
+    create_files(source, ["sample.txt"])
+
+    enospc_err = OSError(errno.ENOSPC, "No space left on device")
+    with patch.object(archive, "_write_file_to_zip", side_effect=enospc_err):
+        with pytest.raises(OSError) as exc_info:
+            archive.compress(source, "full_disk.zip")
+        assert exc_info.value.errno == errno.ENOSPC
 
 
 # =============================================================================

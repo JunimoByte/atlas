@@ -297,6 +297,7 @@ def write_zip(
     temp_zip_path = zip_path.with_suffix(".zip.tmp")
     archive_created = False
 
+    files_written = 0
     try:
         with zipfile.ZipFile(
             temp_zip_path,
@@ -350,6 +351,7 @@ def write_zip(
                         if cancel_callback and cancel_callback():
                             return
                         continue
+                    files_written += 1
 
                 except Exception as error:
                     LOGGER.warning(
@@ -360,7 +362,11 @@ def write_zip(
                     raise
 
         # Validate and finalize
-        if not temp_zip_path.exists() or temp_zip_path.stat().st_size == 0:
+        if (
+            not temp_zip_path.exists()
+            or files_written == 0
+            or temp_zip_path.stat().st_size <= 22
+        ):
             raise RuntimeError(
                 "Zip creation produced an empty or missing archive"
             )
@@ -457,6 +463,20 @@ def compress(  # noqa: C901
     except FileNotFoundError:
         # Re-raise so the pipeline can gracefully skip this archive
         raise
+    except OSError as error:
+        import errno
+
+        if (
+            error.errno == errno.ENOSPC
+            or getattr(error, "winerror", None) == 112
+        ):
+            temp_zip_path = zip_path.with_suffix(".zip.tmp")
+            safe_unlink(temp_zip_path)
+            raise
+        LOGGER.error("Failed to create zip archive: {}".format(error))
+        temp_zip_path = zip_path.with_suffix(".zip.tmp")
+        safe_unlink(temp_zip_path)
+        return None
     except Exception as error:
         LOGGER.error("Failed to create zip archive: {}".format(error))
         temp_zip_path = zip_path.with_suffix(".zip.tmp")

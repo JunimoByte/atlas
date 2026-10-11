@@ -219,6 +219,20 @@ def test_estimate_size_returns_zero_for_empty_matches(
     assert result == 0
 
 
+def test_estimate_size_blocks_on_scan_error(pipeline: Pipeline) -> None:
+    """Verify that ScanError causes estimate_size to return -1."""
+    from atlas.backup.size import ScanError
+
+    with patch(
+        "atlas.backup.pipeline.Size.get_directory_size",
+        side_effect=ScanError("Inaccessible directory"),
+    ):
+        result = pipeline.estimate_size(
+            {"Chrome": [os.path.join("path", "locked")]}
+        )
+    assert result == -1
+
+
 # =============================================================================
 # TESTS — Perform backup
 # =============================================================================

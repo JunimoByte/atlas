@@ -93,6 +93,36 @@ def test_on_progress_non_atty_deduplicates(
     assert "20%" in lines[1]
 
 
+def test_clear_line_when_stdout_none(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Verify clear_line does not raise when sys.stdout is None."""
+    monkeypatch.setattr(sys, "stdout", None)
+    cli.clear_line()
+    cli._on_scanned("test")
+    cli._on_progress(10, 100)
+
+
+def test_on_progress_non_atty_multi_percent_jump(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture,
+) -> None:
+    """Verify milestones log even when progress jumps past decile multiples."""
+    monkeypatch.setattr(sys.stdout, "isatty", lambda: False)
+    cli._LOGGED_MILESTONES.clear()
+
+    # Jump from 0% directly to 14%
+    cli._on_progress(14, 100)
+    # Jump directly to 28%
+    cli._on_progress(28, 100)
+
+    captured = capsys.readouterr()
+    lines = [line for line in captured.out.splitlines() if line.strip()]
+    assert len(lines) == 2
+    assert "10%" in lines[0]
+    assert "20%" in lines[1]
+
+
 def test_on_scanned_atty(monkeypatch: pytest.MonkeyPatch) -> None:
     """Verify scanning text writes and truncates when on a TTY."""
     mock_stdout = MagicMock()

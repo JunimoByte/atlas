@@ -239,6 +239,25 @@ def test_read_xdg_env_var_unset() -> None:
         assert result is None
 
 
+def test_parse_xdg_user_dirs_empty_config_home(tmp_path: Path) -> None:
+    """Verify empty XDG_CONFIG_HOME falls back to ~/.config."""
+    with patch.dict("os.environ", {"XDG_CONFIG_HOME": ""}), patch(
+        "atlas.lib.directories.Path.home", return_value=tmp_path
+    ):
+        result = directories._parse_xdg_user_dirs_file()
+        assert result is None
+
+
+def test_flatpak_downloads_dir_empty_data_home(tmp_path: Path) -> None:
+    """Verify empty XDG_DATA_HOME falls back to default Flatpak data path."""
+    with patch.dict(
+        "os.environ", {"FLATPAK_ID": "org.test.Atlas", "XDG_DATA_HOME": ""}
+    ), patch("atlas.lib.directories.Path.home", return_value=tmp_path):
+        result = directories._get_sandbox_fallback()
+        assert result is not None
+        assert ".var/app/org.test.Atlas/data" in result.as_posix()
+
+
 # =============================================================================
 # TESTS — _get_exe_adjacent_dir
 # =============================================================================

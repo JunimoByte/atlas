@@ -268,6 +268,7 @@ class Window(QtWidgets.QDialog):
         if animate and self.isVisible():
             if getattr(self, "_progress_anim", None) is not None:
                 self._progress_anim.stop()
+                self._progress_anim.deleteLater()
 
             anim = QtCore.QPropertyAnimation(
                 self.interface.progress_bar, b"value", self

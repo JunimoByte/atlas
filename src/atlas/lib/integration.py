@@ -13,6 +13,7 @@ opening folders in the system file manager.
 import logging
 import os
 import platform
+import shlex
 import shutil
 import subprocess
 import sys
@@ -103,8 +104,8 @@ def _build_terminal_command(term: str, fm: str, path: str) -> List[str]:
         return [term, fm, path]
     if term == "wezterm":
         return ["wezterm", "start", "--", fm, path]
-    if term in ("xfce4-terminal", "ghostty"):
-        return [term, "-e", f"{fm} {path}"]
+    if term == "xfce4-terminal":
+        return [term, "-e", f"{fm} {shlex.quote(path)}"]
     if term == "gnome-terminal":
         return ["gnome-terminal", "--", fm, path]
     return [term, "-e", fm, path]
@@ -412,7 +413,7 @@ def _dispatch_open_folder_warning(folder_path: Path) -> None:
         app = QtWidgets.QApplication.instance()
         if app is not None:
             QtCore.QTimer.singleShot(
-                0, app, lambda: _show_open_folder_failed(folder_path)
+                0, lambda: _show_open_folder_failed(folder_path)
             )
             return
     except Exception:

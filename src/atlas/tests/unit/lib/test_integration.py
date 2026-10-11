@@ -436,6 +436,12 @@ def test_build_terminal_command() -> None:
     assert integration._build_terminal_command(
         "alacritty", "ranger", "/path"
     ) == ["alacritty", "-e", "ranger", "/path"]
+    assert integration._build_terminal_command(
+        "ghostty", "ranger", "/path"
+    ) == ["ghostty", "-e", "ranger", "/path"]
+    assert integration._build_terminal_command(
+        "xfce4-terminal", "ranger", "/path with spaces"
+    ) == ["xfce4-terminal", "-e", "ranger '/path with spaces'"]
 
 
 def test_get_terminal_file_manager_candidates(
@@ -461,11 +467,16 @@ def test_dispatch_open_folder_warning(
     temp_folder: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Verify _dispatch_open_folder_warning invokes warning dialog."""
+    from atlas.compatibility.qt import QtWidgets
+
     mock_failed = MagicMock()
     monkeypatch.setattr(
         "atlas.lib.integration._show_open_folder_failed", mock_failed
     )
     integration._dispatch_open_folder_warning(temp_folder)
+    app = QtWidgets.QApplication.instance()
+    if app:
+        app.processEvents()
     mock_failed.assert_called_once_with(temp_folder)
 
 

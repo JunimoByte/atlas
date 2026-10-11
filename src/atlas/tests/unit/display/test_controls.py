@@ -197,6 +197,24 @@ def test_configure_button_hides_button_without_text(
     assert not button.isVisible()
 
 
+def test_configure_button_reenables_disabled_button_when_visible(
+    qapp: QtWidgets.QApplication,
+) -> None:
+    """Verify that configure_button re-enables a disabled button when shown."""
+    box = QtWidgets.QDialogButtonBox(
+        QtWidgets.QDialogButtonBox.StandardButton.Cancel
+    )
+    btn = controls._get_button(box, "Cancel")
+    btn.setEnabled(False)
+    assert not btn.isEnabled()
+
+    controls.configure_button(
+        box, "Cancel", {"visible": True, "text": "Close"}
+    )
+    assert btn.isEnabled()
+    assert btn.text() == "Close"
+
+
 # =============================================================================
 # TEST EXECUTION
 # =============================================================================

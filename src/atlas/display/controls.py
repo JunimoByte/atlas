@@ -100,7 +100,12 @@ def configure_button(
         conf: Config dict with keys 'visible' and 'text'.
 
     """
-    set_button_visible(button_box, name, conf.get("visible", False))
+    is_visible = conf.get("visible", False)
+    set_button_visible(button_box, name, is_visible)
+    if is_visible:
+        button = _get_button(button_box, name)
+        if button:
+            button.setEnabled(conf.get("enabled", True))
     if "text" in conf:
         set_text(button_box, name, conf["text"])
 
