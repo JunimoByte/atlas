@@ -8,6 +8,7 @@ directory hierarchies, and timestamp normalization across operating systems.
 # IMPORTS
 # =============================================================================
 
+import os
 import zipfile
 from pathlib import Path
 from typing import Generator, Tuple
@@ -17,6 +18,21 @@ import pytest
 
 from atlas.backup import archive
 from atlas.backup.attribute import create_zip_info, safe_zipinfo_date
+
+# =============================================================================
+# VARIABLES
+# =============================================================================
+
+_TRAVERSAL_PAYLOADS = [
+    "../escaped.zip",
+    "../../escaped.zip",
+    "nested/../../escaped.zip",
+    "dir/../../../etc/shadow.zip",
+]
+if os.name == "nt":
+    _TRAVERSAL_PAYLOADS.extend(
+        ["..\\escaped_win.zip", "..\\..\\escaped_win.zip"]
+    )
 
 # =============================================================================
 # FIXTURES
@@ -45,17 +61,7 @@ def path_env(tmp_path: Path) -> Generator[Tuple[Path, Path, Path], None, None]:
 # =============================================================================
 
 
-@pytest.mark.parametrize(
-    "malicious_name",
-    [
-        "../escaped.zip",
-        "../../escaped.zip",
-        "nested/../../escaped.zip",
-        "dir/../../../etc/shadow.zip",
-        "..\\escaped_win.zip",
-        "..\\..\\escaped_win.zip",
-    ],
-)
+@pytest.mark.parametrize("malicious_name", _TRAVERSAL_PAYLOADS)
 def test_path_traversal_zip_name_rejected(
     path_env: Tuple[Path, Path, Path], malicious_name: str
 ) -> None:

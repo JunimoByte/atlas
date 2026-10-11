@@ -137,12 +137,22 @@ def test_native_os_lock_skipped_gracefully(
                 handle.seek(0)
                 msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
     else:
-        # On POSIX systems, remove read permissions
+        # On POSIX, strip read permissions; guard against root bypass
+        import io
+
+        real_io_open = io.open
+
+        def posix_deny(file, *args, **kwargs):
+            if "active.lock" in str(file):
+                raise PermissionError(13, "Permission denied (locked)")
+            return real_io_open(file, *args, **kwargs)
+
         try:
             os.chmod(str(locked_target), 0o000)
-            zip_path = archive.compress(
-                [source_dir], zip_name="native_posix_lock.zip"
-            )
+            with patch("io.open", side_effect=posix_deny):
+                zip_path = archive.compress(
+                    [source_dir], zip_name="native_posix_lock.zip"
+                )
         finally:
             os.chmod(str(locked_target), 0o644)
 
@@ -153,3 +163,4 @@ def test_native_os_lock_skipped_gracefully(
         assert zf.testzip() is None
         names = {info.filename.split("/")[-1] for info in zf.infolist()}
         assert "healthy.txt" in names
+        assert "active.lock" not in names

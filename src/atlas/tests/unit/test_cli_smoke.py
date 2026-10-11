@@ -168,12 +168,17 @@ def test_cli_full_backup_json_roundtrip_contract(
         ]
     )
 
-    with patch("atlas.lib.browsers.grab", return_value=fake_browsers):
-        with patch(
-            "atlas.backup.pipeline.Profile.find_profile",
-            return_value=[str(source_dir)],
-        ):
-            exit_code = cli.run_cli(args)
+    from atlas.backup import archive
+
+    try:
+        with patch("atlas.lib.browsers.grab", return_value=fake_browsers):
+            with patch(
+                "atlas.backup.pipeline.Profile.find_profile",
+                return_value=[str(source_dir)],
+            ):
+                exit_code = cli.run_cli(args)
+    finally:
+        archive.set_zip_output_dir(None)
 
     assert exit_code == 0
     captured = capsys.readouterr()
