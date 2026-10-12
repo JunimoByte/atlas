@@ -16,6 +16,7 @@ All source code is organised under `src/atlas/`, following the standard
 src/
   atlas/
     backup/       # scanning, estimation, and backup pipeline
+    compatibility/# platform & Qt binding compatibility
     display/      # window, controller, and signal management
     lib/          # shared utilities (themes, integration helpers)
     tests/        # unit test suite (mirrors package structure)
@@ -23,6 +24,7 @@ src/
     main.py       # bootstrapper router
     gui.py        # graphical entry point
     cli.py        # headless entry point
+    args.py       # CLI argument parsing and version definition
 assets/           # icons and images
 configs/          # runtime configuration files
 docs/             # documentation and ADRs

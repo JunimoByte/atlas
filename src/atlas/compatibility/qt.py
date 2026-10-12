@@ -27,37 +27,6 @@ import sys
 
 LOGGER = logging.getLogger(__name__)
 
-_TILING_WINDOW_MANAGERS = {
-    "amethyst",
-    "awesome",
-    "berry",
-    "bspwm",
-    "cage",
-    "dwl",
-    "dwm",
-    "exwm",
-    "herbstluftwm",
-    "hyprland",
-    "i3",
-    "leftwm",
-    "lspwm",
-    "niri",
-    "notched",
-    "qtile",
-    "ratpoison",
-    "river",
-    "spectrwm",
-    "stumpwm",
-    "sway",
-    "wingo",
-    "worm",
-    "xmonad",
-}
-_LINUX_SESSION_VARIABLES = (
-    "XDG_CURRENT_DESKTOP",
-    "XDG_SESSION_DESKTOP",
-    "DESKTOP_SESSION",
-)
 
 # =============================================================================
 # LINUX ENVIRONMENT CONFIGURATION
@@ -81,7 +50,7 @@ def _configure_frozen_linux_environment() -> None:
 
     """
     if not sys.platform.startswith(
-        ("linux", "freebsd", "openbsd", "netbsd", "dragonfly")
+        ("linux", "freebsd", "openbsd", "netbsd", "dragonfly", "sunos")
     ):
         return
     if not getattr(sys, "frozen", False):
@@ -99,22 +68,6 @@ def _configure_frozen_linux_environment() -> None:
         )
 
 
-def _is_tiling_window_manager() -> bool:
-    """Return whether the current Linux session is a known tiling WM."""
-    if not sys.platform.startswith(
-        ("linux", "freebsd", "openbsd", "netbsd", "dragonfly")
-    ):
-        return False
-    if "SWAYSOCK" in os.environ:
-        return True
-
-    session_name = " ".join(
-        os.environ.get(variable, "").lower()
-        for variable in _LINUX_SESSION_VARIABLES
-    )
-    return any(manager in session_name for manager in _TILING_WINDOW_MANAGERS)
-
-
 def _configure_linux_environment() -> None:
     """Use XCB unless the user explicitly selects another Qt backend.
 
@@ -122,7 +75,7 @@ def _configure_linux_environment() -> None:
     tiling window managers. ``QT_QPA_PLATFORM`` always takes precedence.
     """
     if not sys.platform.startswith(
-        ("linux", "freebsd", "openbsd", "netbsd", "dragonfly")
+        ("linux", "freebsd", "openbsd", "netbsd", "dragonfly", "sunos")
     ) or os.environ.get("QT_QPA_PLATFORM"):
         return
 

@@ -383,6 +383,20 @@ def test_icon_uses_ico_on_windows(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 # =============================================================================
+# TESTS — Non-Windows Native Theme Handling
+# =============================================================================
+
+
+def test_apply_non_windows_preserves_native_style(
+    mock_window: MagicMock, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Verify apply() does not apply custom stylesheets on non-Windows."""
+    monkeypatch.setattr(themes.ThemeDetector, "_is_windows", lambda: False)
+    themes.apply(mock_window)
+    mock_window.setStyleSheet.assert_not_called()
+
+
+# =============================================================================
 # TEST EXECUTION
 # =============================================================================
 

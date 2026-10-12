@@ -12,6 +12,7 @@ import sys
 import zipfile
 from pathlib import Path
 from typing import List
+from unittest.mock import patch
 
 import pytest
 
@@ -327,6 +328,163 @@ def test_compress_rejects_zip_name_that_escapes_output_dir(
 
     assert result is None
     assert not (tmp_path / "escape.zip").exists()
+
+
+# =============================================================================
+# TESTS — Output Directory Management
+# =============================================================================
+
+
+def test_get_zip_output_dir_default(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Verify get_zip_output_dir resolves <Downloads>/Backup by default."""
+    downloads = tmp_path / "Downloads"
+    monkeypatch.setattr(archive, "ZIP_OUTPUT_DIR", None)
+    monkeypatch.setattr(archive, "get_downloads_dir", lambda: downloads)
+
+    out_dir = archive.get_zip_output_dir()
+
+    assert out_dir == downloads / "Backup"
+    assert out_dir.is_dir()
+
+
+def test_set_zip_output_dir_custom_path(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Verify set_zip_output_dir sets and creates custom directory."""
+    custom_dir = tmp_path / "custom_backups"
+    assert not custom_dir.exists()
+
+    result = archive.set_zip_output_dir(custom_dir)
+
+    assert result == custom_dir.resolve()
+    assert result.is_dir()
+    assert archive.get_zip_output_dir() == custom_dir.resolve()
+
+    # Clean up
+    archive.set_zip_output_dir(None)
+
+
+def test_set_zip_output_dir_reset_to_default(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Verify set_zip_output_dir(None) resets to default directory."""
+    downloads = tmp_path / "Downloads"
+    monkeypatch.setattr(archive, "get_downloads_dir", lambda: downloads)
+
+    archive.set_zip_output_dir(tmp_path / "custom")
+    reset_dir = archive.set_zip_output_dir(None)
+
+    assert reset_dir == downloads / "Backup"
+
+
+def test_set_zip_output_dir_rejects_empty_string() -> None:
+    """Verify set_zip_output_dir rejects empty or whitespace paths."""
+    with pytest.raises(ValueError, match="cannot be empty"):
+        archive.set_zip_output_dir("")
+
+    with pytest.raises(ValueError, match="cannot be empty"):
+        archive.set_zip_output_dir("   ")
+
+
+def test_set_zip_output_dir_rejects_existing_file(tmp_path: Path) -> None:
+    """Verify set_zip_output_dir rejects an existing regular file."""
+    file_path = tmp_path / "not_a_dir.txt"
+    file_path.write_text("hello")
+
+    with pytest.raises(NotADirectoryError):
+        archive.set_zip_output_dir(file_path)
+
+
+# =============================================================================
+# TESTS — Archive Verification
+# =============================================================================
+
+
+def test_verify_archive_valid(tmp_path: Path) -> None:
+    """Verify verify_archive returns True for a valid zip archive."""
+    zip_path = tmp_path / "valid.zip"
+    with zipfile.ZipFile(zip_path, "w") as zf:
+        zf.writestr("file1.txt", "hello world")
+        zf.writestr("file2.txt", "second file")
+
+    is_valid, corrupt_name, count = archive.verify_archive(zip_path)
+    assert is_valid is True
+    assert corrupt_name is None
+    assert count == 2
+
+
+def test_verify_archive_corrupted(tmp_path: Path) -> None:
+    """Verify verify_archive detects CRC mismatch in a corrupted archive."""
+    zip_path = tmp_path / "corrupt.zip"
+    with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_STORED) as zf:
+        zf.writestr("entry.txt", b"AAAA" * 100)
+
+    data = bytearray(zip_path.read_bytes())
+    idx = data.find(b"AAAA")
+    assert idx != -1
+    data[idx: idx + 4] = b"BBBB"
+    zip_path.write_bytes(data)
+
+    is_valid, corrupt_name, count = archive.verify_archive(zip_path)
+    assert is_valid is False
+    assert corrupt_name == "entry.txt"
+    assert count == 1
+
+
+def test_verify_archive_nonexistent_file(tmp_path: Path) -> None:
+    """Verify verify_archive returns False for a nonexistent file."""
+    nonexistent = tmp_path / "does_not_exist.zip"
+    is_valid, error, count = archive.verify_archive(nonexistent)
+    assert is_valid is False
+    assert error is not None
+
+
+def test_compress_with_progress_callback(tmp_path: Path) -> None:
+    """Verify progress_callback receives chunk bytes during compress."""
+    source = tmp_path / "source"
+    source.mkdir()
+    create_files(source, ["sample.txt"])
+    (source / "sample.txt").write_bytes(b"A" * 2048)
+
+    chunks = []
+    result = archive.compress(
+        source,
+        "progress_test.zip",
+        progress_callback=chunks.append,
+    )
+    assert result is not None
+    assert result.exists()
+    assert sum(chunks) == 2048
+
+
+def test_compress_rejects_empty_archive_when_files_fail(
+    tmp_path: Path,
+) -> None:
+    """Verify compress returns None when all files fail to write."""
+    source = tmp_path / "source"
+    source.mkdir()
+    create_files(source, ["locked.txt"])
+
+    with patch.object(archive, "_write_file_to_zip", return_value=False):
+        result = archive.compress(source, "empty_fail.zip")
+        assert result is None
+
+
+def test_compress_reraises_enospc(tmp_path: Path) -> None:
+    """Verify compress re-raises ENOSPC disk full errors."""
+    import errno
+
+    source = tmp_path / "source"
+    source.mkdir()
+    create_files(source, ["sample.txt"])
+
+    enospc_err = OSError(errno.ENOSPC, "No space left on device")
+    with patch.object(archive, "_write_file_to_zip", side_effect=enospc_err):
+        with pytest.raises(OSError) as exc_info:
+            archive.compress(source, "full_disk.zip")
+        assert exc_info.value.errno == errno.ENOSPC
 
 
 # =============================================================================

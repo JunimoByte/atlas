@@ -9,6 +9,7 @@ Provides the PyQt graphical user interface initialization and event loop.
 
 import argparse
 import logging
+import os
 import sys
 
 from atlas.compatibility.qt import QtCore, QtGui, QtWidgets
@@ -56,6 +57,13 @@ def run_gui(args: argparse.Namespace = None) -> int:
         )
 
     app = QtWidgets.QApplication(sys.argv)
+    app.setApplicationName("atlas")
+    if hasattr(app, "setDesktopFileName"):
+        flatpak_id = os.environ.get("FLATPAK_ID")
+        desktop_name = (
+            f"{flatpak_id}.desktop" if flatpak_id else "atlas.desktop"
+        )
+        app.setDesktopFileName(desktop_name)
     win = window.Window()
     themes.initialize(win)
 

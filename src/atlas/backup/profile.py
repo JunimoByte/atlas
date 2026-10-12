@@ -100,6 +100,14 @@ def _validate_profile_path(
 
         resolved_base = path.resolve()
 
+        if resolved_base.is_dir():
+            try:
+                with os.scandir(resolved_base):
+                    pass
+            except (PermissionError, OSError):
+                _PATH_CACHE[cache_key] = None
+                return None
+
         if signature and isinstance(signature, (str, list)):
             signatures = (
                 [signature] if isinstance(signature, str) else signature

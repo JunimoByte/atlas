@@ -1,0 +1,188 @@
+"""Atlas | Command-Line Arguments.
+
+Parses CLI arguments and dynamically resolves application version.
+"""
+
+# =============================================================================
+# IMPORTS
+# =============================================================================
+
+import argparse
+import os
+import re
+import sys
+from pathlib import Path
+from typing import List, Optional, Sequence
+
+# =============================================================================
+# CONSTANTS & CACHE
+# =============================================================================
+
+_VERSION_REGEX = re.compile(
+    r'^\s*version\s*=\s*["\']([0-9A-Za-z_.\-+]+)["\']'
+)
+_CACHED_VERSION: Optional[str] = None
+
+# =============================================================================
+# HELPERS
+# =============================================================================
+
+
+def _get_candidate_toml_paths() -> List[Path]:
+    """Assemble candidate filesystem locations for pyproject.toml."""
+    candidates: List[Path] = []
+    try:
+        parents = Path(__file__).resolve().parents
+        if len(parents) >= 3:
+            candidates.append(parents[2] / "pyproject.toml")
+        elif parents:
+            candidates.append(parents[0] / "pyproject.toml")
+    except (OSError, RuntimeError, ValueError):
+        # Ignore symlink loops, permission errors, or unresolvable paths
+        pass
+
+    for env_dir in (getattr(sys, "_MEIPASS", None), os.environ.get("APPDIR")):
+        if env_dir:
+            candidates.append(Path(env_dir) / "pyproject.toml")
+
+    return list(dict.fromkeys(candidates))
+
+
+def _extract_version_from_file(path: Path) -> Optional[str]:
+    """Extract project version from a pyproject.toml file."""
+    try:
+        if not path.is_file():
+            return None
+        section = None
+        for line in path.read_text(
+            encoding="utf-8-sig", errors="replace"
+        ).splitlines():
+            line = line.strip()
+            if line.startswith("[") and line.endswith("]"):
+                section = line[1:-1].strip().lower()
+            elif section in (None, "project"):
+                match = _VERSION_REGEX.match(line)
+                if match:
+                    return match.group(1)
+    except (OSError, UnicodeError, ValueError):
+        # Fall back to None on unreadable files, bad encodings, or IO errors
+        pass
+    return None
+
+
+# =============================================================================
+# FUNCTIONS
+# =============================================================================
+
+
+def get_version(*, force_refresh: bool = False) -> str:
+    """Resolve application version from pyproject.toml or package metadata."""
+    global _CACHED_VERSION
+    if _CACHED_VERSION is not None and not force_refresh:
+        return _CACHED_VERSION
+
+    for toml_path in _get_candidate_toml_paths():
+        resolved = _extract_version_from_file(toml_path)
+        if resolved:
+            _CACHED_VERSION = resolved
+            return _CACHED_VERSION
+
+    try:
+        import importlib.metadata
+
+        _CACHED_VERSION = importlib.metadata.version("atlas")
+        return _CACHED_VERSION
+    except Exception:
+        # PackageNotFoundError if atlas is not installed as a package
+        pass
+
+    _CACHED_VERSION = "1.2"
+    return _CACHED_VERSION
+
+
+VERSION: str = get_version()
+
+
+def build_parser() -> argparse.ArgumentParser:
+    """Build top-level argument parser for Atlas."""
+    parser = argparse.ArgumentParser(
+        prog="atlas", description="Atlas Browser Backup"
+    )
+    parser.add_argument(
+        "-v",
+        "--version",
+        action="version",
+        version=f"Atlas {VERSION}",
+        help="Show program's version number and exit.",
+    )
+    parser.add_argument(
+        "--cli", action="store_true", help="Run Atlas in command-line mode."
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=str,
+        default=None,
+        metavar="DIR",
+        help="Custom output directory for backup archives (CLI mode).",
+    )
+    parser.add_argument(
+        "-l",
+        "--list",
+        action="store_true",
+        help="List detected browser profiles without performing a backup.",
+    )
+    parser.add_argument(
+        "-b",
+        "--browser",
+        type=str,
+        default=None,
+        metavar="NAME",
+        help="Filter backup or inspection to a specific browser by name.",
+    )
+    parser.add_argument(
+        "-q",
+        "--quiet",
+        action="store_true",
+        help="Suppress banner, progress indicators, and non-error output.",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Output results in machine-readable JSON format.",
+    )
+    parser.add_argument(
+        "-C",
+        "--verify",
+        action="store_true",
+        help="Verify CRC-32 integrity of archives after backup.",
+    )
+    return parser
+
+
+def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
+    """Parse command-line arguments safely."""
+    if argv is None:
+        raw = getattr(sys, "argv", None)
+        argv = raw[1:] if raw is not None else []
+    args, _ = build_parser().parse_known_args(argv)
+    return args
+
+
+CLI_FLAGS = frozenset(
+    {"cli", "list", "browser", "json", "verify", "output"}
+)
+
+
+def is_cli_mode(args: Optional[argparse.Namespace]) -> bool:
+    """Return True if any CLI-specific action or flag was requested.
+
+    Args:
+        args: Parsed command-line arguments.
+
+    Returns:
+        bool: True if execution should run in CLI mode.
+    """
+    if not args:
+        return False
+    return any(getattr(args, flag, False) for flag in CLI_FLAGS)

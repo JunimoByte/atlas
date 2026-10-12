@@ -16,7 +16,8 @@ import platform
 import time
 from collections import defaultdict
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from atlas.backup import archive
 from atlas.backup import profile as Profile  # noqa: N812
@@ -37,6 +38,74 @@ LOGGER = logging.getLogger(__name__)
 MAX_RETRIES = 3
 RETRY_DELAY = 1.0
 SIGNAL_BATCH_INTERVAL = 0.5
+PROGRESS_BATCH_INTERVAL = 0.25
+
+
+class _ProgressTracker:
+    """Rate-limited byte progress calculator for backup archives."""
+
+    def __init__(
+        self,
+        total_bytes: int,
+        emit_fn: Callable[[int, int], None],
+        interval: float = PROGRESS_BATCH_INTERVAL,
+    ) -> None:
+        self.total_bytes = total_bytes
+        self.emit_fn = emit_fn
+        self.interval = interval
+        self.bytes_base = 0
+        self.current_browser_bytes = 0
+        self.last_emit_time = 0.0
+        self.last_emit_pct = -1
+
+    def make_chunk_callback(self) -> Optional[Callable[[int], None]]:
+        """Return a chunk callback for an archive compression attempt."""
+        if self.total_bytes <= 0:
+            return None
+
+        self.current_browser_bytes = 0
+
+        def on_chunk(chunk_len: int) -> None:
+            self.current_browser_bytes += chunk_len
+            now = time.monotonic()
+            if now - self.last_emit_time < self.interval:
+                return
+            total_so_far = self.bytes_base + self.current_browser_bytes
+            pct = min(
+                99, max(0, int((total_so_far / self.total_bytes) * 100))
+            )
+            if pct > self.last_emit_pct:
+                self.last_emit_time = now
+                self.last_emit_pct = pct
+                self.emit_fn(pct, 100)
+
+        return on_chunk
+
+    def on_browser_finished(
+        self, completed: int, total: int
+    ) -> Optional[Tuple[int, int]]:
+        """Commit browser bytes and compute monotonic progress update."""
+        self.bytes_base += self.current_browser_bytes
+        self.current_browser_bytes = 0
+
+        if self.total_bytes <= 0:
+            return (completed, total)
+
+        if completed == total:
+            return (completed, total)
+
+        pct = min(
+            99,
+            max(
+                self.last_emit_pct,
+                int((self.bytes_base / self.total_bytes) * 100),
+            ),
+        )
+        if pct > self.last_emit_pct:
+            self.last_emit_pct = pct
+            return (pct, 100)
+        return None
+
 
 # =============================================================================
 # CLASSES
@@ -53,6 +122,16 @@ class PipelineResult(Enum):
     FAILED = "failed"
 
 
+def _is_disk_full(error: OSError) -> bool:
+    """Return True if error represents ENOSPC or WinError 112."""
+    import errno
+
+    return bool(
+        error.errno == errno.ENOSPC
+        or getattr(error, "winerror", None) == 112
+    )
+
+
 class Pipeline:
     """Executes the scanning, size estimation, and backup workflow.
 
@@ -66,6 +145,7 @@ class Pipeline:
         estimated_callback: Optional[Callable[[str], None]] = None,
         no_browsers_found_callback: Optional[Callable[[], None]] = None,
         disk_space_error_callback: Optional[Callable[[str, str], None]] = None,
+        target_browser: Optional[str] = None,
     ) -> None:
         """Initialize the Pipeline.
 
@@ -75,6 +155,7 @@ class Pipeline:
             estimated_callback: Callback for estimated size.
             no_browsers_found_callback: Callback when no profiles are found.
             disk_space_error_callback: Callback for insufficient disk space.
+            target_browser: Optional specific browser name filter.
 
         """
         self._cancelled = False
@@ -84,7 +165,27 @@ class Pipeline:
         self.estimated_callback = estimated_callback
         self.no_browsers_found_callback = no_browsers_found_callback
         self.disk_space_error_callback = disk_space_error_callback
-        self.browsers = browsers.grab()
+        self.target_browser = target_browser
+        self.created_archives: List[Path] = []
+        self._total_bytes: int = 0
+
+        all_browsers = browsers.grab()
+        if target_browser and target_browser.strip():
+            normalized = target_browser.strip().casefold()
+            matched = {
+                k: v
+                for k, v in all_browsers.items()
+                if k.casefold() == normalized
+            }
+            if not matched:
+                matched = {
+                    k: v
+                    for k, v in all_browsers.items()
+                    if normalized in k.casefold()
+                }
+            self.browsers = matched
+        else:
+            self.browsers = all_browsers
 
     def __repr__(self) -> str:
         """Return a string representation of the Pipeline."""
@@ -160,7 +261,10 @@ class Pipeline:
                 )
                 raise
             except OSError as error:
-                if isinstance(error, (PermissionError, FileNotFoundError)):
+                if (
+                    isinstance(error, (PermissionError, FileNotFoundError))
+                    or _is_disk_full(error)
+                ):
                     LOGGER.debug(
                         "Non-retryable OSError on attempt %d: %s",
                         attempt + 1,
@@ -324,10 +428,20 @@ class Pipeline:
 
                 if size is not None:
                     total_size += size
-            except (ScanTimeoutError, ScanError) as error:
+            except ScanTimeoutError as error:
                 LOGGER.error(
-                    "Size scan failed for %s: %s. "
-                    "Estimate is unreliable, blocking disk check.",
+                    "Size scan timed out for %s: %s. "
+                    "Estimate is unreliable, blocking "
+                    "disk check.",
+                    path_str,
+                    error,
+                )
+                return -1
+            except ScanError as error:
+                LOGGER.error(
+                    "Size scan incomplete for %s: %s. "
+                    "Estimate is unreliable, blocking "
+                    "disk check.",
                     path_str,
                     error,
                 )
@@ -354,10 +468,13 @@ class Pipeline:
 
         LOGGER.info("Estimated total size: %s", formatted_size)
         self._emit(self.estimated_callback, formatted_size)
+        self._total_bytes = max(0, total_size)
 
         return total_size
 
-    def perform_backup(self, browser_matches: Dict[str, List[str]]) -> bool:
+    def perform_backup(  # noqa: C901
+        self, browser_matches: Dict[str, List[str]]
+    ) -> bool:
         """Compress profiles into ZIP archives.
 
         Note: browser_matches keys are unique browser names.
@@ -366,9 +483,14 @@ class Pipeline:
             bool: True if every archive is created successfully.
 
         """
+        self.created_archives = []
         total = len(browser_matches)
         completed = 0
         backup_succeeded = True
+        tracker = _ProgressTracker(
+            getattr(self, "_total_bytes", 0),
+            lambda cur, tot: self._emit(self.progress_callback, cur, tot),
+        )
 
         for browser_name, paths in browser_matches.items():
             if self.is_cancelled():
@@ -389,10 +511,12 @@ class Pipeline:
                     paths,
                     zip_name,
                     cancel_callback=self.is_cancelled,
+                    progress_callback=tracker.make_chunk_callback(),
                 )
                 gc.collect()
 
                 if result is not None:
+                    self.created_archives.append(result)
                     LOGGER.info("Archive created: %s", zip_name)
                 elif not self._cancelled:
                     backup_succeeded = False
@@ -401,11 +525,19 @@ class Pipeline:
             except FileNotFoundError as error:
                 backup_succeeded = False
                 LOGGER.warning("Skipped archive %s: %s", zip_name, error)
+            except OSError as error:
+                if _is_disk_full(error):
+                    LOGGER.critical("Disk full during backup: %s", error)
+                    return False
+                backup_succeeded = False
+                LOGGER.exception("Error zipping %s", browser_name)
             except Exception:
                 backup_succeeded = False
                 LOGGER.exception("Error zipping %s", browser_name)
             finally:
                 completed += 1
-                self._emit(self.progress_callback, completed, total)
+                prog = tracker.on_browser_finished(completed, total)
+                if prog is not None:
+                    self._emit(self.progress_callback, prog[0], prog[1])
 
         return backup_succeeded

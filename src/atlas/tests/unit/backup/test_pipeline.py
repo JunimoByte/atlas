@@ -10,11 +10,16 @@ Covers scan, estimate, backup phases, cancellation, and retry logic.
 
 import os
 import sys
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from atlas.backup.pipeline import Pipeline, PipelineResult
+from atlas.backup.pipeline import (
+    Pipeline,
+    PipelineResult,
+    _ProgressTracker,
+)
 
 # =============================================================================
 # FIXTURES
@@ -214,6 +219,20 @@ def test_estimate_size_returns_zero_for_empty_matches(
     assert result == 0
 
 
+def test_estimate_size_blocks_on_scan_error(pipeline: Pipeline) -> None:
+    """Verify that ScanError causes estimate_size to return -1."""
+    from atlas.backup.size import ScanError
+
+    with patch(
+        "atlas.backup.pipeline.Size.get_directory_size",
+        side_effect=ScanError("Inaccessible directory"),
+    ):
+        result = pipeline.estimate_size(
+            {"Chrome": [os.path.join("path", "locked")]}
+        )
+    assert result == -1
+
+
 # =============================================================================
 # TESTS — Perform backup
 # =============================================================================
@@ -347,6 +366,132 @@ def test_run_returns_insufficient_disk_space_when_check_fails(
                 result = pipeline.run()
 
     assert result == PipelineResult.INSUFFICIENT_DISK_SPACE
+
+
+def test_pipeline_target_browser_exact() -> None:
+    """Verify target_browser matches exact browser name case-insensitively."""
+    browser_data = {"Google Chrome": {}, "Firefox": {}, "Brave": {}}
+    with patch(
+        "atlas.backup.pipeline.browsers.grab", return_value=browser_data
+    ):
+        p = Pipeline(target_browser="firefox")
+        assert list(p.browsers.keys()) == ["Firefox"]
+
+
+def test_pipeline_target_browser_substring() -> None:
+    """Verify target_browser falls back to substring match."""
+    browser_data = {"Google Chrome": {}, "Firefox": {}, "Brave Browser": {}}
+    with patch(
+        "atlas.backup.pipeline.browsers.grab", return_value=browser_data
+    ):
+        p = Pipeline(target_browser="brave")
+        assert list(p.browsers.keys()) == ["Brave Browser"]
+
+
+def test_pipeline_target_browser_unknown() -> None:
+    """Verify target_browser sets empty browsers mapping when no match."""
+    browser_data = {"Google Chrome": {}, "Firefox": {}}
+    with patch(
+        "atlas.backup.pipeline.browsers.grab", return_value=browser_data
+    ):
+        p = Pipeline(target_browser="nonexistent")
+        assert p.browsers == {}
+
+
+def test_pipeline_tracks_created_archives(pipeline: Pipeline) -> None:
+    """Verify perform_backup populates created_archives list."""
+    with patch(
+        "atlas.backup.pipeline.archive.compress",
+        return_value=Path("/tmp/Chrome.zip"),
+    ):
+        result = pipeline.perform_backup({"Chrome": ["/p1"]})
+        assert result is True
+        assert pipeline.created_archives == [Path("/tmp/Chrome.zip")]
+
+
+def test_progress_tracker_emits_rate_limited_monotonic() -> None:
+    """Verify _ProgressTracker emits monotonically and rate-limits."""
+    emitted = []
+    tracker = _ProgressTracker(
+        total_bytes=1000,
+        emit_fn=lambda cur, tot: emitted.append((cur, tot)),
+        interval=0.1,
+    )
+
+    cb = tracker.make_chunk_callback()
+    assert cb is not None
+
+    # First chunk: 200 bytes -> 20%
+    cb(200)
+    assert emitted == [(20, 100)]
+
+    # Immediate second chunk: rate limited (time has not elapsed)
+    cb(100)
+    assert len(emitted) == 1
+
+    # Simulate time elapsed
+    tracker.last_emit_time -= 0.2
+    cb(300)  # total 600 bytes -> 60%
+    assert emitted[-1] == (60, 100)
+
+    # Monotonicity: smaller or same percent does not emit
+    tracker.last_emit_time -= 0.2
+    cb(0)
+    assert len(emitted) == 2
+
+
+def test_progress_tracker_caps_at_99() -> None:
+    """Verify _ProgressTracker caps intermediate progress at 99%."""
+    emitted = []
+    tracker = _ProgressTracker(
+        total_bytes=100,
+        emit_fn=lambda cur, tot: emitted.append((cur, tot)),
+        interval=0.0,
+    )
+    cb = tracker.make_chunk_callback()
+    assert cb is not None
+    cb(200)  # Exceeds total
+    assert emitted == [(99, 100)]
+
+
+def test_progress_tracker_zero_total_bytes() -> None:
+    """Verify _ProgressTracker returns None callback when total_bytes <= 0."""
+    tracker = _ProgressTracker(
+        total_bytes=0,
+        emit_fn=lambda c, t: None,
+    )
+    assert tracker.make_chunk_callback() is None
+
+
+def test_progress_tracker_multi_browser_accumulation() -> None:
+    """Verify _ProgressTracker accumulates bytes across multiple browsers."""
+    emitted = []
+    tracker = _ProgressTracker(
+        total_bytes=1000,
+        emit_fn=lambda cur, tot: emitted.append((cur, tot)),
+        interval=0.0,
+    )
+    cb1 = tracker.make_chunk_callback()
+    assert cb1 is not None
+    cb1(300)  # 30%
+    prog1 = tracker.on_browser_finished(1, 2)
+    assert prog1 is None  # Already at 30%, does not regress
+
+    cb2 = tracker.make_chunk_callback()
+    assert cb2 is not None
+    cb2(400)  # 300 + 400 = 70%
+    assert emitted[-1] == (70, 100)
+    prog2 = tracker.on_browser_finished(2, 2)
+    assert prog2 == (2, 2)
+
+
+def test_progress_tracker_on_browser_finished_no_total_bytes() -> None:
+    """Verify on_browser_finished returns (completed, total) when <= 0."""
+    tracker = _ProgressTracker(
+        total_bytes=0,
+        emit_fn=lambda c, t: None,
+    )
+    assert tracker.on_browser_finished(1, 3) == (1, 3)
 
 
 # =============================================================================

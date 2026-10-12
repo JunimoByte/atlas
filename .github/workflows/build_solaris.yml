@@ -1,0 +1,75 @@
+name: Build Solaris Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - alpha
+      - beta
+      - main
+    tags:
+      - 'v*'
+    paths:
+      - 'src/**'
+      - 'assets/**'
+      - 'configs/**'
+      - 'main.spec'
+      - 'pyproject.toml'
+      - '.github/workflows/build_solaris.yml'
+
+jobs:
+  build-solaris:
+    name: Build Solaris 11 x86_64
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Build in Solaris 11 VM
+        uses: vmactions/solaris-vm@v1
+        with:
+          release: '11.4-gcc'
+          usesh: true
+          prepare: |
+            python3 -m venv /tmp/atlas_venv || python3.9 -m venv /tmp/atlas_venv || true
+            if [ -f "/tmp/atlas_venv/bin/pip" ]; then
+              /tmp/atlas_venv/bin/pip install --upgrade pip
+              /tmp/atlas_venv/bin/pip install pyinstaller
+            else
+              python3 -m pip install --break-system-packages pyinstaller || true
+            fi
+          run: |
+            set -e
+
+            if [ -f "/tmp/atlas_venv/bin/pyinstaller" ]; then
+              /tmp/atlas_venv/bin/pyinstaller main.spec --noconfirm --clean
+            else
+              python3 -m PyInstaller main.spec --noconfirm --clean
+            fi
+
+            # 2. Verify binary existence and permissions
+            if [ ! -f "dist/Atlas-x86_64-Portable" ]; then
+              echo "Build failure: dist/Atlas-x86_64-Portable was not generated." >&2
+              exit 1
+            fi
+            chmod +x dist/Atlas-x86_64-Portable
+
+            # 3. Stage the portable release bundle
+            rm -rf dist/Solaris_Release
+            mkdir -p dist/Solaris_Release
+            cp -p dist/Atlas-x86_64-Portable dist/Solaris_Release/
+            cp -p assets/icons/Icon.svg dist/Solaris_Release/
+
+            # 4. Package as tar archive
+            cd dist
+            tar -cvf Atlas-Solaris11-x86_64.tar Solaris_Release/
+
+      - name: Upload Solaris Release Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Atlas-Solaris11-x86_64
+          path: dist/Atlas-Solaris11-x86_64.tar
+          if-no-files-found: error
+          retention-days: 14

@@ -221,6 +221,15 @@
                     "Local State"
                 ]
             }
+        ],
+        "Macos": [
+            {
+                "Type": "APPDATA",
+                "Path": "Arc/User Data",
+                "Signature": [
+                    "Local State"
+                ]
+            }
         ]
     },
     "Arora": {
@@ -556,6 +565,29 @@
                     "Local State"
                 ]
             }
+        ],
+        "Macos": [
+            {
+                "Type": "APPDATA",
+                "Path": "BraveSoftware/Brave-Browser",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "BraveSoftware/Brave-Browser-Beta",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "BraveSoftware/Brave-Browser-Nightly",
+                "Signature": [
+                    "Local State"
+                ]
+            }
         ]
     },
     "Brave Origin": {
@@ -787,6 +819,13 @@
             {
                 "Type": "SNAP",
                 "Path": "chromium/common/chromium",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "SNAP",
+                "Path": "chromium/current/.config/chromium",
                 "Signature": [
                     "Local State"
                 ]
@@ -1426,6 +1465,13 @@
                 ]
             },
             {
+                "Type": "HOME",
+                "Path": "mozilla/firefox",
+                "Signature": [
+                    "profiles.ini"
+                ]
+            },
+            {
                 "Type": "FLATPAK",
                 "Path": "org.mozilla.firefox/.mozilla/firefox",
                 "Signature": [
@@ -1454,6 +1500,36 @@
                 "Signature": [
                     "profiles.ini"
                 ]
+            }
+        ],
+        "SOLARIS": [
+            {
+                "Type": "HOME",
+                "Path": ".mozilla/firefox",
+                "Signature": [
+                    "profiles.ini"
+                ]
+            },
+            {
+                "Type": "HOME",
+                "Path": "mozilla/firefox",
+                "Signature": [
+                    "profiles.ini"
+                ]
+            }
+        ],
+        "Macos": [
+            {
+                "Type": "APPDATA",
+                "Path": "Firefox",
+                "Signature": [
+                    "profiles.ini"
+                ]
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "Firefox/Profiles",
+                "Signature": false
             }
         ]
     },
@@ -1778,6 +1854,29 @@
             {
                 "Type": "HOME",
                 "Path": "google-chrome-unstable",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ],
+        "Macos": [
+            {
+                "Type": "APPDATA",
+                "Path": "Google/Chrome",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "Google/Chrome Beta",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "Google/Chrome Canary",
                 "Signature": [
                     "Local State"
                 ]
@@ -2149,8 +2248,29 @@
                 ]
             },
             {
+                "Type": "HOME",
+                "Path": ".librewolf",
+                "Signature": [
+                    "profiles.ini"
+                ]
+            },
+            {
+                "Type": "HOME",
+                "Path": "librewolf",
+                "Signature": [
+                    "profiles.ini"
+                ]
+            },
+            {
                 "Type": "FLATPAK",
                 "Path": "io.gitlab.librewolf-community/config/librewolf/librewolf",
+                "Signature": [
+                    "profiles.ini"
+                ]
+            },
+            {
+                "Type": "FLATPAK",
+                "Path": "io.gitlab.librewolf-community/.librewolf",
                 "Signature": [
                     "profiles.ini"
                 ]
@@ -2163,6 +2283,20 @@
                 "Signature": [
                     "profiles.ini"
                 ]
+            }
+        ],
+        "Macos": [
+            {
+                "Type": "APPDATA",
+                "Path": "librewolf",
+                "Signature": [
+                    "profiles.ini"
+                ]
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "librewolf/Profiles",
+                "Signature": false
             }
         ]
     },
@@ -2448,8 +2582,29 @@
                 ]
             },
             {
+                "Type": "FLATPAK",
+                "Path": "com.microsoft.EdgeDev/config/microsoft-edge-dev",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
                 "Type": "HOME",
                 "Path": "microsoft-edge",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "HOME",
+                "Path": "microsoft-edge-beta",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "HOME",
+                "Path": "microsoft-edge-dev",
                 "Signature": [
                     "Local State"
                 ]
@@ -2459,6 +2614,36 @@
             {
                 "Type": "HOME",
                 "Path": "microsoft-edge",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ],
+        "Macos": [
+            {
+                "Type": "APPDATA",
+                "Path": "Microsoft Edge",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "Microsoft Edge Beta",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "Microsoft Edge Dev",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "Microsoft Edge Canary",
                 "Signature": [
                     "Local State"
                 ]
@@ -2942,6 +3127,29 @@
                     "Local State"
                 ]
             }
+        ],
+        "Macos": [
+            {
+                "Type": "APPDATA",
+                "Path": "com.operasoftware.Opera",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "com.operasoftware.OperaNext",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "com.operasoftware.OperaDeveloper",
+                "Signature": [
+                    "Local State"
+                ]
+            }
         ]
     },
     "Opera Air": {
@@ -2983,6 +3191,15 @@
             {
                 "Type": "SNAP",
                 "Path": "opera-gx/current/.config/opera-gx",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ],
+        "Macos": [
+            {
+                "Type": "APPDATA",
+                "Path": "com.operasoftware.OperaGX",
                 "Signature": [
                     "Local State"
                 ]
@@ -3346,6 +3563,13 @@
                     "Cookies"
                 ]
             }
+        ],
+        "Macos": [
+            {
+                "Type": "HOME",
+                "Path": "Library/Safari",
+                "Signature": false
+            }
         ]
     },
     "Samsung Internet": {
@@ -3397,6 +3621,15 @@
             }
         ],
         "BSD": [
+            {
+                "Type": "HOME",
+                "Path": ".mozilla/seamonkey",
+                "Signature": [
+                    "profiles.ini"
+                ]
+            }
+        ],
+        "SOLARIS": [
             {
                 "Type": "HOME",
                 "Path": ".mozilla/seamonkey",
@@ -3937,6 +4170,13 @@
                 "Signature": [
                     "Local State"
                 ]
+            },
+            {
+                "Type": "HOME",
+                "Path": "ungoogled-chromium",
+                "Signature": [
+                    "Local State"
+                ]
             }
         ],
         "BSD": [
@@ -4107,6 +4347,22 @@
             {
                 "Type": "HOME",
                 "Path": "vivaldi-snapshot",
+                "Signature": [
+                    "Local State"
+                ]
+            }
+        ],
+        "Macos": [
+            {
+                "Type": "APPDATA",
+                "Path": "Vivaldi",
+                "Signature": [
+                    "Local State"
+                ]
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "Vivaldi Snapshot",
                 "Signature": [
                     "Local State"
                 ]
@@ -4384,6 +4640,20 @@
                 "Signature": [
                     "profiles.ini"
                 ]
+            }
+        ],
+        "Macos": [
+            {
+                "Type": "APPDATA",
+                "Path": "zen",
+                "Signature": [
+                    "profiles.ini"
+                ]
+            },
+            {
+                "Type": "APPDATA",
+                "Path": "zen/Profiles",
+                "Signature": false
             }
         ]
     },

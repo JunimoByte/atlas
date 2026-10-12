@@ -73,6 +73,42 @@ def get_zip_output_dir() -> Path:
     return output_dir
 
 
+def set_zip_output_dir(path: Optional[Union[str, Path]] = None) -> Path:
+    """Override or reset the ZIP archive output directory.
+
+    Args:
+        path: Optional custom destination directory. If None, resets to
+            the default ``<Downloads>/Backup`` location.
+
+    Returns:
+        Path: The resolved, validated output directory path.
+
+    Raises:
+        ValueError: If path is an empty string or invalid.
+        NotADirectoryError: If path points to an existing regular file.
+        OSError: If directory creation fails.
+
+    """
+    global ZIP_OUTPUT_DIR  # noqa: WPS420
+
+    if path is None:
+        ZIP_OUTPUT_DIR = None
+        return get_zip_output_dir()
+
+    if isinstance(path, str) and not path.strip():
+        raise ValueError("Output directory path cannot be empty.")
+
+    resolved = Path(path).resolve()
+    if resolved.is_file():
+        raise NotADirectoryError(
+            f"Output path is an existing file: {resolved}"
+        )
+
+    resolved.mkdir(parents=True, exist_ok=True)
+    ZIP_OUTPUT_DIR = resolved
+    return ZIP_OUTPUT_DIR
+
+
 def generate_zip_name() -> str:
     """Generate a timestamped zip filename."""
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
@@ -130,6 +166,7 @@ def _write_file_to_zip(
     file_path: Path,
     zip_info: zipfile.ZipInfo,
     cancel_callback: Optional[Callable[[], bool]] = None,
+    chunk_callback: Optional[Callable[[int], None]] = None,
 ) -> bool:
     """Write a single file to the ZIP archive.
 
@@ -138,6 +175,7 @@ def _write_file_to_zip(
         file_path: Path to the source file.
         zip_info: ZipInfo object for the file.
         cancel_callback: Optional cancellation check.
+        chunk_callback: Optional callback receiving bytes written per chunk.
 
     Returns:
         bool: True if written successfully, False if cancelled or skipped
@@ -159,6 +197,8 @@ def _write_file_to_zip(
                     if cancel_callback and cancel_callback():
                         return False
                     dest_file.write(chunk)
+                    if chunk_callback:
+                        chunk_callback(len(chunk))
         return True
     except OSError as error:
         # If disk is full, we must abort the backup completely.
@@ -232,6 +272,7 @@ def write_zip(
     zip_path: Path,
     cancel_callback: Optional[Callable[[], bool]] = None,
     archive_root_names: Optional[Dict[Path, str]] = None,
+    progress_callback: Optional[Callable[[int], None]] = None,
 ) -> None:
     """Write files to a ZIP archive safely.
 
@@ -246,6 +287,8 @@ def write_zip(
             check for cancellation.
         archive_root_names (Optional[Dict[Path, str]]): Archive directory
             name assigned to each source root.
+        progress_callback (Optional[Callable[[int], None]]): Callback
+            receiving chunk bytes written.
 
     Raises:
         RuntimeError: If a file cannot be written safely to the archive.
@@ -254,6 +297,7 @@ def write_zip(
     temp_zip_path = zip_path.with_suffix(".zip.tmp")
     archive_created = False
 
+    files_written = 0
     try:
         with zipfile.ZipFile(
             temp_zip_path,
@@ -288,13 +332,26 @@ def write_zip(
                     # Write file contents to ZIP.
                     # Returns False only for cancellation or access errors
                     # (both are safe to skip). Unexpected failures raise.
-                    did_write = _write_file_to_zip(
-                        zip_file, file_path, zip_info, cancel_callback
-                    )
+                    if progress_callback:
+                        did_write = _write_file_to_zip(
+                            zip_file,
+                            file_path,
+                            zip_info,
+                            cancel_callback,
+                            progress_callback,
+                        )
+                    else:
+                        did_write = _write_file_to_zip(
+                            zip_file,
+                            file_path,
+                            zip_info,
+                            cancel_callback,
+                        )
                     if not did_write:
                         if cancel_callback and cancel_callback():
                             return
                         continue
+                    files_written += 1
 
                 except Exception as error:
                     LOGGER.warning(
@@ -305,7 +362,11 @@ def write_zip(
                     raise
 
         # Validate and finalize
-        if not temp_zip_path.exists() or temp_zip_path.stat().st_size == 0:
+        if (
+            not temp_zip_path.exists()
+            or files_written == 0
+            or temp_zip_path.stat().st_size <= 22
+        ):
             raise RuntimeError(
                 "Zip creation produced an empty or missing archive"
             )
@@ -327,6 +388,7 @@ def compress(  # noqa: C901
     source: Union[str, Path, list],
     zip_name: Optional[str] = None,
     cancel_callback: Optional[Callable[[], bool]] = None,
+    progress_callback: Optional[Callable[[int], None]] = None,
 ) -> Optional[Path]:
     """Compress one or multiple directories into a ZIP archive safely.
 
@@ -335,6 +397,8 @@ def compress(  # noqa: C901
         zip_name (Optional[str]): Name of the output ZIP file.
         cancel_callback (Optional[Callable[[], bool]]): Function to
             check for cancellation.
+        progress_callback (Optional[Callable[[int], None]]): Callback
+            receiving chunk bytes written.
 
     Returns:
         Optional[Path]: Path to the created ZIP archive, or None if failed.
@@ -386,6 +450,7 @@ def compress(  # noqa: C901
             zip_path,
             cancel_callback,
             _archive_root_names(sources),
+            progress_callback=progress_callback,
         )
 
         if cancel_callback and cancel_callback():
@@ -398,8 +463,42 @@ def compress(  # noqa: C901
     except FileNotFoundError:
         # Re-raise so the pipeline can gracefully skip this archive
         raise
+    except OSError as error:
+        import errno
+
+        if (
+            error.errno == errno.ENOSPC
+            or getattr(error, "winerror", None) == 112
+        ):
+            temp_zip_path = zip_path.with_suffix(".zip.tmp")
+            safe_unlink(temp_zip_path)
+            raise
+        LOGGER.error("Failed to create zip archive: {}".format(error))
+        temp_zip_path = zip_path.with_suffix(".zip.tmp")
+        safe_unlink(temp_zip_path)
+        return None
     except Exception as error:
         LOGGER.error("Failed to create zip archive: {}".format(error))
         temp_zip_path = zip_path.with_suffix(".zip.tmp")
         safe_unlink(temp_zip_path)
         return None
+
+
+def verify_archive(archive_path: Path) -> Tuple[bool, Optional[str], int]:
+    """Verify CRC-32 checksums of all files in a ZIP archive.
+
+    Args:
+        archive_path: Path to the ZIP archive to test.
+
+    Returns:
+        Tuple[bool, Optional[str], int]: (is_valid, corrupt_entry, file_count)
+    """
+    try:
+        with zipfile.ZipFile(archive_path, "r") as zf:
+            corrupt = zf.testzip()
+            count = len(zf.infolist())
+            if corrupt is not None:
+                return False, corrupt, count
+            return True, None, count
+    except Exception as err:
+        return False, str(err), 0

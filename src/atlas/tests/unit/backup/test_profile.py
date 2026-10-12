@@ -182,6 +182,126 @@ def test_find_profile_deduplicates_paths(tmp_path: Path) -> None:
     assert len(result) == len(set(r.lower() for r in result))
 
 
+def test_find_profile_solaris_firefox(tmp_path: Path) -> None:
+    """Verify that Firefox profiles are discovered on Solaris / SunOS."""
+    profile_dir = tmp_path / ".mozilla" / "firefox"
+    profile_dir.mkdir(parents=True)
+    (profile_dir / "profiles.ini").write_text("[Profile0]\nName=default\n")
+
+    fake_browsers = {
+        "Firefox": {
+            "SOLARIS": [
+                {
+                    "Path": ".mozilla/firefox",
+                    "Type": "HOME",
+                    "Signature": ["profiles.ini"],
+                }
+            ]
+        }
+    }
+
+    with patch.object(
+        profile_module, "_expand_path_by_type", return_value=[profile_dir]
+    ):
+        result = find_profile("Firefox", "SunOS", browsers_data=fake_browsers)
+
+    assert len(result) == 1
+    assert str(profile_dir.resolve()) in result[0]
+
+
+def test_find_profile_macos_chrome(tmp_path: Path) -> None:
+    """Verify that Chrome profiles are discovered on macOS / Darwin."""
+    profile_dir = tmp_path / "Google" / "Chrome"
+    profile_dir.mkdir(parents=True)
+    (profile_dir / "Local State").write_text("{}")
+
+    fake_browsers = {
+        "Google Chrome": {
+            "Macos": [
+                {
+                    "Path": "Google/Chrome",
+                    "Type": "APPDATA",
+                    "Signature": ["Local State"],
+                }
+            ]
+        }
+    }
+
+    with patch.object(
+        profile_module, "_expand_path_by_type", return_value=[profile_dir]
+    ):
+        result = find_profile(
+            "Google Chrome", "Darwin", browsers_data=fake_browsers
+        )
+
+    assert len(result) == 1
+    assert str(profile_dir.resolve()) in result[0]
+
+
+def test_find_profile_skips_unreadable_directory(tmp_path: Path) -> None:
+    """Verify that unreadable directories (e.g. TCC) are skipped."""
+    profile_dir = tmp_path / "Safari"
+    profile_dir.mkdir(parents=True)
+
+    fake_browsers = {
+        "Safari": {
+            "Macos": [
+                {
+                    "Path": "Safari",
+                    "Type": "HOME",
+                    "Signature": False,
+                }
+            ]
+        }
+    }
+
+    with patch.object(
+        profile_module, "_expand_path_by_type", return_value=[profile_dir]
+    ):
+        with patch(
+            "os.scandir", side_effect=PermissionError("TCC locked")
+        ):
+            result = find_profile(
+                "Safari", "Darwin", browsers_data=fake_browsers
+            )
+
+    assert result == []
+
+
+def test_find_profile_linux_chromium_snap_current(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Verify Chromium profile discovered via snap current path."""
+    snap_dir = tmp_path / "snap" / "chromium" / "current" / ".config"
+    profile_dir = snap_dir / "chromium"
+    profile_dir.mkdir(parents=True)
+    (profile_dir / "Local State").write_text("{}")
+
+    fake_browsers = {
+        "Chromium": {
+            "Linux": [
+                {
+                    "Type": "SNAP",
+                    "Path": "chromium/current/.config/chromium",
+                    "Signature": ["Local State"],
+                }
+            ]
+        }
+    }
+
+    fake_types = {
+        "Linux": {
+            "SNAP": [str(tmp_path / "snap")]
+        }
+    }
+
+    monkeypatch.setattr(profile_module, "PATH_TYPES", fake_types)
+    result = find_profile(
+        "Chromium", "Linux", browsers_data=fake_browsers
+    )
+    assert any(str(profile_dir.resolve()) in p for p in result)
+
+
 # =============================================================================
 # TESTS — Get browser name from path
 # =============================================================================

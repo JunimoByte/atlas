@@ -27,6 +27,9 @@ def normalize_os_key(os_name: str) -> str:
     ):
         return "BSD"
 
+    if sys_name in ("sunos", "solaris", "illumos"):
+        return "SOLARIS"
+
     if sys_name in ("darwin", "macos", "mac"):
         return "Macos"
 

@@ -9,10 +9,11 @@ under the `src/` directory.
 
 ## Decision
 All source code lives under `src/atlas/`. The package is declared in
-`pyproject.toml` using `hatchling` as the build backend. The top-level
+`pyproject.toml` using `setuptools` as the build backend. The top-level
 `atlas` namespace exposes subpackages for each concern:
 
 - `atlas.backup` — scanning, size estimation, compression, and backup
+- `atlas.compatibility` — unified Qt binding and environment setup
 - `atlas.display` — window, controller, worker, signals, and controls
 - `atlas.lib` — shared utilities (theme helpers, OS integration)
 - `atlas.ui` — Qt dialog definitions

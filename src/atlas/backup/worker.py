@@ -46,18 +46,15 @@ class Worker(QtCore.QObject):
         """Initialize the Worker."""
         super().__init__(parent)
         self._pipeline: Optional[Pipeline] = None
+        self._is_cancelled: bool = False
 
     # =========================================================================
     # PUBLIC METHODS
     # =========================================================================
 
     def cancel(self) -> None:
-        """Cancel the running pipeline and emit the cancelled signal.
-
-        Thread-safe: ``_pipeline`` is stored before ``pipeline.run()``
-        starts and cleared in a ``finally`` block, so this will always
-        reach a live instance while the pipeline is executing.
-        """
+        """Cancel the running pipeline and emit the cancelled signal."""
+        self._is_cancelled = True
         if self._pipeline is not None:
             self._pipeline.cancel()
         self.cancelled.emit()
@@ -70,6 +67,11 @@ class Worker(QtCore.QObject):
         the appropriate QtCore.pyqtSignal emission.
         """
         LOGGER.info("Worker started")
+        if self._is_cancelled:
+            LOGGER.info("Worker cancelled before pipeline startup")
+            self.cancelled.emit()
+            return
+
         try:
             self._pipeline = Pipeline(
                 progress_callback=self.progress.emit,
@@ -78,6 +80,8 @@ class Worker(QtCore.QObject):
                 no_browsers_found_callback=self.no_browsers_found.emit,
                 disk_space_error_callback=self.disk_space_error.emit,
             )
+            if self._is_cancelled:
+                self._pipeline.cancel()
             result = self._pipeline.run()
 
             if result == PipelineResult.SUCCESS:

@@ -145,6 +145,12 @@ def test_create_zip_info_missing_file() -> None:
     assert zi.external_attr == 0o600 << 16
 
 
+def test_create_zip_info_sets_compress_deflated(sample_file: Path) -> None:
+    """Verify that compress_type is explicitly set to ZIP_DEFLATED."""
+    zi = attribute.create_zip_info(sample_file)
+    assert zi.compress_type == zipfile.ZIP_DEFLATED
+
+
 # =============================================================================
 # TEST EXECUTION
 # =============================================================================

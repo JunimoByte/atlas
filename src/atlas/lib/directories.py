@@ -282,9 +282,8 @@ def _parse_xdg_user_dirs_file() -> Optional[Path]:
         Optional[Path]: Parsed path, or None if unavailable.
 
     """
-    config_home = os.environ.get(
-        "XDG_CONFIG_HOME",
-        os.path.join(Path.home(), ".config"),
+    config_home = os.environ.get("XDG_CONFIG_HOME") or os.path.join(
+        Path.home(), ".config"
     )
     dirs_file = Path(config_home) / "user-dirs.dirs"
 
@@ -381,9 +380,8 @@ def _get_sandbox_fallback() -> Optional[Path]:
     flatpak_id = os.environ.get("FLATPAK_ID")
     if flatpak_id:
         LOGGER.debug("Flatpak sandbox detected, using XDG_DATA_HOME fallback.")
-        data_home = os.environ.get(
-            "XDG_DATA_HOME",
-            str(Path.home() / ".var" / "app" / flatpak_id / "data"),
+        data_home = os.environ.get("XDG_DATA_HOME") or str(
+            Path.home() / ".var" / "app" / flatpak_id / "data"
         )
         return Path(data_home) / _DOWNLOADS_SUBDIR
 

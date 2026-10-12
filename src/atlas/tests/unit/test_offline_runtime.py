@@ -1,8 +1,10 @@
 """Runtime guard for Atlas's offline-first startup path."""
 
 import socket
+import sys
 from types import SimpleNamespace
 from typing import Any, List, Tuple
+from unittest.mock import patch
 
 import pytest
 
@@ -42,8 +44,9 @@ def test_startup_does_not_attempt_network_access(
         SimpleNamespace(QApplication=start_and_quit),
     )
 
-    with pytest.raises(SystemExit) as exit_info:
-        main.main()
+    with patch.object(sys, "argv", ["atlas"]):
+        with pytest.raises(SystemExit) as exit_info:
+            main.main()
 
     assert attempts == []
     assert exit_info.value.code == 0
