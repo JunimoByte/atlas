@@ -68,10 +68,47 @@ Atlas development follows:
 - Modular architecture principles
 - Clear separation of UI and pipeline logic
 - Backward compatibility constraints (Windows 7 → Windows 11, Linux
-  (glibc 2.31+), FreeBSD 13+ / GhostBSD 22+)
+  (glibc 2.31+), FreeBSD 13+ / GhostBSD 22+, OpenBSD, NetBSD, DragonFly BSD,
+  Solaris 11 / SunOS / Illumos)
 - Linux desktop compatibility through the required XWayland/XCB backend
 
 These standards guide long-term maintainability.
+
+## Development Setup & Verification
+
+Atlas provides automated environment setup scripts for developers:
+
+- **Windows**: Run `scripts\setup_dev.bat` in Command Prompt.
+- **Linux / macOS / BSD**: Run `source scripts/setup_dev.sh` in Bash or Zsh.
+- **Manual setup**:
+  ```bash
+  python -m venv venv
+  # Activate venv, then:
+  pip install -e .[dev]
+  ```
+
+### Running Tests
+
+Before submitting a pull request, ensure all tests pass:
+
+```bash
+pytest src/atlas/tests/unit
+```
+
+For headless testing without an active desktop display:
+
+```bash
+QT_QPA_PLATFORM=offscreen pytest src/atlas/tests/unit
+```
+
+### Running Linters
+
+Atlas enforces strict PEP 8 and PEP 257 standards (79-character line limit):
+
+```bash
+ruff check .
+flake8 .
+```
 
 ## Development Tooling
 
@@ -144,13 +181,15 @@ Atlas is built with the following priorities:
 4. **Defensive programming**
 5. **Minimal unnecessary complexity**
 
+## Security & Storage Considerations
+
+Atlas does not currently implement archive encryption. Users are responsible
+for securing backup storage locations.
+
 ## Future Plans
 
 Atlas is committed to the open-source community. Future plans may include
 expanding the contribution model or adding new collaboration channels.
-
-Atlas does not currently implement archive encryption.
-Users are responsible for securing backup storage locations.
 
 Thank you for supporting Atlas.
 

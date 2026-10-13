@@ -9,13 +9,14 @@ user-controlled output location.
 
 ## Supported Environments
 
-Atlas is intended to run across Windows (NT), Linux, and BSD kernels
-(Windows 7 or later, Linux with glibc 2.31+, and FreeBSD/GhostBSD). The
-supported runtime is Python 3.8 or newer. Qt is supplied by PyQt6 when
-available, with PyQt5 selected as a fallback. Ubuntu 20.04 LTS is the
-recommended Linux build baseline because it provides a broad compatibility
-foundation for newer Linux desktop systems. For BSD systems, it is recommended
-to compile on FreeBSD 13+ or GhostBSD 22+.
+Atlas is intended to run across Windows (NT), Linux, BSD, and Solaris kernels
+(Windows 7 or later, Linux with glibc 2.31+, FreeBSD/GhostBSD, OpenBSD, NetBSD,
+DragonFly BSD, and Solaris 11 / SunOS / Illumos). The supported runtime is
+Python 3.8 or newer. Qt is supplied by PyQt6 when available, with PyQt5
+selected as a fallback. Ubuntu 20.04 LTS is the recommended Linux build
+baseline because it provides a broad compatibility foundation for newer
+Linux desktop systems. For BSD systems, compiling on FreeBSD 13+ or GhostBSD 22+
+is recommended.
 
 Linux configuration is performed before the Qt binding is imported. Atlas uses
 XWayland/XCB for stable decorations and window flags, including on tiling
@@ -50,9 +51,14 @@ resolution to `atlas.args` and routes execution:
 **CLI Mode (`cli.py`)**:
 1. Refuse elevated/admin execution (prints warning).
 2. Load and validate browser configuration.
-3. Apply custom output directory if `-o` / `--output` is specified.
-4. Construct `Pipeline` with console standard output callbacks.
-5. Execute pipeline and exit.
+3. If `-l` / `--list` is specified, discover profiles, output results (or
+   stream JSON if `--json`), and exit without performing backup I/O.
+4. Filter targets if `-b` / `--browser` is provided.
+5. Apply custom output directory if `-o` / `--output` is specified.
+6. Construct `Pipeline` with console standard output callbacks (or quiet
+   suppression if `-q` / `--quiet`).
+7. Execute pipeline, verify archive CRC-32 integrity if `-C` / `--verify`
+   is requested, emit results (text or JSON), and exit.
 
 The backup operation follows a separate staged flow:
 
@@ -123,10 +129,12 @@ come from `configs/types.json`. `lib.browsers.verify_entries` validates and
 caches the browser list during startup, while `backup.profile` loads and caches
 the path types. Both expose their results transparently.
 
-OS keys in these configuration files (`Windows`, `Linux`, `Macos`, `BSD`) are
-agnostic. They are mapped dynamically via `lib.system.normalize_os_key`
-to match the current platform (`platform.system()`), ensuring variants like
-GhostBSD or OpenBSD resolve correctly to `BSD`.
+OS keys in these configuration files (`Windows`, `Linux`, `Macos`, `BSD`,
+`SOLARIS`) are agnostic. They are mapped dynamically via
+`lib.system.normalize_os_key` to match the current platform
+(`platform.system()`), ensuring variants like GhostBSD, OpenBSD, or
+DragonFly BSD resolve correctly to `BSD`, and SunOS or Illumos resolve
+to `SOLARIS`.
 
 For each configured browser, `Pipeline.scan_profiles` resolves candidate
 locations for the current operating system and verifies profile signatures.
@@ -174,6 +182,10 @@ before downloading a missing `appimagetool`; a declined or failed download
 still leaves the AppDir ready for manual packaging. Both specs omit web
 engines, network-capable Qt modules, and unrelated frameworks to preserve the
 offline-first runtime.
+
+`scripts/build_flatpak.sh` packages the application as a sandboxed Flatpak
+using the manifest and metadata in `installer/flatpak/`
+(`io.github.junimobyte.Atlas.yml`).
 
 `scripts/build_deb.sh` reuses that same Linux onedir payload to create a
 native Debian package. The packaged application remains isolated in
@@ -227,6 +239,7 @@ separately.
 
 | Location | Responsibility |
 | --- | --- |
+| `src/atlas/__main__.py` | Direct execution module (`python -m atlas`). |
 | `src/atlas/main.py` | Bootstrapper router; delegates to GUI or CLI. |
 | `src/atlas/gui.py` | Graphical entry point (Qt application launch). |
 | `src/atlas/cli.py` | Headless entry point (CLI application launch). |
@@ -243,11 +256,13 @@ separately.
 | `scripts/build_appimage.sh` | AppDir and AppImage build script. |
 | `installer/debian/` | Debian package control and metadata. |
 | `scripts/build_deb.sh` | Debian package build script using onedir. |
+| `installer/flatpak/` | Flatpak manifest and desktop metadata. |
+| `scripts/build_flatpak.sh` | Flatpak package build script. |
 | `scripts/build_pkg.sh` | Native FreeBSD `.pkg` package build script. |
 | `scripts/install_bsd.sh` | FreeBSD/GhostBSD portable runner/installer. |
 | `installer/Atlas.iss` | Windows Inno Setup installer definition. |
 | `installer/msix/` | Windows Store MSIX manifest and assets. |
-| `scripts/setup_dev.sh` | Linux/BSD developer environment script. |
+| `scripts/setup_dev.sh` | Linux/macOS/BSD developer environment script. |
 | `scripts/setup_dev.bat` | Windows developer environment script. |
 
 ## Testing and Headless Use

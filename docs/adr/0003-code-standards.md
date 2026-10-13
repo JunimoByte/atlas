@@ -8,8 +8,9 @@ adhere to well-defined and widely accepted coding standards.
 
 ## Decision
 I adopted **PEP 8** for code style and **PEP 257** uniformly for all
-docstrings — public and private alike. This policy is enforced via
-`AGENTS.md` at the repository root.
+docstrings — public and private alike. This policy is configured in
+`pyproject.toml` and enforced via continuous integration and
+`.agents/rules/mentor.md`.
 
 ## Rationale
 - **Consistency**: A single docstring standard eliminates judgment calls

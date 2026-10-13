@@ -21,6 +21,7 @@ src/
     lib/          # shared utilities (themes, integration helpers)
     tests/        # unit test suite (mirrors package structure)
     ui/           # Qt UI definitions
+    __main__.py   # direct execution entry point
     main.py       # bootstrapper router
     gui.py        # graphical entry point
     cli.py        # headless entry point
@@ -28,10 +29,10 @@ src/
 assets/           # icons and images
 configs/          # runtime configuration files
 docs/             # documentation and ADRs
-scripts/          # developer setup scripts
-installer/        # platform packaging metadata
-main.spec          # Windows PyInstaller definition
-appimage.spec      # Linux AppImage PyInstaller definition
+scripts/          # build and developer setup scripts
+installer/        # platform packaging metadata (appimage, debian, flatpak, msix, Atlas.iss)
+main.spec         # Windows PyInstaller definition
+appimage.spec     # Linux AppImage PyInstaller definition
 pyproject.toml    # build and dependency metadata
 ```
 

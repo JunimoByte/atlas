@@ -31,8 +31,7 @@ never writing to any browser directory.
 - **Headless & Automation Ready:** Full graphical interface and headless
   CLI mode (`--cli`) with cron-safe logging.
 - **Cross-Platform:** Native support for Windows (7 through 11), Linux
-  (glibc 2.31+), BSD (FreeBSD, GhostBSD), and Solaris (Oracle Solaris 11,
-  OpenIndiana).
+  (glibc 2.31+), and BSD (FreeBSD, GhostBSD, OpenBSD, NetBSD, DragonFly BSD).
 
 ## Privacy & Offline Guarantee
 
@@ -57,13 +56,12 @@ For full details, see the [Privacy Policy](PRIVACY.md).
 
 ### Prebuilt Binaries
 
-Download native executables and packages from [Releases](../../releases):
+Download native executables and packages from [Releases](https://github.com/JunimoByte/atlas/releases):
 
 - **Windows:** Standalone portable `.exe`, Inno Setup installer, or MSIX
   package
-- **Linux:** Standalone `.AppImage` or `.deb` package
+- **Linux:** Standalone `.AppImage`, `.deb`, or Flatpak (`.flatpak`) bundle
 - **FreeBSD:** Portable release bundle (`.tar` with installer) or native `.pkg`
-- **Solaris:** Portable release bundle (`.tar` with native binary)
 
 ### Install with pip
 
@@ -71,7 +69,10 @@ Download native executables and packages from [Releases](../../releases):
 pip install .
 atlas                          # Launch GUI
 atlas --cli                    # Headless backup (default: Downloads/Backup)
-atlas --cli -o /mnt/backups    # Headless backup to custom directory
+atlas --cli --list             # Inspect detected browser profiles
+atlas --cli --browser firefox  # Back up a specific browser
+atlas --cli -o /mnt/backups -C # Back up to custom directory and verify CRC-32
+atlas --cli --json             # Machine-readable JSON output
 ```
 
 ## How It Works
@@ -90,7 +91,7 @@ atlas --cli -o /mnt/backups    # Headless backup to custom directory
 
 ### Setup Environment
 
-- **Linux / macOS / BSD / Solaris** (`bash` or `zsh`):
+- **Linux / macOS / BSD** (`bash` or `zsh`):
   ```bash
   source scripts/setup_dev.sh
   ```
@@ -114,9 +115,9 @@ QT_QPA_PLATFORM=offscreen pytest
 | :--- | :--- | :--- |
 | **Windows** | `pyinstaller main.spec` | `dist/*-Portable.exe` |
 | **Linux AppImage** | `bash scripts/build_appimage.sh` | `dist/*.AppImage` |
+| **Linux Flatpak** | `bash scripts/build_flatpak.sh` | `dist/*.flatpak` |
 | **Debian / Ubuntu** | `bash scripts/build_deb.sh` | `dist/*.deb` |
 | **FreeBSD** | `bash scripts/build_pkg.sh` | `dist/*.pkg` |
-| **Solaris** | `pyinstaller main.spec` | `dist/*-Solaris*.tar` |
 
 *For advanced packaging options and platform notes, see the [docs](docs/).*
 

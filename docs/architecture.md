@@ -13,6 +13,7 @@ Application Start
   → Estimate Size
   → Disk Space Check
   → Archive Creation
+  → Integrity Verification (Optional / CLI)
   → Completion / Error
 ```
 
@@ -23,10 +24,12 @@ begin.
 
 ## Platform and Kernel Compatibility
 
-Atlas supports Windows (NT), Linux (glibc 2.31+), and BSD kernels.
+Atlas supports Windows (NT), Linux (glibc 2.31+), BSD, and Solaris kernels.
 Ubuntu 20.04 LTS is the recommended Linux build baseline because its older
 userspace maximizes compatibility with newer Linux desktop systems. For BSD
-systems, compiling on FreeBSD 13+ or GhostBSD 22+ is recommended.
+systems, compiling on FreeBSD 13+ or GhostBSD 22+ is recommended, with path
+mappings and testing covering OpenBSD, NetBSD, and DragonFly BSD. Solaris 11 /
+SunOS / Illumos profiles are supported natively and verified via CI.
 
 `compatibility/qt.py` uses the XWayland/XCB backend on Linux for stable
 decorations and window flags, including on tiling window managers. Users may
@@ -46,6 +49,9 @@ Packaging pipelines produce standalone, platform-tailored releases:
   missing, the build script prompts before downloading it to the user's local
   bin directory. A declined or failed download leaves a complete AppDir ready
   for packaging.
+- **Flatpak (`scripts/build_flatpak.sh`)**: Packages sandboxed builds using
+  the application manifest and metadata in `installer/flatpak/`
+  (`io.github.junimobyte.Atlas.yml`).
 - **Debian / Ubuntu Package (`scripts/build_deb.sh`)**: Reuses the onedir
   payload staged under `/opt/atlas` to build native `.deb` packages using
   `dpkg-deb`, with launcher and desktop metadata from `installer/debian/`.
@@ -97,10 +103,20 @@ runners. Does not import Qt dependencies directly.
 
 ### `src/atlas/args.py`
 The command-line argument parser and version resolution module. Builds the CLI
-argument schema (`--cli`, `-o`/`--output`, `-v`/`--version`, `-h`/`--help`) and
-dynamically resolves the application version from the canonical
-`pyproject.toml` configuration to prevent hardcoded constants and avoid
-recursive Python imports.
+argument schema and dynamically resolves the application version from the
+canonical `pyproject.toml` configuration to prevent hardcoded constants and
+avoid recursive Python imports.
+
+Supported CLI arguments:
+- `-v`, `--version`: Show version number and exit.
+- `--cli`: Execute in headless command-line mode.
+- `-o`, `--output DIR`: Custom output directory for backup archives.
+- `-l`, `--list`: List detected browser profiles without performing a backup.
+- `-b`, `--browser NAME`: Filter backup or inspection to a specific browser.
+- `-q`, `--quiet`: Suppress banners, progress, and non-error output.
+- `--json`: Output execution results or profile listings in JSON format.
+- `-C`, `--verify`: Verify CRC-32 integrity of archives after backup.
+- `-h`, `--help`: Display usage summary.
 
 ### `src/atlas/gui.py`
 The graphical UI runner. Handles the startup sequence for the traditional UI:
@@ -114,9 +130,13 @@ The graphical UI runner. Handles the startup sequence for the traditional UI:
 
 ### `src/atlas/cli.py`
 The headless runner. Operates without any PyQt dependencies, ensuring maximum
-compatibility on servers, safe mode boots, and automated scripts. Uses plain
-Python console streams and carriage returns for an interactive progress output
-without spanning the terminal.
+compatibility on servers, safe mode boots, and automated scripts. Supports:
+- Interactive progress displays via terminal carriage returns.
+- Browser discovery listing (`--list`) without triggering backup I/O.
+- Browser filtering (`--browser`) for targeted profile backups.
+- Quiet output (`--quiet`) and machine-readable JSON streaming (`--json`)
+  for external pipeline integrations.
+- Post-backup archive integrity verification via `archive.verify_archive`.
 
 ---
 
@@ -341,12 +361,13 @@ Contains the business logic for backup operations.
 #### Low-Level Backup Flow
 
 ```text
-User Action
-  → Worker Thread Spawned
+User Action / CLI Invocation
+  → Worker Thread / Headless Pipeline
   → Profile Discovery (scan_profiles)
   → Size Estimation (estimate_size)
   → Disk Space Validation (check_disk_space)
   → Archive Creation (perform_backup → compress)
+  → Integrity Verification (verify_archive, if requested)
   → Progress Updates
   → Completion / Error Signal
 ```
@@ -424,6 +445,8 @@ Handles ZIP archive creation.
 - **`write_zip(files, sources, zip_path, cancel_callback)`** — Writes files to
   a `.zip.tmp` temp file, then atomically renames it to the final path via
   `os.replace()`. Validates the archive is non-empty before rename.
+- **`verify_archive(zip_path)`** — Validates the CRC-32 integrity of all records
+  inside the created ZIP archive without extracting them to disk.
 - **`_write_file_to_zip(zip_file, file_path, zip_info, cancel_callback)`** —
   Streams file content in `CHUNK_SIZE` (1 MB) chunks, checking cancellation
   each iteration.

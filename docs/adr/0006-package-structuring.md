@@ -22,8 +22,8 @@ All source code lives under `src/atlas/`. The package is declared in
 - **Packaging Standard**: Conforms to the `src/package-name` layout
   recommended by the Python Packaging Authority.
 - **Namespace Cleanliness**: All internal imports use the `atlas.*`
-  prefix (e.g., `from atlas.lib.themes import resource_path`), which is
-  unambiguous and collision-safe.
+  prefix (e.g., `from atlas.lib.directories import get_downloads_dir`),
+  which is unambiguous and collision-safe.
 - **Distributability**: The package can be installed with `pip install .`
   or bundled with PyInstaller without modifying `sys.path` or relying on
   a custom launcher.

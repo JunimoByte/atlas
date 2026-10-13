@@ -18,13 +18,18 @@ up not just standard releases, but also:
 > Settings) is fully backed up.
 
 ### 🖥️ Cross-Platform Kernel & OS Compatibility
-Engineered for maximum portability across Windows, Linux, and BSD kernels:
+Engineered for maximum portability across Windows, Linux, BSD, and Solaris:
 *   **Windows (NT Kernel)**: 7, 8, 10, 11.
 *   **Linux (Linux Kernel / glibc 2.31+)**: Build portable releases on
     Ubuntu 20.04 LTS for the broadest practical compatibility with newer
     Linux desktop systems.
-*   **BSD (FreeBSD/GhostBSD Kernels)**: Native support with automated `.pkg`
-    generation (recommended to compile on FreeBSD 13+ or GhostBSD 22+).
+*   **BSD (FreeBSD, GhostBSD, OpenBSD, NetBSD, DragonFly BSD)**: Native
+    support with automated `.pkg` generation (recommended to compile on
+    FreeBSD 13+ or GhostBSD 22+) and cross-BSD path mappings.
+*   **Solaris / SunOS / Illumos**: Native profile support for Firefox and
+    SeaMonkey with continuous integration verification on Solaris 11.
+*   **macOS (Darwin)**: Profile paths mapped across Chromium and Gecko
+    browsers.
 
 ### Linux and BSD Desktop Compatibility
 
@@ -44,6 +49,8 @@ releases tailored for each supported operating system:
 *   **Linux AppImage (`scripts/build_appimage.sh`)**: Builds an onedir payload
     staged at `dist/Atlas.AppDir/usr/bin` and packages it into a standalone
     AppImage using `appimagetool`.
+*   **Flatpak (`scripts/build_flatpak.sh`)**: Builds sandboxed packages from
+    manifest and desktop metadata maintained in `installer/flatpak/`.
 *   **Debian/Ubuntu (`scripts/build_deb.sh`)**: Reuses the Linux onedir payload
     under `/opt/atlas` to create standard `.deb` packages with system desktop
     and icon integration.
@@ -53,7 +60,8 @@ releases tailored for each supported operating system:
     compatibility.
 *   **Windows Portable & Installer (`main.spec`, Inno Setup, MSIX)**: Compiles
     standalone portable executables (`Atlas-x86_64-Portable.exe`), Inno Setup
-    installers, and MSIX packages for Microsoft Store distribution.
+    installers (`installer/Atlas.iss`), and MSIX packages for Microsoft Store
+    distribution.
 
 ## Running Atlas
 
@@ -61,7 +69,10 @@ releases tailored for each supported operating system:
 ```bash
 python -m atlas.main
 python -m atlas.main --cli
-python -m atlas.main --cli -o /path/to/backup
+python -m atlas.main --cli --list
+python -m atlas.main --cli --browser firefox
+python -m atlas.main --cli -o /path/to/backup --verify
+python -m atlas.main --cli --json
 python -m atlas.main --version
 ```
 
@@ -70,7 +81,10 @@ python -m atlas.main --version
 pip install .
 atlas
 atlas --cli
-atlas --cli -o /path/to/backup
+atlas --cli --list
+atlas --cli --browser firefox
+atlas --cli -o /path/to/backup --verify
+atlas --cli --json
 atlas --version
 ```
 
@@ -81,6 +95,7 @@ Atlas/
 ├── pyproject.toml         # Project metadata and dependencies
 ├── src/                   # Source code
 │   └── atlas/             # Main package
+│       ├── __main__.py    # Direct execution module
 │       ├── main.py        # Bootstrapper router
 │       ├── gui.py         # Graphical entry point
 │       ├── cli.py         # Headless entry point
@@ -122,8 +137,10 @@ Atlas/
 │   ├── types.json
 │   └── blacklist.json
 ├── installer/             # Packaging metadata
+│   ├── Atlas.iss          # Inno Setup Windows installer
 │   ├── appimage/          # AppImage launcher and desktop entry
 │   ├── debian/            # Debian control and desktop entry
+│   ├── flatpak/           # Flatpak manifest and desktop metadata
 │   └── msix/              # Windows Store MSIX manifest and assets
 ├── scripts/               # Build and environment setup scripts
 └── docs/                  # Architecture, ADRs, and guides
