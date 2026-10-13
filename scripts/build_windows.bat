@@ -104,7 +104,7 @@ if not "%ISCC_CMD%"=="" (
         echo WARNING: Inno Setup compilation returned an error.
     ) else (
         echo.
-        echo [OK] Inno Setup installer compiled successfully in installer\Output\
+        echo [OK] Inno Setup installer compiled successfully in dist\
     )
 ) else (
     echo.

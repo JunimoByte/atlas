@@ -26,9 +26,19 @@ LOGGER = logging.getLogger(__name__)
 
 
 def _get_base_path() -> str:
-    """Resolve project root path for dev and frozen environments."""
+    """Resolve project root path for dev, Flatpak, and frozen environments."""
     if getattr(sys, "frozen", False):
         return getattr(sys, "_MEIPASS", os.getcwd())
+
+    candidates = [
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")),
+        sys.prefix,
+        os.path.join(sys.prefix, "share", "atlas"),
+        "/app",
+    ]
+    for candidate in candidates:
+        if os.path.isdir(os.path.join(candidate, "configs")):
+            return candidate
 
     return os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
 
