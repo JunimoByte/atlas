@@ -1,7 +1,14 @@
 ; Atlas Installer Script
 
 #define MyAppName "Atlas"
-#define MyAppVersion "1.2"
+
+#ifndef MyAppVersion
+  #define MyAppVersion ExecAndGetFirstLine("python", "-c ""import os, sys; sys.path.insert(0, os.path.abspath('../src')); from atlas.args import VERSION; print(VERSION)""", SourcePath)
+#endif
+#ifndef MyAppVersion
+  #define MyAppVersion "1.2"
+#endif
+
 #define MyAppPublisher "Michael Dorman"
 #define MyAppURL "https://junimobyte.github.io/atlas-website/"
 

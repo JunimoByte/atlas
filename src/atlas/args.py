@@ -96,7 +96,7 @@ def get_version(*, force_refresh: bool = False) -> str:
         # PackageNotFoundError if atlas is not installed as a package
         pass
 
-    _CACHED_VERSION = "1.2"
+    _CACHED_VERSION = "0.0.0"
     return _CACHED_VERSION
 
 
