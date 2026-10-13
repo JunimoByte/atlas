@@ -3,21 +3,8 @@ name: Build FreeBSD Release
 on:
   workflow_dispatch:
   push:
-    branches:
-      - alpha
-      - beta
-      - main
     tags:
       - 'v*'
-    paths:
-      - 'src/**'
-      - 'assets/**'
-      - 'configs/**'
-      - 'scripts/install_bsd.sh'
-      - 'main.spec'
-      - 'appimage.spec'
-      - 'pyproject.toml'
-      - '.github/workflows/build_bsd.yml'
 
 jobs:
   build-freebsd:

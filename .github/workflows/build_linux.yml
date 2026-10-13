@@ -3,25 +3,8 @@ name: Build Linux Release
 on:
   workflow_dispatch:
   push:
-    branches:
-      - alpha
-      - beta
-      - main
     tags:
       - 'v*'
-    paths:
-      - 'src/**'
-      - 'assets/**'
-      - 'configs/**'
-      - 'installer/appimage/**'
-      - 'installer/debian/**'
-      - 'scripts/build_appimage.sh'
-      - 'scripts/build_deb.sh'
-      - 'scripts/build_flatpak.sh'
-      - 'installer/flatpak/**'
-      - 'appimage.spec'
-      - 'pyproject.toml'
-      - '.github/workflows/build_linux.yml'
 
 jobs:
   build-linux:
