@@ -19,3 +19,4 @@ For more information on ADRs, see [adr.github.io](https://adr.github.io/).
 10. [FreeBSD Package Distribution](0010-freebsd-package-distribution.md)
 11. [Command-Line Argument Parsing: atlas.args](0011-argument-parsing.md)
 12. [Windows MSIX & Store Distribution](0012-windows-msix-distribution.md)
+13. [Unified Application Versioning](0013-unified-application-versioning.md)
