@@ -113,7 +113,7 @@ QT_QPA_PLATFORM=offscreen pytest
 
 | Target Platform | Command | Output Artifact |
 | :--- | :--- | :--- |
-| **Windows** | `pyinstaller main.spec` | `dist/*-Portable.exe` |
+| **Windows** | `scripts\build_windows.bat` | `dist/*-Portable.exe` & installer |
 | **Linux AppImage** | `bash scripts/build_appimage.sh` | `dist/*.AppImage` |
 | **Linux Flatpak** | `bash scripts/build_flatpak.sh` | `dist/*.flatpak` |
 | **Debian / Ubuntu** | `bash scripts/build_deb.sh` | `dist/*.deb` |

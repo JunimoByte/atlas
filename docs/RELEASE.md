@@ -109,17 +109,17 @@ Release workflows do **not** run on routine commits to keep developer CI fast (~
 
 To build the Windows executable and installer locally:
 
-1. Build portable PyInstaller executables:
+1. Run the 1-click packaging script (compatible with Windows 7 through 11):
+   ```cmd
+   scripts\build_windows.bat
+   ```
+   This automatically compiles the portable executable in `dist\` and compiles `installer\Atlas.iss` if Inno Setup (`iscc`) is installed.
+
+2. Alternatively, run the individual commands manually:
    ```cmd
    pyinstaller main.spec
-   ```
-   Outputs will be placed in `dist/Atlas-x86_64-Portable.exe` (or `dist/Atlas-x86-Portable.exe`).
-
-2. Compile the Inno Setup installer:
-   ```cmd
    iscc installer\Atlas.iss
    ```
-   Inno Setup automatically detects the executable in `dist/`, resolves the version from Python, and compiles `installer\Output\Atlas-x86_64-Setup.exe`.
 
 ---
 

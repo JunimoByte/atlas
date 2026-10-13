@@ -13,6 +13,12 @@ classifiers = [
     "Operating System :: OS Independent"
 ]
 
+[project.urls]
+Homepage = "https://junimobyte.github.io/atlas-website/"
+Repository = "https://github.com/JunimoByte/atlas"
+Issues = "https://github.com/JunimoByte/atlas/issues"
+Documentation = "https://github.com/JunimoByte/atlas#readme"
+
 [project.optional-dependencies]
 gui = [
     "pyinstaller>=6.0",

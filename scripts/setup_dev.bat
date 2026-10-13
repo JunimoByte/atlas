@@ -60,16 +60,10 @@ REM    PyQt6 requires Python 3.9+. On Python 3.8 (e.g. Windows 7) we skip
 REM    straight to PyQt5 without wasting time on a doomed PyQt6 attempt.
 REM ---------------------------------------------------------------------------
 echo Installing Qt binding...
-for /f %%M in ('python -c "import sys; print(sys.version_info.minor)"') do set "PY_MINOR=%%M"
+for /f %%Q in ('python -c "import sys; print(1 if sys.version_info >= (3, 9) else 0)"') do set "USE_PYQT6=%%Q"
 
-if %PY_MINOR% LEQ 8 (
-    echo Python 3.8 detected -- installing PyQt5 directly...
-    python -m pip install --quiet "PyQt5>=5.15"
-    if errorlevel 1 (
-        echo ERROR: Failed to install PyQt5.
-        exit /b 1
-    )
-) else (
+if "!USE_PYQT6!"=="1" (
+    echo Python 3.9+ detected -- installing PyQt6...
     python -m pip install --quiet "PyQt6>=6.0"
     if errorlevel 1 (
         echo PyQt6 failed, falling back to PyQt5...
@@ -78,6 +72,13 @@ if %PY_MINOR% LEQ 8 (
             echo ERROR: Failed to install PyQt5 fallback.
             exit /b 1
         )
+    )
+) else (
+    echo Python 3.8 detected (Windows 7 compatible) -- installing PyQt5 directly...
+    python -m pip install --quiet "PyQt5>=5.15"
+    if errorlevel 1 (
+        echo ERROR: Failed to install PyQt5.
+        exit /b 1
     )
 )
 
