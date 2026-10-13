@@ -74,6 +74,7 @@ def test_browsers_config_schema(configs_dir: Path) -> None:
                 "must be a list of configuration entries."
             )
 
+            seen_pairs = set()
             for index, entry in enumerate(entries):
                 location_str = (
                     f"{browser_name} -> {platform_name} -> entry [{index}]"
@@ -90,13 +91,27 @@ def test_browsers_config_schema(configs_dir: Path) -> None:
                 )
 
                 # Field types & values
+                path_val = entry["Path"]
                 assert (
-                    isinstance(entry["Path"], str) and entry["Path"].strip()
+                    isinstance(path_val, str) and path_val.strip()
                 ), f"Empty or non-string 'Path' at {location_str}"
+                assert path_val == path_val.strip(), (
+                    f"Untrimmed whitespace in 'Path' at {location_str}"
+                )
 
+                type_val = entry["Type"]
                 assert (
-                    isinstance(entry["Type"], str) and entry["Type"].strip()
+                    isinstance(type_val, str) and type_val.strip()
                 ), f"Empty or non-string 'Type' at {location_str}"
+                assert type_val == type_val.strip(), (
+                    f"Untrimmed whitespace in 'Type' at {location_str}"
+                )
+
+                pair = (path_val, type_val)
+                assert pair not in seen_pairs, (
+                    f"Duplicate (Path, Type) pair {pair} at {location_str}"
+                )
+                seen_pairs.add(pair)
 
                 sig = entry["Signature"]
                 assert sig is False or (
