@@ -116,6 +116,24 @@ def test_grab_returns_cached_data(
     assert "Chrome" in cached
 
 
+def test_verify_entries_malformed_structures_handled_gracefully() -> None:
+    """Ensure malformed non-dict types do not cause unhandled crashes."""
+    assert browsers.verify_entries(browsers_json="not a dict") is False
+    assert browsers.verify_entries(browsers_json=[1, 2, 3]) is False
+
+    malformed = {
+        "BrokenBrowser": {
+            "Windows": [
+                "not a dict",
+                None,
+                {"Path": 123, "Type": "profile", "Signature": False},
+            ],
+            123: [{"Path": "valid", "Type": "profile", "Signature": False}],
+        }
+    }
+    assert browsers.verify_entries(browsers_json=malformed) is False
+
+
 # =============================================================================
 # TEST EXECUTION
 # =============================================================================

@@ -5,6 +5,9 @@ on:
     branches: [alpha, beta, main]
   pull_request:
     branches: [alpha, beta, main]
+  schedule:
+    # Monthly heartbeat test run at 00:00 UTC on the 1st of every month
+    - cron: '0 0 1 * *'
 
 jobs:
   lint:

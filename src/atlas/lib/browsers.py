@@ -94,8 +94,8 @@ def verify_entries(  # noqa: C901
             if browsers_json is not None
             else load_json("browsers.json")
         )
-        if not data:
-            LOGGER.error("Failed to load browsers.json or it is empty.")
+        if not data or not isinstance(data, dict):
+            LOGGER.error("Failed to load browsers.json or invalid format.")
             return False
 
         cleaned: Dict[str, Any] = {}
@@ -111,13 +111,24 @@ def verify_entries(  # noqa: C901
                 continue
             clean_systems: Dict[str, Any] = {}
             for system, entries in systems.items():
-                if not isinstance(entries, list) or not system.strip():
+                if (
+                    not isinstance(system, str)
+                    or not system.strip()
+                    or not isinstance(entries, list)
+                ):
                     errors.append(
                         "❌ Invalid system {} in {}".format(system, browser)
                     )
                     continue
                 clean_entries = []
                 for entry in entries:
+                    if not isinstance(entry, dict):
+                        errors.append(
+                            "❌ Non-dict entry in {} ({})".format(
+                                browser, system
+                            )
+                        )
+                        continue
                     e_errors = _validate_entry(entry, browser, system)
                     if e_errors:
                         errors.extend(e_errors)

@@ -157,6 +157,37 @@ def _expand_wildcard(base: Path, rel_path: Path) -> List[Path]:
     return matches
 
 
+def _collect_entry_profiles(
+    entry: Dict[str, Any],
+    browser_name: str,
+    os_key: str,
+    seen_paths: Set[str],
+) -> List[str]:
+    """Extract and validate profile paths for a single configuration entry."""
+    if not isinstance(entry, dict):
+        LOGGER.warning("Skipping non-dict entry in %s", browser_name)
+        return []
+
+    raw_path = entry.get("Path")
+    signature_file = entry.get("Signature")
+    path_type = entry.get("Type")
+
+    if not raw_path or signature_file is None or not path_type:
+        LOGGER.error("Incomplete data for %s: %s", browser_name, entry)
+        return []
+
+    collected: List[str] = []
+    candidate_paths = _expand_path_by_type(path_type, raw_path, os_key)
+    for location in candidate_paths:
+        result = _validate_profile_path(location, signature_file)
+        if result:
+            norm_path = os.path.normcase(result)
+            if norm_path not in seen_paths:
+                collected.append(result)
+                seen_paths.add(norm_path)
+    return collected
+
+
 def find_profile(
     browser_name: str,
     operating_system: str,
@@ -189,33 +220,48 @@ def find_profile(
         )
         return []
 
-    browser_data = browsers_data[browser_name]
+    browser_data = browsers_data.get(browser_name, {})
+    if not isinstance(browser_data, dict):
+        LOGGER.warning(
+            "Malformed configuration for browser %s", browser_name
+        )
+        return []
+
     os_key = normalize_os_key(operating_system)
     os_entries = browser_data.get(os_key, [])
+    if not isinstance(os_entries, list):
+        return []
 
     valid_profiles: List[str] = []
     seen_paths: Set[str] = set()
 
     for entry in os_entries:
-        raw_path = entry.get("Path")
-        signature_file = entry.get("Signature")
-        path_type = entry.get("Type")
-
-        if not raw_path or signature_file is None or not path_type:
-            LOGGER.error("Incomplete data for %s: %s", browser_name, entry)
-            continue
-
-        candidate_paths = _expand_path_by_type(path_type, raw_path, os_key)
-
-        for location in candidate_paths:
-            result = _validate_profile_path(location, signature_file)
-            if result:
-                norm_path = os.path.normcase(result)
-                if norm_path not in seen_paths:
-                    valid_profiles.append(result)
-                    seen_paths.add(norm_path)
+        valid_profiles.extend(
+            _collect_entry_profiles(entry, browser_name, os_key, seen_paths)
+        )
 
     return valid_profiles
+
+
+def _matches_entry_path(
+    entry: Dict[str, Any], os_key: str, path_lower: str
+) -> bool:
+    """Check if a path matches an individual browser entry."""
+    if not isinstance(entry, dict):
+        return False
+    raw_path = entry.get("Path")
+    path_type = entry.get("Type")
+    signature = entry.get("Signature")
+
+    if not raw_path or not path_type:
+        return False
+
+    candidate_paths = _expand_path_by_type(path_type, raw_path, os_key)
+    for location in candidate_paths:
+        resolved = _validate_profile_path(location, signature)
+        if resolved and path_lower.startswith(os.path.normcase(resolved)):
+            return True
+    return False
 
 
 def get_browser_name_from_path(
@@ -251,22 +297,13 @@ def get_browser_name_from_path(
     path_lower = os.path.normcase(str(Path(path_str)))
 
     for name, systems in browsers_data.items():
+        if not isinstance(systems, dict):
+            continue
         entries = systems.get(os_key, [])
+        if not isinstance(entries, list):
+            continue
         for entry in entries:
-            raw_path = entry.get("Path")
-            path_type = entry.get("Type")
-            signature = entry.get("Signature")
-
-            if not raw_path or not path_type:
-                continue
-
-            candidate_paths = _expand_path_by_type(path_type, raw_path, os_key)
-
-            for location in candidate_paths:
-                resolved = _validate_profile_path(location, signature)
-                if resolved and path_lower.startswith(
-                    os.path.normcase(resolved)
-                ):
-                    return name
+            if _matches_entry_path(entry, os_key, path_lower):
+                return name
 
     return "Unknown"
