@@ -24,9 +24,25 @@ fi
 # ==============================================================================
 # OS COMPATIBILITY CHECK
 # ==============================================================================
-# Check if the system has the older libutil.so.9 required by this binary.
-# If not, install the compat13x-amd64 package automatically.
-if ! grep -q "libutil.so.9" /var/run/ld-elf.so.hints 2>/dev/null; then
+# Check if the binary has unresolved dynamic shared library dependencies (such
+# as FreeBSD 13 ABI libraries like libutil.so.9 when running on FreeBSD 14+).
+if command -v ldd >/dev/null 2>&1; then
+    MISSING_LIBS=$(ldd "$SCRIPT_DIR/$BINARY_NAME" 2>&1 | grep "not found" || true)
+    if [ -n "$MISSING_LIBS" ]; then
+        echo "Missing shared libraries detected:"
+        echo "$MISSING_LIBS"
+        if echo "$MISSING_LIBS" | grep -q "libutil.so.9"; then
+            echo "Installing FreeBSD 13 compatibility package (compat13x-amd64)..."
+            pkg install -y compat13x-amd64 || {
+                echo "Failed to install compatibility libraries."
+                exit 1
+            }
+        else
+            echo "Attempting to install compatibility runtime..."
+            pkg install -y compat13x-amd64 2>/dev/null || true
+        fi
+    fi
+elif [ -f /var/run/ld-elf.so.hints ] && ! grep -q "libutil.so.9" /var/run/ld-elf.so.hints 2>/dev/null; then
     echo "Missing FreeBSD 13 ABI libraries (libutil.so.9)."
     echo "Installing compat13x-amd64..."
     pkg install -y compat13x-amd64 || {

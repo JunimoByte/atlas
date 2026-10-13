@@ -15,23 +15,28 @@ on:
       - 'configs/**'
       - 'scripts/install_bsd.sh'
       - 'main.spec'
+      - 'appimage.spec'
       - 'pyproject.toml'
       - '.github/workflows/build_bsd.yml'
 
 jobs:
   build-freebsd:
-    name: Build FreeBSD 13 x86_64
+    name: Build FreeBSD ${{ matrix.release }} x86_64
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        release: ['13.4', '14.1']
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Build in FreeBSD 13 VM
+      - name: Build and Test in FreeBSD ${{ matrix.release }} VM
         uses: vmactions/freebsd-vm@v1
         with:
-          release: '13.4'
+          release: ${{ matrix.release }}
           usesh: true
           prepare: |
             export ASSUME_ALWAYS_YES=yes
@@ -40,22 +45,30 @@ jobs:
             pkg install -y python311 py311-pip bash
             ln -sf /usr/local/bin/python3.11 /usr/local/bin/python3 || true
             ln -sf /usr/local/bin/python3.11 /usr/local/bin/python || true
-            pkg install -y py311-qt6-pyqt || pkg install -y py311-PyQt6
+            pkg install -y py311-pytest || python3.11 -m pip install pytest
+            pkg install -y py311-qt6-pyqt || pkg install -y py311-PyQt6 || true
             pkg install -y py311-pyinstaller || python3.11 -m pip install pyinstaller
           run: |
             set -e
 
-            # 1. Compile single-file portable binary
+            # 1. Run unit tests under native FreeBSD
+            QT_QPA_PLATFORM=offscreen python3.11 -m pytest src/atlas/tests/unit -q
+
+            # 2. Compile single-file portable binary
             python3.11 -m PyInstaller main.spec --noconfirm --clean
 
-            # 2. Verify binary existence and permissions
+            # 3. Verify binary existence and permissions
             if [ ! -f "dist/Atlas-x86_64-Portable" ]; then
               echo "Build failure: dist/Atlas-x86_64-Portable was not generated." >&2
               exit 1
             fi
             chmod +x dist/Atlas-x86_64-Portable
 
-            # 3. Stage the portable release bundle
+            # 4. Smoke test the compiled binary directly on FreeBSD
+            ./dist/Atlas-x86_64-Portable --version
+            ./dist/Atlas-x86_64-Portable --cli --list
+
+            # 5. Stage the portable release bundle
             rm -rf dist/FreeBSD_Release
             mkdir -p dist/FreeBSD_Release
             cp -p dist/Atlas-x86_64-Portable dist/FreeBSD_Release/
@@ -63,14 +76,15 @@ jobs:
             cp -p scripts/install_bsd.sh dist/FreeBSD_Release/
             chmod +x dist/FreeBSD_Release/install_bsd.sh
 
-            # 4. Package as tar archive
+            # 6. Package as tar archive
+            REL_TAG=$(echo "${{ matrix.release }}" | cut -d. -f1)
             cd dist
-            tar -cvf Atlas-FreeBSD13-x86_64.tar FreeBSD_Release/
+            tar -cvf "Atlas-FreeBSD${REL_TAG}-x86_64.tar" FreeBSD_Release/
 
       - name: Upload FreeBSD Release Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Atlas-FreeBSD13-x86_64
-          path: dist/Atlas-FreeBSD13-x86_64.tar
+          name: Atlas-FreeBSD-${{ matrix.release }}-x86_64
+          path: dist/Atlas-FreeBSD*-x86_64.tar
           if-no-files-found: error
           retention-days: 14

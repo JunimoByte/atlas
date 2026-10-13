@@ -17,6 +17,7 @@ import glob
 import importlib
 import os
 import pkgutil
+import site
 import subprocess
 import sys
 import sysconfig
@@ -72,6 +73,32 @@ def _find_libpython() -> List:
 
 
 _libpython_binaries = _find_libpython()
+
+
+# =============================================================================
+# BSD PATH DETECTION
+# =============================================================================
+# On FreeBSD/GhostBSD, PyQt is installed via pkg into the system Python
+# site-packages (e.g. /usr/local/lib/python3.12/site-packages), not into
+# the venv. PyInstaller needs these paths explicitly so it can find and
+# bundle the Qt extension modules when building pkg payloads.
+
+_bsd_extra_paths: List[str] = []
+if sys.platform.startswith(
+    ("freebsd", "openbsd", "netbsd", "dragonfly", "sunos")
+):
+    for _scheme in ("posix_prefix", "posix_user"):
+        _candidate = sysconfig.get_path("platlib", _scheme)
+        if _candidate and _candidate not in _bsd_extra_paths:
+            _bsd_extra_paths.append(_candidate)
+    for _sp in site.getsitepackages():
+        if _sp not in _bsd_extra_paths:
+            _bsd_extra_paths.append(_sp)
+    if _bsd_extra_paths:
+        print(
+            "appimage.spec: BSD detected — adding to pathex: "
+            f"{_bsd_extra_paths}"
+        )
 
 # =============================================================================
 # QT BINDING DETECTION
@@ -241,7 +268,7 @@ def enforce_offline_payload(analysis: Analysis) -> None:
 
 a = Analysis(
     ["src/atlas/main.py"],
-    pathex=["src"],
+    pathex=["src"] + _bsd_extra_paths,
     binaries=_libpython_binaries,
     datas=datas,
     hiddenimports=hiddenimports,
