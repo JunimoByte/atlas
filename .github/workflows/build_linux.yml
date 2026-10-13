@@ -35,10 +35,24 @@ jobs:
 
       - name: Build AppImage and DEB in Ubuntu 20.04
         run: |
-          IMAGE="public.ecr.aws/ubuntu/ubuntu:20.04"
-          for i in 1 2 3; do
-            docker pull "$IMAGE" && break || sleep 5
+          IMAGES=(
+            "mcr.microsoft.com/mirror/docker/library/ubuntu:20.04"
+            "docker.io/library/ubuntu:20.04"
+            "public.ecr.aws/ubuntu/ubuntu:20.04"
+          )
+          IMAGE=""
+          for img in "${IMAGES[@]}"; do
+            echo "Attempting to pull base image: $img"
+            if docker pull "$img"; then
+              IMAGE="$img"
+              break
+            fi
+            echo "Failed to pull $img, trying next mirror..."
           done
+          if [ -z "$IMAGE" ]; then
+            echo "Failed to pull Ubuntu 20.04 from any mirror." >&2
+            exit 1
+          fi
           docker run --rm \
             -v "$PWD:/workspace" \
             -w /workspace \

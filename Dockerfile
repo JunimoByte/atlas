@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=public.ecr.aws/docker/library/python:3.8-slim
+ARG BASE_IMAGE=mcr.microsoft.com/mirror/docker/library/python:3.8-slim
 FROM ${BASE_IMAGE}
 
 # System dependencies for Qt6 / PyQt6 on headless Linux

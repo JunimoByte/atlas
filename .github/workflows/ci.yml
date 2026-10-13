@@ -39,7 +39,25 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build Docker image
-        run: docker build -t atlas-tests .
+        run: |
+          IMAGES=(
+            "mcr.microsoft.com/mirror/docker/library/python:3.8-slim"
+            "docker.io/library/python:3.8-slim"
+            "public.ecr.aws/docker/library/python:3.8-slim"
+          )
+          BUILT=false
+          for img in "${IMAGES[@]}"; do
+            echo "Attempting Docker build with base image: $img"
+            if docker build --build-arg BASE_IMAGE="$img" -t atlas-tests .; then
+              BUILT=true
+              break
+            fi
+            echo "Build with $img failed, trying next mirror..."
+          done
+          if [ "$BUILT" != "true" ]; then
+            echo "Failed to build Docker test image from any mirror." >&2
+            exit 1
+          fi
 
       - name: Verify offline Linux payload
         run: >
