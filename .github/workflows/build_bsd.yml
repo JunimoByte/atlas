@@ -42,20 +42,24 @@ jobs:
             export ASSUME_ALWAYS_YES=yes
             pkg bootstrap -f
             pkg update -f
-            pkg install -y python311 py311-pip bash
-            ln -sf /usr/local/bin/python3.11 /usr/local/bin/python3 || true
-            ln -sf /usr/local/bin/python3.11 /usr/local/bin/python || true
-            pkg install -y py311-pytest || python3.11 -m pip install pytest
-            pkg install -y py311-qt6-pyqt || pkg install -y py311-PyQt6 || true
-            pkg install -y py311-pyinstaller || python3.11 -m pip install pyinstaller
+            pkg install -y python3 bash || pkg install -y python311 bash || pkg install -y python312 bash
+            ln -sf /usr/local/bin/python3 /usr/local/bin/python || true
+
+            PY_FLAVOR=$(python3 -c "import sys; print(f'py{sys.version_info.major}{sys.version_info.minor}')")
+            echo "Targeting FreeBSD Python flavor: ${PY_FLAVOR}"
+
+            pkg install -y "${PY_FLAVOR}-pip" || python3 -m ensurepip --default-pip || true
+            pkg install -y "${PY_FLAVOR}-pytest" || python3 -m pip install --break-system-packages pytest || python3 -m pip install pytest
+            pkg install -y "${PY_FLAVOR}-qt6-pyqt" || pkg install -y "${PY_FLAVOR}-PyQt6" || python3 -m pip install --break-system-packages PyQt6 || true
+            pkg install -y "${PY_FLAVOR}-pyinstaller" || python3 -m pip install --break-system-packages pyinstaller || python3 -m pip install pyinstaller
           run: |
             set -e
 
             # 1. Run unit tests under native FreeBSD
-            QT_QPA_PLATFORM=offscreen python3.11 -m pytest src/atlas/tests/unit -q
+            QT_QPA_PLATFORM=offscreen python3 -m pytest src/atlas/tests/unit -q
 
             # 2. Compile single-file portable binary
-            python3.11 -m PyInstaller main.spec --noconfirm --clean
+            python3 -m PyInstaller main.spec --noconfirm --clean
 
             # 3. Verify binary existence and permissions
             if [ ! -f "dist/Atlas-x86_64-Portable" ]; then
