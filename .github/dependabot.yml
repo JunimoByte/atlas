@@ -1,0 +1,16 @@
+version: 2
+updates:
+  # Check GitHub Actions dependencies once a month
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    # Bundle updates into a single combined PR to avoid notification noise
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    open-pull-requests-limit: 3
+    labels:
+      - "ci"
+      - "dependencies"
