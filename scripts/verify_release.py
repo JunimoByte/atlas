@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Atlas | Pre-flight Release Verification Script.
 
 Validates that repository state, configs, tests, linters, and versioning

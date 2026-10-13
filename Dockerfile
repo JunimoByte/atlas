@@ -41,4 +41,4 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # Headless Qt mode
 ENV QT_QPA_PLATFORM=offscreen
 
-CMD ["pytest", "src/atlas/tests/unit", "-q"]
+CMD ["pytest", "-q"]

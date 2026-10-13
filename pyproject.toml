@@ -42,7 +42,7 @@ dev = [
 atlas = "atlas.main:main"
 
 [tool.pytest.ini_options]
-testpaths = ["src/atlas/tests/unit"]
+testpaths = ["src/atlas/tests"]
 pythonpath = ["src"]
 
 [tool.setuptools.package-data]

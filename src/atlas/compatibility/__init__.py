@@ -4,3 +4,7 @@ Centralized dependency abstraction layer for adapting
 third-party libraries whose APIs differ across supported
 environments.
 """
+
+from . import qt
+
+__all__ = ["qt"]

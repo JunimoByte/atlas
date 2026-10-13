@@ -5,7 +5,7 @@
 #ifndef MyAppVersion
   #define MyAppVersion ExecAndGetFirstLine("python", "-c ""import os, sys; sys.path.insert(0, os.path.abspath('../src')); from atlas.args import VERSION; print(VERSION)""", SourcePath)
 #endif
-#ifndef MyAppVersion
+#if MyAppVersion == ""
   #define MyAppVersion "1.2"
 #endif
 
@@ -50,6 +50,9 @@ UninstallDisplayIcon={app}\{#MyAppExeName}
 
 ; Installer icon
 SetupIconFile=..\assets\icons\Icon.ico
+
+; Prompt to close running Atlas before overwriting the executable
+CloseApplications=yes
 
 #if MyAppIs64Bit
 ArchitecturesAllowed=x64compatible

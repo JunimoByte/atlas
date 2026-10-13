@@ -6,6 +6,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: read
+
 jobs:
   build-linux:
     name: Build Linux x86_64 (AppImage & DEB)

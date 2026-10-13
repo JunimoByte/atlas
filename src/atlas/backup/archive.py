@@ -8,6 +8,7 @@ Handles safe compression of browser profile directories with error handling.
 # IMPORTS
 # =============================================================================
 
+import errno
 import itertools
 import logging
 import os
@@ -33,6 +34,7 @@ LOGGER = logging.getLogger(__name__)
 
 CHUNK_SIZE = 1024 * 1024
 ATLAS_SUBDIR = "Backup"
+WINERROR_DISK_FULL = 112
 ZIP_OUTPUT_DIR = None  # type: Optional[Path]
 
 # =============================================================================
@@ -202,11 +204,9 @@ def _write_file_to_zip(
         return True
     except OSError as error:
         # If disk is full, we must abort the backup completely.
-        import errno
-
         if (
             error.errno == errno.ENOSPC
-            or getattr(error, "winerror", None) == 112
+            or getattr(error, "winerror", None) == WINERROR_DISK_FULL
         ):
             LOGGER.error("Disk full during backup: %s", error)
             raise
@@ -464,11 +464,9 @@ def compress(  # noqa: C901
         # Re-raise so the pipeline can gracefully skip this archive
         raise
     except OSError as error:
-        import errno
-
         if (
             error.errno == errno.ENOSPC
-            or getattr(error, "winerror", None) == 112
+            or getattr(error, "winerror", None) == WINERROR_DISK_FULL
         ):
             temp_zip_path = zip_path.with_suffix(".zip.tmp")
             safe_unlink(temp_zip_path)

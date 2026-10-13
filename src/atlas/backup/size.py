@@ -43,6 +43,9 @@ except Exception as error:
 # =============================================================================
 
 MAX_SCAN_TIME = 300
+SIZE_UNITS = ("B", "KB", "MB", "GB", "TB", "PB")
+BYTES_PER_KIB = 1024
+DISK_SPACE_SAFETY_FACTOR = 1.5
 
 # =============================================================================
 # EXCEPTIONS
@@ -85,15 +88,14 @@ def format_size(bytes_size: Union[int, float]) -> str:
         if bytes_size < 0 or math.isnan(bytes_size) or math.isinf(bytes_size):
             return "Invalid size"
 
-        units = ["B", "KB", "MB", "GB", "TB", "PB"]
-        for i, unit in enumerate(units):
-            if bytes_size < 1024 or i == len(units) - 1:
+        for i, unit in enumerate(SIZE_UNITS):
+            if bytes_size < BYTES_PER_KIB or i == len(SIZE_UNITS) - 1:
                 if bytes_size.is_integer():
                     return "{} {}".format(int(bytes_size), unit)
                 return "{:.2f}".format(bytes_size).rstrip("0").rstrip(
                     "."
                 ) + " {}".format(unit)
-            bytes_size /= 1024
+            bytes_size /= BYTES_PER_KIB
     except (ValueError, TypeError):
         return "Unknown size"
     return "Unknown size"
@@ -203,7 +205,9 @@ def check_disk_space(
         output_dir.mkdir(parents=True, exist_ok=True)
         _, _, free = shutil.disk_usage(output_dir)
 
-        required_space = int(estimated_size_bytes * 1.5)
+        required_space = int(
+            estimated_size_bytes * DISK_SPACE_SAFETY_FACTOR
+        )
         has_sufficient_space = free >= required_space
 
         return has_sufficient_space, format_size(free)

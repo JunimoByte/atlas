@@ -22,6 +22,15 @@ from typing import Optional, Tuple
 LOGGER = logging.getLogger(__name__)
 
 # =============================================================================
+# CONSTANTS
+# =============================================================================
+
+ZIP_MIN_YEAR = 1980
+ZIP_MAX_YEAR = 2107
+DEFAULT_DOS_DATE = (ZIP_MIN_YEAR, 1, 1, 0, 0, 0)
+DEFAULT_UNIX_PERMISSIONS = 0o600 << 16
+
+# =============================================================================
 # FUNCTIONS
 # =============================================================================
 
@@ -44,7 +53,7 @@ def safe_zipinfo_date(
         if mtime is None:
             mtime = file_path.stat().st_mtime
         dt = datetime.fromtimestamp(max(0.0, mtime))
-        year = max(1980, min(dt.year, 2107))
+        year = max(ZIP_MIN_YEAR, min(dt.year, ZIP_MAX_YEAR))
         return (
             year,
             dt.month,
@@ -57,7 +66,7 @@ def safe_zipinfo_date(
         LOGGER.debug(
             "Failed to get file date for {}: {}".format(file_path, error)
         )
-        return 1980, 1, 1, 0, 0, 0
+        return DEFAULT_DOS_DATE
 
 
 def get_windows_version() -> Optional[Tuple[int, int]]:
@@ -117,5 +126,5 @@ def create_zip_info(file_path: Path) -> zipfile.ZipInfo:
         LOGGER.debug(
             "Failed to set file attributes for {}: {}".format(file_path, error)
         )
-        zi.external_attr = 0o600 << 16
+        zi.external_attr = DEFAULT_UNIX_PERMISSIONS
     return zi

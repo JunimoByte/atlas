@@ -182,6 +182,7 @@ def collect_submodules(package_name: str) -> List[str]:
 
 hiddenimports = (
     collect_submodules("atlas.backup")
+    + collect_submodules("atlas.compatibility")
     + collect_submodules("atlas.lib")
     + collect_submodules("atlas.display")
     + collect_submodules("atlas.ui")

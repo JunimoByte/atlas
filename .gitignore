@@ -37,6 +37,20 @@ __pycache__/
 
 # Distribution / packaging artifacts
 *.egg-info/
+*.whl
+installer/Output/
+*.msix
+*.appx
+
+# Qt compiled artifacts
+*_rc.py
+ui_*.py
+*.qm
+
+# Coverage / test artifacts
+.coverage
+.coverage.*
+htmlcov/
 
 # flake8 configuration
 .flake8_errors.txt

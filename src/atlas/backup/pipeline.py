@@ -10,6 +10,7 @@ Designed for modular testing and separation from PyQt signals.
 # IMPORTS
 # =============================================================================
 
+import errno
 import gc
 import logging
 import platform
@@ -39,6 +40,7 @@ MAX_RETRIES = 3
 RETRY_DELAY = 1.0
 SIGNAL_BATCH_INTERVAL = 0.5
 PROGRESS_BATCH_INTERVAL = 0.25
+WINERROR_DISK_FULL = 112
 
 
 class _ProgressTracker:
@@ -124,11 +126,9 @@ class PipelineResult(Enum):
 
 def _is_disk_full(error: OSError) -> bool:
     """Return True if error represents ENOSPC or WinError 112."""
-    import errno
-
     return bool(
         error.errno == errno.ENOSPC
-        or getattr(error, "winerror", None) == 112
+        or getattr(error, "winerror", None) == WINERROR_DISK_FULL
     )
 
 

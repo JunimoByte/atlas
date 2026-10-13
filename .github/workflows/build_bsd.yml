@@ -6,6 +6,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: read
+
 jobs:
   build-freebsd:
     name: Build FreeBSD ${{ matrix.release }} x86_64
@@ -43,7 +46,7 @@ jobs:
             set -e
 
             # 1. Run unit tests under native FreeBSD
-            QT_QPA_PLATFORM=offscreen python3 -m pytest src/atlas/tests/unit -q
+            QT_QPA_PLATFORM=offscreen python3 -m pytest -q
 
             # 2. Compile single-file portable binary
             python3 -m PyInstaller main.spec --noconfirm --clean

@@ -3,6 +3,9 @@ name: Build Solaris Release
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build-solaris:
     name: Build Solaris 11 x86_64

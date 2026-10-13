@@ -109,7 +109,6 @@
         "safebrowsing",
         "glean",
         "datareporting",
-        "shader-cache",
         "shader-cache-vulkan",
         "saved-telemetry-pings",
         "pending-telemetry-pings",

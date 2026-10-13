@@ -154,6 +154,16 @@ def test_blacklist_config_schema(configs_dir: Path) -> None:
         isinstance(folder, str) and folder.strip() for folder in folder_list
     )
 
+    # Ensure no duplicate entries in any list
+    assert len(ext_list) == len(set(ext_list)), (
+        "Duplicate entries in SKIP_FILE_EXTENSION: "
+        + str([e for e in ext_list if ext_list.count(e) > 1])
+    )
+    assert len(folder_list) == len(set(folder_list)), (
+        "Duplicate entries in SKIP_FOLDERS: "
+        + str([f for f in folder_list if folder_list.count(f) > 1])
+    )
+
     # Validate conditional extension exclusions
     ext_dict = data["SKIP_FILE_WITH_EXTENSION"]
     assert isinstance(ext_dict, dict)
@@ -163,3 +173,16 @@ def test_blacklist_config_schema(configs_dir: Path) -> None:
         assert all(
             isinstance(fn, str) and fn.strip() for fn in filenames
         )
+
+
+def test_types_config_schema(configs_dir: Path) -> None:
+    """Validate structure and data types of configs/types.json."""
+    types_file = configs_dir / "types.json"
+    assert types_file.is_file(), "configs/types.json missing"
+
+    data: Dict[str, Any] = json.loads(
+        types_file.read_text(encoding="utf-8")
+    )
+    assert isinstance(data, dict) and len(data) > 0, (
+        "types.json must be a non-empty JSON object"
+    )
