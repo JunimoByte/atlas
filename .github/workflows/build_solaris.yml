@@ -2,20 +2,6 @@ name: Build Solaris Release
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - alpha
-      - beta
-      - main
-    tags:
-      - 'v*'
-    paths:
-      - 'src/**'
-      - 'assets/**'
-      - 'configs/**'
-      - 'main.spec'
-      - 'pyproject.toml'
-      - '.github/workflows/build_solaris.yml'
 
 jobs:
   build-solaris:

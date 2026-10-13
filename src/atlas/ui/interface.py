@@ -11,6 +11,7 @@ and buttons.
 import logging
 from typing import Tuple
 
+from atlas.args import VERSION
 from atlas.compatibility.qt import QtCore, QtGui, QtWidgets
 
 # =============================================================================
@@ -257,12 +258,10 @@ class UiDialog:
 
         main_dialog.setWindowTitle(tr("MainDialog", "Atlas"))
         self.title.setText(
-            tr(
-                "MainDialog",
-                '<span style="font-size:16pt;">Atlas</span> '
-                '<span style="font-size:11pt; vertical-align:super;">1.2'
-                "</span>",
-            )
+            f'<span style="font-size:16pt;">'
+            f'{tr("MainDialog", "Atlas")}</span> '
+            f'<span style="font-size:11pt; vertical-align:super;">'
+            f"{VERSION}</span>"
         )
         self.description.setText(
             tr(

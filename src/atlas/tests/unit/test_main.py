@@ -12,7 +12,7 @@ from unittest.mock import patch
 
 import pytest
 
-from atlas import main
+from atlas import args, main
 
 # =============================================================================
 # TESTS — Routing & Version Flag
@@ -26,7 +26,8 @@ def test_main_version_flag(capsys: pytest.CaptureFixture) -> None:
             main.main()
         assert exc_info.value.code == 0
     captured = capsys.readouterr()
-    assert "Atlas 1.2" in captured.out or "Atlas 1.2" in captured.err
+    expected_str = f"Atlas {args.VERSION}"
+    assert expected_str in captured.out or expected_str in captured.err
 
 
 def test_main_routes_to_cli() -> None:

@@ -8,6 +8,7 @@ version reporting, known argument handling, and non-Windows safety edge cases.
 # IMPORTS
 # =============================================================================
 
+import re
 from pathlib import Path
 from typing import Generator
 
@@ -37,7 +38,12 @@ def test_get_version() -> None:
     """Verify get_version extracts semantic version from pyproject.toml."""
     version = args.get_version(force_refresh=True)
     assert isinstance(version, str)
-    assert version == "1.2"
+    assert re.match(r"^\d+\.\d+(\.\d+)?([a-zA-Z0-9.\-+]+)?$", version)
+    root_toml = Path(__file__).resolve().parents[4] / "pyproject.toml"
+    if root_toml.is_file():
+        expected = args._extract_version_from_file(root_toml)
+        if expected:
+            assert version == expected
 
 
 def test_get_version_caching(monkeypatch: pytest.MonkeyPatch) -> None:
