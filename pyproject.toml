@@ -3,7 +3,7 @@ name = "atlas"
 version = "1.2"
 description = "Atlas is a browser profile backup application."
 requires-python = ">=3.8"
-authors = [{ name = "Michael Dorman" }]
+authors = [{ name = "JunimoByte" }]
 license = { text = "AGPL-3.0-or-later" }
 readme = "README.md"
 keywords = ["backup", "browser", "profiles"]

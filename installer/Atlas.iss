@@ -9,7 +9,7 @@
   #define MyAppVersion "1.2"
 #endif
 
-#define MyAppPublisher "Michael Dorman"
+#define MyAppPublisher "JunimoByte"
 #define MyAppURL "https://junimobyte.github.io/atlas-website/"
 
 ; Select the PyInstaller output and installer architecture from the file that
