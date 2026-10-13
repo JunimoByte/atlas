@@ -27,8 +27,13 @@ download_appimagetool() {
     local architecture="$1"
     local local_bin_dir="$HOME/.local/bin"
     local destination="$local_bin_dir/appimagetool"
-    local download_url="https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-${architecture}.AppImage"
     local temporary_file
+
+    local download_urls=(
+        "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-${architecture}.AppImage"
+        "https://github.com/AppImage/appimagetool/releases/download/1.9.1/appimagetool-${architecture}.AppImage"
+        "https://github.com/AppImage/appimagetool/releases/download/1.9.0/appimagetool-${architecture}.AppImage"
+    )
 
     if ! command -v curl >/dev/null 2>&1 \
         && ! command -v wget >/dev/null 2>&1; then
@@ -38,19 +43,28 @@ download_appimagetool() {
 
     mkdir -p "$local_bin_dir"
     temporary_file="$(mktemp "${TMPDIR:-/tmp}/atlas-appimagetool.XXXXXX")"
-    echo "Downloading appimagetool to $destination..."
 
-    if command -v curl >/dev/null 2>&1; then
-        curl --fail --location --retry 3 --output "$temporary_file" \
-            "$download_url" || {
-                rm -f -- "$temporary_file"
-                return 1
-            }
-    else
-        wget --output-document="$temporary_file" "$download_url" || {
-            rm -f -- "$temporary_file"
-            return 1
-        }
+    local downloaded=false
+    for url in "${download_urls[@]}"; do
+        echo "Downloading appimagetool from $url to $destination..."
+        if command -v curl >/dev/null 2>&1; then
+            if curl --fail --location --retry 2 --output "$temporary_file" "$url"; then
+                downloaded=true
+                break
+            fi
+        else
+            if wget --output-document="$temporary_file" "$url"; then
+                downloaded=true
+                break
+            fi
+        fi
+        echo "Failed to download from $url, trying next mirror..."
+    done
+
+    if [ "$downloaded" = false ]; then
+        rm -f -- "$temporary_file"
+        echo "Failed to download appimagetool from any release mirror." >&2
+        return 1
     fi
 
     chmod 755 "$temporary_file"

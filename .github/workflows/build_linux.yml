@@ -126,13 +126,26 @@ jobs:
               # 2. Setup dev environment (matches VM build)
               source scripts/setup_dev.sh
 
-              # 3. AppImage packaging tool
-              TOOL_BASE="https://github.com/AppImage/appimagetool/releases"
-              TOOL_FILE="appimagetool-x86_64.AppImage"
-              curl -fsSL --retry 3 --retry-delay 2 \
-                -o /usr/local/bin/appimagetool \
-                "${TOOL_BASE}/download/continuous/${TOOL_FILE}"
-              chmod +x /usr/local/bin/appimagetool
+              # 3. AppImage packaging tool with multi-release fallback
+              APPIMAGETOOL_URLS=(
+                "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"
+                "https://github.com/AppImage/appimagetool/releases/download/1.9.1/appimagetool-x86_64.AppImage"
+                "https://github.com/AppImage/appimagetool/releases/download/1.9.0/appimagetool-x86_64.AppImage"
+              )
+              TOOL_DOWNLOADED=false
+              for tool_url in "${APPIMAGETOOL_URLS[@]}"; do
+                echo "Attempting appimagetool download from: $tool_url"
+                if curl -fsSL --retry 2 --retry-delay 1 -o /usr/local/bin/appimagetool "$tool_url"; then
+                  chmod +x /usr/local/bin/appimagetool
+                  TOOL_DOWNLOADED=true
+                  break
+                fi
+                echo "Download failed, trying next release mirror..."
+              done
+              if [ "$TOOL_DOWNLOADED" = false ]; then
+                echo "Failed to download appimagetool from any mirror." >&2
+                exit 1
+              fi
 
               # 4. Build AppImage & Debian package inside venv
               bash scripts/build_appimage.sh
