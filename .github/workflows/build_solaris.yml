@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Build in Solaris 11 VM
         uses: vmactions/solaris-vm@v1
@@ -53,7 +53,7 @@ jobs:
             tar -cvf Atlas-Solaris11-x86_64.tar Solaris_Release/
 
       - name: Upload Solaris Release Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Atlas-Solaris11-x86_64
           path: dist/Atlas-Solaris11-x86_64.tar
