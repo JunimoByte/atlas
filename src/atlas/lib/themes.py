@@ -383,15 +383,19 @@ class ImageManager:
                     )
                 )
             else:
-                project_root = os.path.dirname(
-                    os.path.dirname(
-                        os.path.dirname(
-                            os.path.dirname(os.path.abspath(__file__))
+                candidates = [
+                    os.path.abspath(
+                        os.path.join(
+                            os.path.dirname(__file__), "../../../assets"
                         )
-                    )
-                )
-                base_path = os.path.abspath(
-                    os.path.join(project_root, "assets")
+                    ),
+                    os.path.join(sys.prefix, "assets"),
+                    os.path.join(sys.prefix, "share", "atlas", "assets"),
+                    "/app/assets",
+                ]
+                base_path = next(
+                    (c for c in candidates if os.path.isdir(c)),
+                    candidates[0],
                 )
 
             full_path = os.path.abspath(os.path.join(base_path, filename))

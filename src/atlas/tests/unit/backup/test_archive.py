@@ -487,6 +487,38 @@ def test_compress_reraises_enospc(tmp_path: Path) -> None:
         assert exc_info.value.errno == errno.ENOSPC
 
 
+def test_write_file_to_zip_midstream_error_raises(tmp_path: Path) -> None:
+    """Verify that mid-stream I/O error raises rather than returning False."""
+    test_file = tmp_path / "midstream.dat"
+    test_file.write_bytes(b"A" * (archive.CHUNK_SIZE * 2))
+
+    zip_path = tmp_path / "test.zip"
+    zi = archive.create_zip_info(test_file)
+    zi.filename = "midstream.dat"
+
+    real_open = zipfile.ZipFile.open
+
+    class FailingZipFile(zipfile.ZipFile):
+        def open(self, *args, **kwargs):
+            handle = real_open(self, *args, **kwargs)
+            original_write = handle.write
+            call_count = [0]
+
+            def failing_write(data):
+                call_count[0] += 1
+                if call_count[0] > 1:
+                    raise OSError("Mid-stream write error")
+                return original_write(data)
+
+            handle.write = failing_write
+            return handle
+
+    with FailingZipFile(zip_path, "w") as zf:
+        with pytest.raises(OSError) as exc_info:
+            archive._write_file_to_zip(zf, test_file, zi)
+        assert "Mid-stream write error" in str(exc_info.value)
+
+
 # =============================================================================
 # TEST EXECUTION
 # =============================================================================

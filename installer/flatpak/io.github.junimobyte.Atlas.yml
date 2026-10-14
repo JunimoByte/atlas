@@ -31,6 +31,7 @@ modules:
     build-commands:
       - pip3 install --no-build-isolation --no-deps --prefix=/app .
       - cp -r configs /app/configs
+      - cp -r assets /app/assets
       - install -Dm644 assets/icons/Icon.svg
         /app/share/icons/hicolor/scalable/apps/io.github.junimobyte.Atlas.svg
       - install -Dm644 installer/flatpak/io.github.junimobyte.Atlas.desktop

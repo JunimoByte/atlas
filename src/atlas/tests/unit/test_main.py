@@ -108,3 +108,8 @@ def test_package_main_entry_point() -> None:
         with patch.object(sys, "argv", ["atlas", "--version"]):
             runpy.run_module("atlas", run_name="__main__")
         mock_main.assert_called_once()
+
+
+def test_attach_windows_console_safe() -> None:
+    """Verify _attach_windows_console runs safely across platforms."""
+    main._attach_windows_console()

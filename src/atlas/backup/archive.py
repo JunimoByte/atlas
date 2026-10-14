@@ -188,6 +188,7 @@ def _write_file_to_zip(
             it as a fatal archive failure.
 
     """
+    bytes_written = 0
     try:
         with file_path.open("rb") as src_file:
             with zip_file.open(zip_info, "w") as dest_file:
@@ -199,6 +200,7 @@ def _write_file_to_zip(
                     if cancel_callback and cancel_callback():
                         return False
                     dest_file.write(chunk)
+                    bytes_written += len(chunk)
                     if chunk_callback:
                         chunk_callback(len(chunk))
         return True
@@ -209,6 +211,15 @@ def _write_file_to_zip(
             or getattr(error, "winerror", None) == WINERROR_DISK_FULL
         ):
             LOGGER.error("Disk full during backup: %s", error)
+            raise
+
+        if bytes_written > 0:
+            LOGGER.error(
+                "I/O error mid-stream after writing %d bytes to %s: %s",
+                bytes_written,
+                file_path,
+                error,
+            )
             raise
 
         LOGGER.warning(

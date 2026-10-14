@@ -405,6 +405,25 @@ class Window(QtWidgets.QDialog):
     def closeEvent(self, event: Any) -> None:  # noqa: N802
         """Handle cleanup on close."""
         LOGGER.debug("Window closing")
+        if self.controller.state == ControllerState.RUNNING:
+            try:
+                from atlas.display.popup import show_question
+
+                confirmed = show_question(
+                    title="Atlas",
+                    message="Cancel Backup?",
+                    details=(
+                        "A backup operation is currently in progress.\n\n"
+                        "Do you want to cancel the backup and close Atlas?"
+                    ),
+                )
+                if not confirmed:
+                    event.ignore()
+                    return
+            except Exception:
+                pass
+            self._handle_cancel_button()
+
         if getattr(self, "_progress_anim", None) is not None:
             self._progress_anim.stop()
         self.controller.cleanup()

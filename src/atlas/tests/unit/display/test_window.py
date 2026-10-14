@@ -16,6 +16,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from atlas.compatibility.qt import QtWidgets
+from atlas.display.controller import ControllerState
 from atlas.display.window import UIMode, Window
 
 # =============================================================================
@@ -358,6 +359,34 @@ def test_scanned_entries_signal_updates_attribute(window: Window) -> None:
     """Verify that the scanned entries signal updates the window attribute."""
     window.signals.scanned_entries.emit("Firefox / default")
     assert window.latest_scanned_info == "Firefox / default"
+
+
+def test_close_event_running_declined_ignores_event(window: Window) -> None:
+    """Verify closeEvent ignores the event when confirmation is declined."""
+    window.controller.state = ControllerState.RUNNING
+    mock_event = MagicMock()
+
+    with patch("atlas.display.popup.show_question", return_value=False):
+        window.closeEvent(mock_event)
+        mock_event.ignore.assert_called_once()
+        mock_event.accept.assert_not_called()
+
+
+def test_close_event_running_confirmed_cancels_and_accepts(
+    window: Window,
+) -> None:
+    """Verify closeEvent accepts and cleans up when confirmed."""
+    window.controller.state = ControllerState.RUNNING
+    mock_event = MagicMock()
+
+    with patch(
+        "atlas.display.popup.show_question", return_value=True
+    ), patch.object(
+        window, "_handle_cancel_button"
+    ) as mock_cancel:
+        window.closeEvent(mock_event)
+        mock_cancel.assert_called_once()
+        mock_event.accept.assert_called_once()
 
 
 # =============================================================================

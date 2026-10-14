@@ -239,9 +239,7 @@ class Controller(QtCore.QObject):
             self._worker_thread.quit()
             if wait:
                 if not self._worker_thread.wait(THREAD_WAIT_TIMEOUT_MS):
-                    LOGGER.error("Worker thread hung! Forcing termination.")
-                    self._worker_thread.terminate()
-                    self._worker_thread.wait(500)
+                    LOGGER.error("Worker thread shutdown timed out.")
                     self._set_state(ControllerState.FAILED)
                     self.signals.worker_error.emit(
                         "The backup process timed out."

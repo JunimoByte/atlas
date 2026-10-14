@@ -29,6 +29,26 @@ LOGGER = logging.getLogger(__name__)
 # =============================================================================
 
 
+def _attach_windows_console() -> None:
+    """Attach to parent console on Windows for GUI-subsystem CLI runs."""
+    if sys.platform != "win32":
+        return
+    try:
+        import ctypes
+
+        if ctypes.windll.kernel32.AttachConsole(-1):
+            if sys.stdout is None or not hasattr(sys.stdout, "write"):
+                sys.stdout = open(
+                    "CONOUT$", "w", encoding="utf-8", errors="replace"
+                )
+            if sys.stderr is None or not hasattr(sys.stderr, "write"):
+                sys.stderr = open(
+                    "CONOUT$", "w", encoding="utf-8", errors="replace"
+                )
+    except Exception:
+        pass
+
+
 def main() -> None:
     """Launch Atlas.
 
@@ -40,6 +60,7 @@ def main() -> None:
         logging.getLogger().setLevel(logging.ERROR)
 
     if is_cli_mode(args):
+        _attach_windows_console()
         from atlas.cli import run_cli
 
         sys.exit(run_cli(args))
