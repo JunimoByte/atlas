@@ -8,6 +8,7 @@ normalization.
 # IMPORTS
 # =============================================================================
 
+import errno
 import os
 import sys
 import zipfile
@@ -473,19 +474,59 @@ def test_compress_rejects_empty_archive_when_files_fail(
         assert result is None
 
 
-def test_compress_reraises_enospc(tmp_path: Path) -> None:
-    """Verify compress re-raises ENOSPC disk full errors."""
-    import errno
-
+@pytest.mark.parametrize(
+    "storage_error",
+    [
+        pytest.param(
+            OSError(errno.ENOSPC, "No space left on device"),
+            id="enospc",
+        ),
+        pytest.param(
+            OSError(getattr(errno, "EDQUOT", errno.ENOSPC), "Quota exceeded"),
+            id="edquot",
+            marks=pytest.mark.skipif(
+                not hasattr(errno, "EDQUOT"),
+                reason="EDQUOT is not available on this platform",
+            ),
+        ),
+        pytest.param(
+            OSError(0, "The disk is full", None, 39),
+            id="windows-handle-disk-full",
+        ),
+    ],
+)
+def test_compress_reraises_storage_exhaustion(
+    tmp_path: Path, storage_error: OSError
+) -> None:
+    """Storage exhaustion must not become a generic archive failure."""
     source = tmp_path / "source"
     source.mkdir()
     create_files(source, ["sample.txt"])
 
-    enospc_err = OSError(errno.ENOSPC, "No space left on device")
-    with patch.object(archive, "_write_file_to_zip", side_effect=enospc_err):
+    with patch.object(
+        archive, "_write_file_to_zip", side_effect=storage_error
+    ):
         with pytest.raises(OSError) as exc_info:
             archive.compress(source, "full_disk.zip")
-        assert exc_info.value.errno == errno.ENOSPC
+        assert exc_info.value is storage_error
+
+
+def test_compress_reraises_enospc_from_output_directory(
+    tmp_path: Path,
+) -> None:
+    """Do not turn an output-directory ENOSPC into a generic failure."""
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "sample.txt").write_text("content")
+    disk_full = OSError(errno.ENOSPC, "No space left on device")
+
+    with patch.object(
+        archive, "_resolve_output_zip_path", side_effect=disk_full
+    ):
+        with pytest.raises(OSError) as exc_info:
+            archive.compress(source, "full_disk.zip")
+
+    assert exc_info.value.errno == errno.ENOSPC
 
 
 def test_write_file_to_zip_midstream_error_raises(tmp_path: Path) -> None:

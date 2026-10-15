@@ -7,7 +7,7 @@ Worker threads are patched to prevent real I/O in unit tests.
 
 import sys
 import time
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -185,6 +185,25 @@ def test_cleanup_skips_worker_when_inactive(ctrl: Controller) -> None:
     ) as mock_cleanup:
         ctrl.cleanup()
     mock_cleanup.assert_not_called()
+
+
+def test_cleanup_refuses_exit_until_running_thread_stops(
+    ctrl: Controller,
+) -> None:
+    """Verify cleanup leaves the UI alive when a worker exceeds its timeout."""
+    ctrl.state = ControllerState.RUNNING
+    ctrl.worker = MagicMock()
+    worker_thread = MagicMock()
+    worker_thread.isRunning.return_value = True
+    worker_thread.wait.return_value = False
+    ctrl._worker_thread = worker_thread
+
+    assert ctrl.cleanup() is False
+    assert ctrl.state == ControllerState.CANCELLING
+    ctrl.worker.cancel.assert_called_once()
+    worker_thread.quit.assert_called_once()
+    worker_thread.wait.assert_called_once_with(THREAD_WAIT_TIMEOUT_MS)
+    assert not ctrl.signals.signalsBlocked()
 
 
 def test_handle_worker_completion_sets_success(ctrl: Controller) -> None:

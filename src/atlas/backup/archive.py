@@ -45,7 +45,12 @@ LOGGER = logging.getLogger(__name__)
 CHUNK_SIZE = 1024 * 1024
 ATLAS_SUBDIR = "Backup"
 WINERROR_DISK_FULL = 112
+WINERROR_HANDLE_DISK_FULL = 39
+STORAGE_EXHAUSTED_ERRNOS = {errno.ENOSPC}
 ZIP_OUTPUT_DIR = None  # type: Optional[Path]
+
+if hasattr(errno, "EDQUOT"):
+    STORAGE_EXHAUSTED_ERRNOS.add(errno.EDQUOT)
 
 # =============================================================================
 # FUNCTIONS
@@ -174,10 +179,11 @@ def _resolve_output_zip_path(zip_name: str) -> Path:
 
 
 def _is_disk_full(error: OSError) -> bool:
-    """Return True if the error indicates disk full."""
+    """Return True for exhausted storage or an exhausted disk quota."""
     return (
-        error.errno == errno.ENOSPC
-        or getattr(error, "winerror", None) == WINERROR_DISK_FULL
+        error.errno in STORAGE_EXHAUSTED_ERRNOS
+        or getattr(error, "winerror", None)
+        in (WINERROR_DISK_FULL, WINERROR_HANDLE_DISK_FULL)
     )
 
 
@@ -510,7 +516,12 @@ def compress(  # noqa: C901
 
     try:
         zip_path = _resolve_output_zip_path(zip_name)
-    except (ValueError, OSError) as error:
+    except OSError as error:
+        if _is_disk_full(error):
+            raise
+        LOGGER.error("Invalid zip output path: %s", error)
+        return None
+    except ValueError as error:
         LOGGER.error("Invalid zip output path: %s", error)
         return None
 

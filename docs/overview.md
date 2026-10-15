@@ -77,6 +77,11 @@ python -m atlas.main --version
 ```
 
 **As a Package:**
+
+On BSD and Solaris, install the matching native PyQt package before creating a
+virtual environment with `--system-site-packages`. PyPI does not provide
+portable PyQt wheels for those systems.
+
 ```bash
 pip install .
 atlas

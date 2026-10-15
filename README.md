@@ -65,6 +65,9 @@ Download native executables and packages from [Releases](https://github.com/Juni
 
 ### Install with pip
 
+On BSD and Solaris, install PyQt from the native package manager before this
+step. PyPI does not provide portable PyQt wheels for those systems.
+
 ```bash
 pip install .
 atlas                          # Launch GUI

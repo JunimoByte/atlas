@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Set
 
 from atlas.backup import archive as Archive  # noqa: N812
+from atlas.compatibility.qt import QtCore, QtWidgets
 from atlas.display.popup import show_warning
 
 # =============================================================================
@@ -29,6 +30,66 @@ from atlas.display.popup import show_warning
 # =============================================================================
 
 LOGGER = logging.getLogger(__name__)
+
+
+def _queued_connection_type() -> object:
+    """Return the Qt queued-connection enum for either supported binding."""
+    connection_type = getattr(QtCore.Qt, "ConnectionType", QtCore.Qt)
+    return connection_type.QueuedConnection
+
+
+class _OpenFolderWarningDispatcher(QtCore.QObject):
+    """Relay folder-open failures from background work to the Qt UI thread."""
+
+    warning_requested = QtCore.pyqtSignal(object)
+
+    def __init__(self, parent: QtCore.QObject) -> None:
+        """Initialize the dispatcher in the application's UI thread."""
+        super().__init__(parent)
+        self.warning_requested.connect(
+            self._show_warning, _queued_connection_type()
+        )
+
+    @QtCore.pyqtSlot(object)
+    def _show_warning(self, folder_path: object) -> None:
+        """Show the warning after Qt has returned to its UI event loop."""
+        if isinstance(folder_path, Path):
+            _show_open_folder_failed(folder_path)
+
+
+_OPEN_FOLDER_WARNING_DISPATCHER: Optional[_OpenFolderWarningDispatcher] = None
+
+
+def _get_open_folder_warning_dispatcher(
+) -> Optional[_OpenFolderWarningDispatcher]:
+    """Return a dispatcher owned by the application's main Qt thread.
+
+    The Linux opener runs in a daemon thread. A ``QTimer`` made in that
+    thread has no event loop, so it cannot reliably deliver a warning. Create
+    this QObject before launching the daemon and use its queued signal to
+    post failures back to the application thread.
+    """
+    global _OPEN_FOLDER_WARNING_DISPATCHER
+
+    try:
+        app = QtWidgets.QApplication.instance()
+        if app is None or QtCore.QThread.currentThread() != app.thread():
+            return None
+
+        dispatcher = _OPEN_FOLDER_WARNING_DISPATCHER
+        if dispatcher is not None:
+            try:
+                if dispatcher.parent() is app:
+                    return dispatcher
+            except RuntimeError:
+                # The QApplication was already torn down; recreate lazily.
+                pass
+
+        _OPEN_FOLDER_WARNING_DISPATCHER = _OpenFolderWarningDispatcher(app)
+        return _OPEN_FOLDER_WARNING_DISPATCHER
+    except Exception as exc:
+        LOGGER.debug("Could not initialize folder warning dispatcher: %s", exc)
+        return None
 
 # =============================================================================
 # DESKTOP ENVIRONMENT DETECTION
@@ -406,18 +467,27 @@ def _show_open_folder_failed(folder_path: Path) -> None:
 
 
 def _dispatch_open_folder_warning(folder_path: Path) -> None:
-    """Safely dispatch open folder warning to the main Qt thread."""
-    try:
-        from atlas.compatibility.qt import QtCore, QtWidgets
-
-        app = QtWidgets.QApplication.instance()
-        if app is not None:
-            QtCore.QTimer.singleShot(
-                0, lambda: _show_open_folder_failed(folder_path)
-            )
+    """Queue a folder-open warning onto the application's UI thread."""
+    dispatcher = _OPEN_FOLDER_WARNING_DISPATCHER
+    if dispatcher is None:
+        dispatcher = _get_open_folder_warning_dispatcher()
+    if dispatcher is not None:
+        try:
+            dispatcher.warning_requested.emit(folder_path)
             return
-    except Exception:
-        pass
+        except RuntimeError:
+            # The application may have started shutdown between lookup and
+            # emission. Avoid touching widgets from the daemon thread.
+            LOGGER.debug(
+                "Folder warning dispatcher was deleted during shutdown"
+            )
+
+    if threading.current_thread() is not threading.main_thread():
+        LOGGER.warning(
+            "Could not dispatch folder-open warning because the Qt UI is "
+            "not available."
+        )
+        return
 
     try:
         _show_open_folder_failed(folder_path)
@@ -453,6 +523,8 @@ def _open_folder_platform(folder_path: Path) -> None:
         LOGGER.info("Opened folder: %s", folder_path)
     else:
         # Linux and other POSIX systems.
+        _get_open_folder_warning_dispatcher()
+
         def _run_open() -> None:
             if not _run_linux_open(folder_path):
                 _dispatch_open_folder_warning(folder_path)

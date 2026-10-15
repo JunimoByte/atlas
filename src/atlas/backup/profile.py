@@ -11,7 +11,7 @@ Locates valid browser profile directories and identifies browser types.
 import fnmatch
 import logging
 import os
-from functools import lru_cache
+import stat
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Union
 
@@ -36,17 +36,19 @@ except Exception:
     PATH_TYPES = {}
 
 # =============================================================================
-# VARIABLES
+# EXCEPTIONS
 # =============================================================================
 
-_PATH_CACHE: Dict = {}
+
+class ProfileScanError(RuntimeError):
+    """Describe an unexpected filesystem failure during profile discovery."""
+
 
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
 
 
-@lru_cache(maxsize=256)
 def _expand_path_by_type(
     path_type: str, path: str, os_name: str
 ) -> List[Path]:
@@ -81,51 +83,92 @@ def _expand_path_by_type(
     return expanded
 
 
+def _path_exists(path: Path) -> bool:
+    """Return whether ``path`` exists while handling expected live changes.
+
+    Browser profiles can legitimately disappear, be locked, or be protected
+    by operating-system privacy controls while Atlas is scanning.  Those
+    conditions mean that the profile is unavailable for this run.  Other I/O
+    failures are surfaced so the caller cannot mistake a failed scan for an
+    empty browser installation.
+    """
+    try:
+        path.stat()
+        return True
+    except (FileNotFoundError, NotADirectoryError, PermissionError) as error:
+        LOGGER.debug("Profile path is unavailable: %s (%s)", path, error)
+        return False
+    except OSError as error:
+        raise ProfileScanError(
+            f"Could not inspect profile path {path}: {error}"
+        ) from error
+
+
+def _is_directory(path: Path) -> bool:
+    """Check whether ``path`` is a directory while preserving I/O errors."""
+    try:
+        return stat.S_ISDIR(path.stat().st_mode)
+    except (FileNotFoundError, NotADirectoryError, PermissionError) as error:
+        LOGGER.debug("Profile path is unavailable: %s (%s)", path, error)
+        return False
+    except OSError as error:
+        _raise_profile_scan_error(path, error)
+        return False
+
+
+def _raise_profile_scan_error(path: Path, error: OSError) -> None:
+    """Raise a scan error for an unexpected filesystem failure."""
+    raise ProfileScanError(
+        f"Could not inspect profile path {path}: {error}"
+    ) from error
+
+
 def _validate_profile_path(
     path: Path, signature: Union[str, List[str], None, bool]
 ) -> Optional[str]:
     """Validate profile path contains required signature(s)."""
-    # Normalize path for platform-appropriate case comparison
-    cache_key = (
-        os.path.normcase(str(path)),
-        tuple(signature) if isinstance(signature, list) else signature,
-    )
-    if cache_key in _PATH_CACHE:
-        return _PATH_CACHE[cache_key]
-
     try:
-        if not path.exists():
-            _PATH_CACHE[cache_key] = None
+        if not _path_exists(path):
             return None
 
         resolved_base = path.resolve()
 
-        if resolved_base.is_dir():
-            try:
-                with os.scandir(resolved_base):
-                    pass
-            except (PermissionError, OSError):
-                _PATH_CACHE[cache_key] = None
-                return None
+        if not _is_directory(resolved_base):
+            return None
+
+        try:
+            with os.scandir(resolved_base):
+                pass
+        except (
+            FileNotFoundError,
+            NotADirectoryError,
+            PermissionError,
+        ) as error:
+            LOGGER.debug(
+                "Profile path is unavailable: %s (%s)",
+                resolved_base,
+                error,
+            )
+            return None
+        except OSError as error:
+            _raise_profile_scan_error(resolved_base, error)
 
         if signature and isinstance(signature, (str, list)):
             signatures = (
                 [signature] if isinstance(signature, str) else signature
             )
             if not any(
-                (resolved_base / str(sig)).exists() for sig in signatures
+                _path_exists(resolved_base / str(sig)) for sig in signatures
             ):
-                _PATH_CACHE[cache_key] = None
                 return None
 
-        _PATH_CACHE[cache_key] = str(resolved_base)
         return str(resolved_base)
 
-    except Exception:
-        LOGGER.debug(
-            "Error checking path/signature for %s", path, exc_info=True
-        )
-        _PATH_CACHE[cache_key] = None
+    except (FileNotFoundError, NotADirectoryError, PermissionError) as error:
+        LOGGER.debug("Profile path is unavailable: %s (%s)", path, error)
+        return None
+    except OSError as error:
+        _raise_profile_scan_error(path, error)
         return None
 
 
@@ -133,22 +176,29 @@ def _expand_wildcard(base: Path, rel_path: Path) -> List[Path]:
     """Recursively expand wildcards in each path segment."""
     # If no more segments, return base itself
     if not rel_path.parts:
-        return [base] if base.exists() else []
+        return [base] if _path_exists(base) else []
 
     first, *rest = rel_path.parts
     matches: List[Path] = []
 
     # If first segment contains wildcard
     if "*" in first or "?" in first:
-        if not base.exists():
+        if not _path_exists(base):
             return []
 
         try:
             for entry in base.iterdir():
-                if fnmatch.fnmatch(entry.name, first) and entry.is_dir():
+                if fnmatch.fnmatch(entry.name, first) and _is_directory(entry):
                     matches.extend(_expand_wildcard(entry, Path(*rest)))
-        except (OSError, PermissionError):
+        except (
+            FileNotFoundError,
+            NotADirectoryError,
+            PermissionError,
+        ) as error:
+            LOGGER.debug("Profile path is unavailable: %s (%s)", base, error)
             return []
+        except OSError as error:
+            _raise_profile_scan_error(base, error)
     else:
         # No wildcard, just join
         next_base = base / first

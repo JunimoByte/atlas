@@ -11,6 +11,19 @@ authors = [{ name = "JunimoByte" }]
 license = { text = "AGPL-3.0-or-later" }
 readme = "README.md"
 keywords = ["backup", "browser", "profiles"]
+dependencies = [
+    # PyQt6 requires Python 3.9+; retain PyQt5 for supported 3.8 hosts.
+    "PyQt5>=5.15; python_version < '3.9' and (platform_system == 'Windows' or platform_system == 'Darwin' or platform_system == 'Linux')",
+    "PyQt6>=6.0; python_version >= '3.9' and platform_system == 'Windows'",
+    # PyQt 6.7.1 drops macOS 10.14/10.15; Qt 6.8 drops macOS 12.
+    "PyQt6>=6.0,<6.7.1; python_version >= '3.9' and platform_system == 'Darwin' and platform_release < '20'",
+    "PyQt6>=6.0,<6.8; python_version >= '3.9' and platform_system == 'Darwin' and platform_release >= '20' and platform_release < '22'",
+    "PyQt6>=6.0; python_version >= '3.9' and platform_system == 'Darwin' and platform_release >= '22'",
+    # Keep Qt 6.7 for the project's broad glibc 2.31 compatibility baseline.
+    "PyQt6>=6.0,<6.8; python_version >= '3.9' and platform_system == 'Linux'",
+    # BSD and Solaris obtain PyQt from their native package managers. Omitting
+    # a PyPI requirement prevents pip from attempting an unsupported build.
+]
 
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -28,18 +41,15 @@ gui = [
     "pyinstaller>=6.0",
 ]
 
-# Pure linting/testing tools -- no Qt (installed separately by setup scripts)
-# PEP 508 environment markers let pip pick the right version automatically:
-#   Python 3.8 (Windows 7) gets the last compatible releases.
-#   Python 3.9+ (Windows 10/11) gets the latest available release.
+# Linting and test tools. The runtime Qt binding is declared above.
 dev = [
     "pytest>=7.0",
     "pytest-qt>=4.0; platform_system != 'FreeBSD' and platform_system != 'OpenBSD' and platform_system != 'NetBSD' and platform_system != 'DragonFly'",
     "black>=23.0.0",
     "flake8>=5.0.0,<7.0.0; python_version < '3.9'",
     "flake8>=7.0.0; python_version >= '3.9'",
-    "ruff>=0.1.0,<0.5.0; python_version < '3.9' and platform_system != 'FreeBSD' and platform_system != 'OpenBSD' and platform_system != 'NetBSD' and platform_system != 'DragonFly'",
-    "ruff>=0.5.0; python_version >= '3.9' and platform_system != 'FreeBSD' and platform_system != 'OpenBSD' and platform_system != 'NetBSD' and platform_system != 'DragonFly'",
+    "ruff>=0.1.0,<0.5.0; python_version < '3.9' and platform_system != 'FreeBSD' and platform_system != 'OpenBSD' and platform_system != 'NetBSD' and platform_system != 'DragonFly' and platform_system != 'SunOS' and platform_system != 'Solaris'",
+    "ruff>=0.5.0; python_version >= '3.9' and platform_system != 'FreeBSD' and platform_system != 'OpenBSD' and platform_system != 'NetBSD' and platform_system != 'DragonFly' and platform_system != 'SunOS' and platform_system != 'Solaris'",
 ]
 
 [project.scripts]
@@ -52,8 +62,12 @@ pythonpath = ["src"]
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[tool.setuptools.package-data]
-atlas = ["configs/*.json", "configs/*.yaml", "configs/*.yml"]
+[tool.setuptools.data-files]
+"share/atlas/configs" = [
+    "configs/blacklist.json",
+    "configs/browsers.json",
+    "configs/types.json",
+]
 
 [tool.ruff]
 target-version = "py38"

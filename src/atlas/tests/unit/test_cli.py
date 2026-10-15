@@ -322,6 +322,47 @@ def test_run_list_keyboard_interrupt_size(
                 assert "Size estimation cancelled by user." in captured.out
 
 
+def test_run_list_rejects_incomplete_size_estimate(
+    capsys: pytest.CaptureFixture,
+) -> None:
+    """A failed directory scan cannot be printed as a valid profile list."""
+    args = argparse.Namespace(list=True, quiet=False, json=False, browser=None)
+    with patch("atlas.lib.browsers.verify_entries", return_value=True):
+        with patch("atlas.lib.permissions.is_elevated", return_value=False):
+            with patch("atlas.cli.Pipeline") as mock_pipeline_cls:
+                mock_inst = MagicMock()
+                mock_inst.browsers = {"Firefox": {}}
+                mock_inst.scan_profiles.return_value = {"Firefox": ["/p"]}
+                mock_inst.estimate_size.return_value = -1
+                mock_pipeline_cls.return_value = mock_inst
+
+                assert cli.run_list(args) == 1
+                captured = capsys.readouterr()
+                assert "could not complete reliably" in captured.out
+                assert "Invalid size" not in captured.out
+
+
+def test_run_list_json_rejects_incomplete_size_estimate(
+    capsys: pytest.CaptureFixture,
+) -> None:
+    """JSON listing reports an incomplete estimate as an error result."""
+    args = argparse.Namespace(list=True, quiet=False, json=True, browser=None)
+    with patch("atlas.lib.browsers.verify_entries", return_value=True):
+        with patch("atlas.lib.permissions.is_elevated", return_value=False):
+            with patch("atlas.cli.Pipeline") as mock_pipeline_cls:
+                mock_inst = MagicMock()
+                mock_inst.browsers = {"Firefox": {}}
+                mock_inst.scan_profiles.return_value = {"Firefox": ["/p"]}
+                mock_inst.estimate_size.return_value = -1
+                mock_pipeline_cls.return_value = mock_inst
+
+                assert cli.run_list(args) == 1
+                captured = capsys.readouterr()
+                data = json.loads(captured.out)
+                assert data["status"] == "error"
+                assert "could not complete reliably" in data["message"]
+
+
 def test_run_list_elevated_warning(capsys: pytest.CaptureFixture) -> None:
     """Verify run_list warns when executed with elevated privileges."""
     args = argparse.Namespace(list=True)

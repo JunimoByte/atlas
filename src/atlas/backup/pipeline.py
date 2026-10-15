@@ -41,6 +41,11 @@ RETRY_DELAY = 1.0
 SIGNAL_BATCH_INTERVAL = 0.5
 PROGRESS_BATCH_INTERVAL = 0.25
 WINERROR_DISK_FULL = 112
+WINERROR_HANDLE_DISK_FULL = 39
+STORAGE_EXHAUSTED_ERRNOS = {errno.ENOSPC}
+
+if hasattr(errno, "EDQUOT"):
+    STORAGE_EXHAUSTED_ERRNOS.add(errno.EDQUOT)
 
 
 class _ProgressTracker:
@@ -84,11 +89,16 @@ class _ProgressTracker:
         return on_chunk
 
     def on_browser_finished(
-        self, completed: int, total: int
+        self, completed: int, total: int, succeeded: bool = True
     ) -> Optional[Tuple[int, int]]:
-        """Commit browser bytes and compute monotonic progress update."""
-        self.bytes_base += self.current_browser_bytes
+        """Commit browser bytes and report a successful archive's progress."""
+        browser_bytes = self.current_browser_bytes
         self.current_browser_bytes = 0
+
+        if not succeeded:
+            return None
+
+        self.bytes_base += browser_bytes
 
         if self.total_bytes <= 0:
             return (completed, total)
@@ -125,10 +135,11 @@ class PipelineResult(Enum):
 
 
 def _is_disk_full(error: OSError) -> bool:
-    """Return True if error represents ENOSPC or WinError 112."""
+    """Return True for exhausted storage or an exhausted disk quota."""
     return bool(
-        error.errno == errno.ENOSPC
-        or getattr(error, "winerror", None) == WINERROR_DISK_FULL
+        error.errno in STORAGE_EXHAUSTED_ERRNOS
+        or getattr(error, "winerror", None)
+        in (WINERROR_DISK_FULL, WINERROR_HANDLE_DISK_FULL)
     )
 
 
@@ -168,6 +179,7 @@ class Pipeline:
         self.target_browser = target_browser
         self.created_archives: List[Path] = []
         self._total_bytes: int = 0
+        self._disk_full = False
 
         all_browsers = browsers.grab()
         if target_browser and target_browser.strip():
@@ -304,7 +316,11 @@ class Pipeline:
         """
         LOGGER.info("Pipeline started")
 
-        matches = self.scan_profiles()
+        try:
+            matches = self.scan_profiles()
+        except Profile.ProfileScanError as error:
+            LOGGER.error("Profile scan failed: %s", error, exc_info=True)
+            return PipelineResult.FAILED
         if self.is_cancelled():
             return PipelineResult.CANCELLED
         if not matches:
@@ -319,9 +335,17 @@ class Pipeline:
         if self.is_cancelled():
             return PipelineResult.CANCELLED
 
-        if not self.perform_backup(matches) or self.is_cancelled():
-            if self.is_cancelled():
-                return PipelineResult.CANCELLED
+        backup_succeeded = self.perform_backup(matches)
+        if self.is_cancelled():
+            return PipelineResult.CANCELLED
+        if self._disk_full:
+            self._emit(
+                self.disk_space_error_callback,
+                Size.format_size(self._total_bytes),
+                "Unknown",
+            )
+            return PipelineResult.INSUFFICIENT_DISK_SPACE
+        if not backup_succeeded:
             LOGGER.error("Pipeline finished with backup errors.")
             return PipelineResult.FAILED
 
@@ -370,13 +394,16 @@ class Pipeline:
                     Profile.find_profile,
                     browser,
                     os_name,
-                    browsers_data=self.browsers,
+                    self.browsers,
                 )
 
                 if profiles:
                     browser_matches[browser].extend(profiles)
-            except Exception:
+            except Exception as error:
                 LOGGER.exception("Error scanning %s", browser)
+                raise Profile.ProfileScanError(
+                    f"Could not scan {browser}: {error}"
+                ) from error
             finally:
                 scanned += 1
                 now = time.monotonic()
@@ -484,6 +511,7 @@ class Pipeline:
 
         """
         self.created_archives = []
+        self._disk_full = False
         total = len(browser_matches)
         completed = 0
         backup_succeeded = True
@@ -496,6 +524,7 @@ class Pipeline:
             if self.is_cancelled():
                 return False
 
+            archive_succeeded = False
             try:
                 zip_name = f"{browser_name}.zip"
                 LOGGER.info(
@@ -520,6 +549,8 @@ class Pipeline:
 
                 if result is not None:
                     self.created_archives.append(result)
+                    completed += 1
+                    archive_succeeded = True
                     LOGGER.info("Archive created: %s", zip_name)
                 else:
                     backup_succeeded = False
@@ -532,6 +563,7 @@ class Pipeline:
             except OSError as error:
                 if _is_disk_full(error):
                     LOGGER.critical("Disk full during backup: %s", error)
+                    self._disk_full = True
                     return False
                 backup_succeeded = False
                 LOGGER.exception("Error zipping %s", browser_name)
@@ -539,8 +571,9 @@ class Pipeline:
                 backup_succeeded = False
                 LOGGER.exception("Error zipping %s", browser_name)
             finally:
-                completed += 1
-                prog = tracker.on_browser_finished(completed, total)
+                prog = tracker.on_browser_finished(
+                    completed, total, archive_succeeded
+                )
                 if prog is not None:
                     self._emit(self.progress_callback, prog[0], prog[1])
 

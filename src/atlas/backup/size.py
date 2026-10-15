@@ -8,10 +8,12 @@ Provides human-readable size formatting and disk space validation.
 # IMPORTS
 # =============================================================================
 
+import errno
 import logging
 import math
 import os
 import shutil
+import stat
 import time
 from pathlib import Path
 from typing import Tuple, Union
@@ -69,9 +71,60 @@ class ScanError(RuntimeError):
     """
 
 
+class _ScanCancelledError(InterruptedError):
+    """Raised internally when a size scan observes cancellation."""
+
+
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
+
+
+def _check_scan_interruption(
+    start_time: float,
+    path_str: Union[str, Path],
+    cancel_callback: Union[None, callable],
+) -> None:
+    """Raise when a size scan has been cancelled or timed out."""
+    if cancel_callback and cancel_callback():
+        raise _ScanCancelledError("Directory size scan cancelled by user")
+
+    if time.monotonic() - start_time > MAX_SCAN_TIME:
+        raise ScanTimeoutError(
+            "Directory scan timed out after {}s: {}".format(
+                MAX_SCAN_TIME, path_str
+            )
+        )
+
+
+def _get_scan_root(path_str: Union[str, Path]) -> Union[Path, None]:
+    """Resolve an existing directory root without hiding I/O failures."""
+    source = Path(path_str)
+    try:
+        root = source.resolve()
+    except (OSError, RuntimeError) as error:
+        LOGGER.debug("Could not resolve scan root %s: %s", source, error)
+        try:
+            root = source.absolute()
+        except OSError as absolute_error:
+            raise ScanError(
+                "Could not resolve directory scan root: {}".format(path_str)
+            ) from absolute_error
+
+    try:
+        root_stat = root.stat()
+    except OSError as error:
+        if error.errno in (errno.ENOENT, errno.ENOTDIR):
+            return None
+        raise ScanError(
+            "Could not inspect directory scan root {}: {}".format(
+                path_str, error
+            )
+        ) from error
+
+    if not stat.S_ISDIR(root_stat.st_mode):
+        return None
+    return root
 
 
 def format_size(bytes_size: Union[int, float]) -> str:
@@ -126,32 +179,24 @@ def get_directory_size(  # noqa: C901
     start_time = time.monotonic()
     scan_incomplete = False
 
-    try:
-        root = Path(path_str).resolve()
-    except OSError:
-        root = Path(path_str).absolute()
-
-    if not root.exists() or not root.is_dir():
+    _check_scan_interruption(start_time, path_str, cancel_callback)
+    root = _get_scan_root(path_str)
+    _check_scan_interruption(start_time, path_str, cancel_callback)
+    if root is None:
         return 0
 
     stack = [str(root)]
 
     while stack:
-        if cancel_callback and cancel_callback():
-            raise InterruptedError("Directory size scan cancelled by user")
-
+        _check_scan_interruption(start_time, path_str, cancel_callback)
         current_dir = stack.pop()
-
-        if time.monotonic() - start_time > MAX_SCAN_TIME:
-            raise ScanTimeoutError(
-                "Directory scan timed out after {}s: {}".format(
-                    MAX_SCAN_TIME, path_str
-                )
-            )
 
         try:
             with os.scandir(current_dir) as entries:
                 for entry in entries:
+                    _check_scan_interruption(
+                        start_time, path_str, cancel_callback
+                    )
                     try:
                         if entry.is_dir(follow_symlinks=False):
                             if is_junction(entry):
@@ -169,9 +214,17 @@ def get_directory_size(  # noqa: C901
                             "Error accessing %s: %s", entry.path, error
                         )
                         scan_incomplete = True
+                    finally:
+                        _check_scan_interruption(
+                            start_time, path_str, cancel_callback
+                        )
+        except _ScanCancelledError:
+            raise
         except OSError as error:
             LOGGER.debug("Cannot scan directory %s: %s", current_dir, error)
             scan_incomplete = True
+
+        _check_scan_interruption(start_time, path_str, cancel_callback)
 
     if scan_incomplete:
         raise ScanError(

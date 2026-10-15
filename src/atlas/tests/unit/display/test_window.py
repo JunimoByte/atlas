@@ -389,6 +389,44 @@ def test_close_event_running_confirmed_cancels_and_accepts(
         mock_event.accept.assert_called_once()
 
 
+def test_close_event_waits_for_worker_shutdown_before_accepting(
+    window: Window,
+) -> None:
+    """Verify a timed-out worker shutdown keeps the dialog open."""
+    window.controller.state = ControllerState.RUNNING
+    mock_event = MagicMock()
+
+    with patch(
+        "atlas.display.popup.show_question", return_value=True
+    ), patch.object(
+        window, "_handle_cancel_button"
+    ), patch.object(
+        window.controller, "cleanup", return_value=False
+    ):
+        window.closeEvent(mock_event)
+
+    mock_event.ignore.assert_called_once()
+    mock_event.accept.assert_not_called()
+    assert (
+        "Waiting for the backup to stop"
+        in window.interface.time_elapsed.text()
+    )
+
+
+def test_reject_while_cancelling_keeps_dialog_open(window: Window) -> None:
+    """Escape cannot bypass cleanup while a worker is still stopping."""
+    window.controller.state = ControllerState.CANCELLING
+
+    with patch.object(QtWidgets.QDialog, "reject") as mock_reject:
+        window.reject()
+
+    mock_reject.assert_not_called()
+    assert (
+        "Waiting for the backup to stop"
+        in window.interface.time_elapsed.text()
+    )
+
+
 # =============================================================================
 # TEST EXECUTION
 # =============================================================================

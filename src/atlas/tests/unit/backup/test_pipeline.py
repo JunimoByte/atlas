@@ -8,6 +8,7 @@ Covers scan, estimate, backup phases, cancellation, and retry logic.
 # IMPORTS
 # =============================================================================
 
+import errno
 import os
 import sys
 from pathlib import Path
@@ -20,6 +21,7 @@ from atlas.backup.pipeline import (
     PipelineResult,
     _ProgressTracker,
 )
+from atlas.backup.profile import ProfileScanError
 
 # =============================================================================
 # FIXTURES
@@ -187,6 +189,28 @@ def test_scan_profiles_populates_matches(pipeline: Pipeline) -> None:
         assert os.path.join("fake", "profile", "path") in paths
 
 
+def test_scan_profiles_surfaces_profile_scan_error(
+    pipeline: Pipeline,
+) -> None:
+    """A failed profile scan must not be reported as no profiles found."""
+    with patch(
+        "atlas.backup.pipeline.Profile.find_profile",
+        side_effect=ProfileScanError("I/O failure"),
+    ):
+        with pytest.raises(ProfileScanError):
+            pipeline.scan_profiles()
+
+
+def test_run_returns_failed_when_profile_scan_fails(
+    pipeline: Pipeline,
+) -> None:
+    """Pipeline run reports a profile scan failure as FAILED."""
+    with patch.object(
+        pipeline, "scan_profiles", side_effect=ProfileScanError("I/O failure")
+    ):
+        assert pipeline.run() == PipelineResult.FAILED
+
+
 # =============================================================================
 # TESTS — Estimate size
 # =============================================================================
@@ -289,6 +313,79 @@ def test_perform_backup_returns_false_on_archive_failure(
     assert result is False
 
 
+def test_failed_archive_after_writing_data_does_not_complete_progress(
+    pipeline: Pipeline,
+) -> None:
+    """A failed final archive must not report 100 percent progress."""
+    emitted = []
+    pipeline._total_bytes = 100
+    pipeline.progress_callback = lambda cur, tot: emitted.append((cur, tot))
+
+    def failed_compress(*args: object, **kwargs: object) -> None:
+        progress_callback = kwargs["progress_callback"]
+        assert progress_callback is not None
+        progress_callback(100)
+        return None
+
+    with patch(
+        "atlas.backup.pipeline.archive.compress", side_effect=failed_compress
+    ):
+        assert pipeline.perform_backup({"Chrome": ["/p"]}) is False
+
+    assert all(current < total for current, total in emitted)
+
+
+def test_cancelled_archive_after_writing_data_does_not_complete_progress(
+    pipeline: Pipeline,
+) -> None:
+    """Cancellation after data writes must not report 100 percent progress."""
+    emitted = []
+    pipeline._total_bytes = 100
+    pipeline.progress_callback = lambda cur, tot: emitted.append((cur, tot))
+
+    def cancelled_compress(*args: object, **kwargs: object) -> None:
+        progress_callback = kwargs["progress_callback"]
+        assert progress_callback is not None
+        progress_callback(100)
+        pipeline.cancel()
+        return None
+
+    with patch(
+        "atlas.backup.pipeline.archive.compress",
+        side_effect=cancelled_compress,
+    ):
+        assert pipeline.perform_backup({"Chrome": ["/p"]}) is False
+
+    assert all(current < total for current, total in emitted)
+
+
+def test_progress_excludes_bytes_from_a_failed_archive(
+    pipeline: Pipeline,
+) -> None:
+    """Progress for a later archive excludes bytes from an earlier failure."""
+    emitted = []
+    attempts = 0
+    pipeline._total_bytes = 200
+    pipeline.progress_callback = lambda cur, tot: emitted.append((cur, tot))
+
+    def compress(*args: object, **kwargs: object) -> object:
+        nonlocal attempts
+        attempts += 1
+        progress_callback = kwargs["progress_callback"]
+        assert progress_callback is not None
+        progress_callback(100)
+        return None if attempts == 1 else Path("second.zip")
+
+    with patch(
+        "atlas.backup.pipeline.archive.compress", side_effect=compress
+    ):
+        assert pipeline.perform_backup(
+            {"Chrome": ["/first"], "Firefox": ["/second"]}
+        ) is False
+
+    assert all(current <= 50 for current, _ in emitted)
+
+
 # =============================================================================
 # TESTS — Repr
 # =============================================================================
@@ -364,6 +461,47 @@ def test_run_returns_insufficient_disk_space_when_check_fails(
                 pipeline, "_verify_disk_space", return_value=False
             ):
                 result = pipeline.run()
+
+    assert result == PipelineResult.INSUFFICIENT_DISK_SPACE
+
+
+@pytest.mark.parametrize(
+    "storage_error",
+    [
+        pytest.param(
+            OSError(errno.ENOSPC, "No space left on device"),
+            id="enospc",
+        ),
+        pytest.param(
+            OSError(getattr(errno, "EDQUOT", errno.ENOSPC), "Quota exceeded"),
+            id="edquot",
+            marks=pytest.mark.skipif(
+                not hasattr(errno, "EDQUOT"),
+                reason="EDQUOT is not available on this platform",
+            ),
+        ),
+        pytest.param(
+            OSError(0, "The disk is full", None, 39),
+            id="windows-handle-disk-full",
+        ),
+    ],
+)
+def test_run_returns_insufficient_disk_space_when_archive_exhausts_storage(
+    pipeline: Pipeline, storage_error: OSError
+) -> None:
+    """Write-time storage exhaustion must retain its disk-space outcome."""
+    pipeline._total_bytes = 1024
+
+    with patch.object(
+        pipeline, "scan_profiles", return_value={"Chrome": ["/p"]}
+    ), patch.object(
+        pipeline, "estimate_size", return_value=1024
+    ), patch.object(
+        pipeline, "_verify_disk_space", return_value=True
+    ), patch(
+        "atlas.backup.pipeline.archive.compress", side_effect=storage_error
+    ):
+        result = pipeline.run()
 
     assert result == PipelineResult.INSUFFICIENT_DISK_SPACE
 

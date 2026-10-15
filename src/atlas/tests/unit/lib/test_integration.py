@@ -9,6 +9,7 @@ Unit tests for integration.py OS folder helpers.
 
 import subprocess
 import sys
+import threading
 from pathlib import Path
 from typing import List, Optional
 from unittest.mock import MagicMock, patch
@@ -477,6 +478,37 @@ def test_dispatch_open_folder_warning(
     app = QtWidgets.QApplication.instance()
     if app:
         app.processEvents()
+    mock_failed.assert_called_once_with(temp_folder)
+
+
+def test_dispatch_open_folder_warning_from_daemon_thread(
+    temp_folder: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Verify daemon failures are queued to the existing Qt UI thread."""
+    from atlas.compatibility.qt import QtWidgets
+
+    app = QtWidgets.QApplication.instance()
+    if app is None:
+        app = QtWidgets.QApplication(sys.argv[:1])
+
+    mock_failed = MagicMock()
+    monkeypatch.setattr(
+        "atlas.lib.integration._show_open_folder_failed", mock_failed
+    )
+    monkeypatch.setattr(
+        integration, "_OPEN_FOLDER_WARNING_DISPATCHER", None
+    )
+    assert integration._get_open_folder_warning_dispatcher() is not None
+
+    worker = threading.Thread(
+        target=integration._dispatch_open_folder_warning,
+        args=(temp_folder,),
+        daemon=True,
+    )
+    worker.start()
+    worker.join()
+    app.processEvents()
+
     mock_failed.assert_called_once_with(temp_folder)
 
 

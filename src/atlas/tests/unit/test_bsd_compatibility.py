@@ -25,13 +25,9 @@ from atlas.lib import browsers, directories, integration, permissions, system
 
 @pytest.fixture(autouse=True)
 def init_test_environment() -> None:
-    """Ensure browsers configuration and profile caches are reset."""
+    """Ensure browser configuration is loaded before each test."""
     browsers.verify_entries()
-    profile._PATH_CACHE.clear()
-    profile._expand_path_by_type.cache_clear()
     yield
-    profile._PATH_CACHE.clear()
-    profile._expand_path_by_type.cache_clear()
 
 
 # =============================================================================

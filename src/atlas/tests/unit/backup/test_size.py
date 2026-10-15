@@ -9,6 +9,7 @@ and output directory creation.
 # IMPORTS
 # =============================================================================
 
+import errno
 import sys
 from pathlib import Path
 
@@ -98,6 +99,114 @@ def test_get_directory_size_recursive(tmp_path: Path) -> None:
     sub.mkdir()
     (sub / "file.txt").write_bytes(b"x" * 50)
     assert get_directory_size(tmp_path) == 50
+
+
+def test_get_directory_size_checks_cancel_inside_flat_directory(
+    tmp_path: Path,
+) -> None:
+    """Cancellation must be observed while scanning one directory."""
+    (tmp_path / "first.txt").write_bytes(b"x")
+    (tmp_path / "second.txt").write_bytes(b"x")
+    calls = {"count": 0}
+
+    def cancel_callback() -> bool:
+        calls["count"] += 1
+        return calls["count"] >= 5
+
+    with pytest.raises(InterruptedError):
+        get_directory_size(tmp_path, cancel_callback)
+
+    assert calls["count"] >= 5
+
+
+def test_get_directory_size_checks_timeout_inside_flat_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Timeouts must be observed while enumerating one directory."""
+    (tmp_path / "only-file.txt").write_bytes(b"x")
+    ticks = iter(
+        [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            size_module.MAX_SCAN_TIME + 1.0,
+        ]
+    )
+
+    class FakeTime:
+        """Supply deterministic timestamps without changing global time."""
+
+        @staticmethod
+        def monotonic() -> float:
+            return next(ticks)
+
+    monkeypatch.setattr(size_module, "time", FakeTime)
+
+    with pytest.raises(size_module.ScanTimeoutError):
+        get_directory_size(tmp_path)
+
+
+def test_get_directory_size_checks_timeout_after_empty_directory_scan(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A slow final directory scan cannot return a trusted size."""
+    ticks = iter(
+        [0.0, 0.0, 0.0, 0.0, size_module.MAX_SCAN_TIME + 1.0]
+    )
+
+    class FakeTime:
+        """Supply deterministic timestamps without changing global time."""
+
+        @staticmethod
+        def monotonic() -> float:
+            return next(ticks)
+
+    monkeypatch.setattr(size_module, "time", FakeTime)
+
+    with pytest.raises(size_module.ScanTimeoutError):
+        get_directory_size(tmp_path)
+
+
+def test_get_directory_size_checks_timeout_after_root_lookup(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A slow root lookup cannot return a trusted zero-byte estimate."""
+    missing_root = tmp_path / "missing"
+    ticks = iter([0.0, 0.0, size_module.MAX_SCAN_TIME + 1.0])
+
+    class FakeTime:
+        """Supply deterministic timestamps without changing global time."""
+
+        @staticmethod
+        def monotonic() -> float:
+            return next(ticks)
+
+    monkeypatch.setattr(size_module, "time", FakeTime)
+
+    with pytest.raises(size_module.ScanTimeoutError):
+        get_directory_size(missing_root)
+
+
+def test_get_directory_size_raises_for_inaccessible_root(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A root I/O error must not become a trusted zero-byte estimate."""
+    root = tmp_path.resolve()
+    original_stat = Path.stat
+
+    def inaccessible_stat(
+        path: Path, *args: object, **kwargs: object
+    ) -> object:
+        if path == root:
+            raise OSError(errno.EIO, "network filesystem error")
+        return original_stat(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "stat", inaccessible_stat)
+
+    with pytest.raises(size_module.ScanError, match="scan root"):
+        get_directory_size(tmp_path)
 
 
 # =============================================================================

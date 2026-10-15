@@ -11,8 +11,10 @@ PyInstaller bundles.
 import json
 import logging
 import os
+import site
 import sys
-from typing import Any, Dict
+from pathlib import Path
+from typing import Any, Dict, Optional
 
 # =============================================================================
 # LOGGING
@@ -25,19 +27,32 @@ LOGGER = logging.getLogger(__name__)
 # =============================================================================
 
 
+def _get_installed_data_base_path() -> Optional[str]:
+    """Find a wheel data directory relative to the installed package."""
+    module_path = Path(os.path.abspath(__file__))
+    for parent in module_path.parents:
+        config_dir = parent / "share" / "atlas" / "configs"
+        if config_dir.is_dir():
+            return str(config_dir.parent)
+
+    return None
+
+
 def _get_base_path() -> str:
-    """Resolve project root path for dev, Flatpak, and frozen environments."""
+    """Resolve config root for development, installed, and frozen builds."""
     if getattr(sys, "frozen", False):
         return getattr(sys, "_MEIPASS", os.getcwd())
 
-    candidates = [
+    candidates = (
         os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")),
+        _get_installed_data_base_path(),
         sys.prefix,
         os.path.join(sys.prefix, "share", "atlas"),
+        os.path.join(site.getuserbase(), "share", "atlas"),
         "/app",
-    ]
+    )
     for candidate in candidates:
-        if os.path.isdir(os.path.join(candidate, "configs")):
+        if candidate and os.path.isdir(os.path.join(candidate, "configs")):
             return candidate
 
     return os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))

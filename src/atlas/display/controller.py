@@ -167,29 +167,54 @@ class Controller(QtCore.QObject):
                 "Failed to initialize the backup process."
             )
 
-    def cancel_backup(self) -> None:
-        """Cancel the current backup operation."""
+    def cancel_backup(self) -> bool:
+        """Request cancellation of the current backup operation.
+
+        Cancellation is deliberately non-blocking here so the UI can remain
+        responsive while a filesystem operation reaches a cancellation point.
+        Window shutdown uses :meth:`cleanup` to wait for the worker thread
+        before allowing the dialog to close.
+        """
         if not self._set_state(ControllerState.CANCELLING):
-            return
+            return False
 
         LOGGER.info("Cancelling backup")
         self._stop_elapsed_timer()
-        self._request_worker_shutdown(wait=True)
+        return self._request_worker_shutdown()
 
     def reset(self) -> None:
         """Explicitly recover from a FAILED state back to idle."""
         if self.state == ControllerState.FAILED:
             self._set_state(ControllerState.IDLE)
 
-    def cleanup(self) -> None:
-        """Perform full synchronous cleanup for application exit."""
+    def cleanup(self) -> bool:
+        """Stop the worker thread before application exit.
+
+        Returns:
+            ``True`` once no active worker thread remains. ``False`` when a
+            cooperative cancellation did not finish within the shutdown
+            timeout. Callers must keep the UI alive in that case; destroying
+            a running ``QThread`` can crash the application or leave Python
+            work running after the window has closed.
+        """
         self._stop_elapsed_timer()
-        # Block signals so shutdown-path errors don't try to update
-        # a half-destroyed UI (e.g. worker_error emitted after force-idle).
+        has_worker_context = bool(self.worker or self._worker_thread)
+
+        if self.state != ControllerState.IDLE or has_worker_context:
+            if self.state != ControllerState.CANCELLING:
+                self._force_state(
+                    ControllerState.CANCELLING, "application shutdown"
+                )
+
+            if not self._request_worker_shutdown(wait=True):
+                return False
+
+        # No worker can emit into the UI after a successful wait. Blocking
+        # prevents stale, already-queued UI signals from updating a dialog
+        # that is about to be destroyed.
         self.signals.blockSignals(True)
-        if self.state != ControllerState.IDLE:
-            self._force_idle("application shutdown")
-            self._request_worker_shutdown(wait=True)
+        self._force_idle("application shutdown complete")
+        return True
 
     # =========================================================================
     # WORKER MANAGEMENT
@@ -198,7 +223,8 @@ class Controller(QtCore.QObject):
     def _deploy_worker(self) -> None:
         """Create and start the worker thread."""
         if self.worker or self._worker_thread:
-            self._request_worker_shutdown(wait=True)
+            if not self._request_worker_shutdown(wait=True):
+                raise RuntimeError("Previous backup worker is still stopping")
 
         self.worker = Backup.Worker()
         self._worker_thread = QtCore.QThread(self)
@@ -236,13 +262,17 @@ class Controller(QtCore.QObject):
                 LOGGER.warning("Worker cancel failed: %s", e)
 
         if self._worker_thread and self._worker_thread.isRunning():
+            try:
+                self._worker_thread.requestInterruption()
+            except AttributeError:
+                # Older Qt bindings may not expose interruption requests.
+                pass
             self._worker_thread.quit()
             if wait:
                 if not self._worker_thread.wait(THREAD_WAIT_TIMEOUT_MS):
-                    LOGGER.error("Worker thread shutdown timed out.")
-                    self._set_state(ControllerState.FAILED)
-                    self.signals.worker_error.emit(
-                        "The backup process timed out."
+                    LOGGER.warning(
+                        "Worker thread did not stop within %d ms.",
+                        THREAD_WAIT_TIMEOUT_MS,
                     )
                     return False
         return True

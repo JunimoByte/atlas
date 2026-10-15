@@ -8,6 +8,7 @@ Covers path expansion, wildcard resolution, profile validation, and lookup.
 # IMPORTS
 # =============================================================================
 
+import errno
 import sys
 from pathlib import Path
 from unittest.mock import patch
@@ -21,21 +22,6 @@ from atlas.backup.profile import (
     find_profile,
     get_browser_name_from_path,
 )
-
-# =============================================================================
-# FIXTURES
-# =============================================================================
-
-
-@pytest.fixture(autouse=True)
-def clear_path_cache() -> None:
-    """Clear the profile path cache and lru_cache before each test."""
-    profile_module._PATH_CACHE.clear()
-    profile_module._expand_path_by_type.cache_clear()
-    yield
-    profile_module._PATH_CACHE.clear()
-    profile_module._expand_path_by_type.cache_clear()
-
 
 # =============================================================================
 # TESTS — Expand wildcard
@@ -66,6 +52,71 @@ def test_expand_wildcard_empty_rel_path_returns_base(tmp_path: Path) -> None:
     assert tmp_path in _expand_wildcard(tmp_path, Path(""))
 
 
+def test_expand_wildcard_surfaces_unexpected_io_errors(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Unexpected I/O failures must not look like an absent profile."""
+    original_stat = profile_module.os.stat
+
+    def broken_stat(
+        path: object, *args: object, **kwargs: object
+    ) -> object:
+        if Path(path) == tmp_path:
+            raise OSError(errno.EIO, "I/O failure")
+        return original_stat(path, *args, **kwargs)
+
+    monkeypatch.setattr(profile_module.os, "stat", broken_stat)
+
+    with pytest.raises(profile_module.ProfileScanError):
+        _expand_wildcard(tmp_path, Path(""))
+
+
+def test_expand_wildcard_surfaces_candidate_io_errors(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A wildcard candidate I/O error must not hide a profile."""
+    candidate = tmp_path / "Profile 1"
+    candidate.mkdir()
+    original_stat = profile_module.os.stat
+
+    def broken_stat(
+        path: object, *args: object, **kwargs: object
+    ) -> object:
+        if Path(path) == candidate:
+            raise OSError(errno.EIO, "I/O failure")
+        return original_stat(path, *args, **kwargs)
+
+    monkeypatch.setattr(profile_module.os, "stat", broken_stat)
+
+    with pytest.raises(profile_module.ProfileScanError):
+        _expand_wildcard(tmp_path, Path("Profile *"))
+
+
+def test_expand_path_by_type_rechecks_wildcards(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Wildcard discovery reflects profiles created after an earlier scan."""
+    profiles_dir = tmp_path / "Profiles"
+    profiles_dir.mkdir()
+    (profiles_dir / "Profile 1").mkdir()
+    monkeypatch.setattr(
+        profile_module,
+        "PATH_TYPES",
+        {"Windows": {"APPDATA": [str(tmp_path)]}},
+    )
+
+    first = profile_module._expand_path_by_type(
+        "APPDATA", "Profiles/Profile *", "Windows"
+    )
+    (profiles_dir / "Profile 2").mkdir()
+    second = profile_module._expand_path_by_type(
+        "APPDATA", "Profiles/Profile *", "Windows"
+    )
+
+    assert len(first) == 1
+    assert len(second) == 2
+
+
 # =============================================================================
 # TESTS — Validate profile path
 # =============================================================================
@@ -81,6 +132,39 @@ def test_validate_profile_path_returns_none_for_missing(
 def test_validate_profile_path_no_signature_required(tmp_path: Path) -> None:
     """Verify that any existing directory is accepted without a signature."""
     assert _validate_profile_path(tmp_path, False) == str(tmp_path.resolve())
+
+
+def test_validate_profile_path_rejects_file_without_signature(
+    tmp_path: Path,
+) -> None:
+    """A profile candidate must be a directory even without a signature."""
+    profile_file = tmp_path / "not-a-directory"
+    profile_file.write_text("data", encoding="utf-8")
+
+    assert _validate_profile_path(profile_file, False) is None
+
+
+def test_validate_profile_path_surfaces_late_io_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """An I/O failure after the initial existence check must fail the scan."""
+    original_stat = profile_module.os.stat
+    stat_calls = 0
+
+    def unstable_stat(
+        path: object, *args: object, **kwargs: object
+    ) -> object:
+        nonlocal stat_calls
+        if Path(path) == tmp_path:
+            stat_calls += 1
+            if stat_calls >= 2:
+                raise OSError(errno.EIO, "I/O failure")
+        return original_stat(path, *args, **kwargs)
+
+    monkeypatch.setattr(profile_module.os, "stat", unstable_stat)
+
+    with pytest.raises(profile_module.ProfileScanError):
+        _validate_profile_path(tmp_path, False)
 
 
 def test_validate_profile_path_with_matching_signature(tmp_path: Path) -> None:
@@ -105,13 +189,23 @@ def test_validate_profile_path_with_list_signature_any_match(
     )
 
 
-def test_validate_profile_path_caches_result(tmp_path: Path) -> None:
-    """Verify that validation results are cached."""
-    (tmp_path / "Preferences").write_text("{}")
-    result1 = _validate_profile_path(tmp_path, "Preferences")
-    result2 = _validate_profile_path(tmp_path, "Preferences")
-    assert result1 == result2
-    assert len(profile_module._PATH_CACHE) >= 1
+def test_validate_profile_path_rechecks_filesystem_state(
+    tmp_path: Path,
+) -> None:
+    """Validation must reflect profile creation and signature removal."""
+    profile_dir = tmp_path / "Profile"
+
+    assert _validate_profile_path(profile_dir, "Preferences") is None
+
+    profile_dir.mkdir()
+    signature = profile_dir / "Preferences"
+    signature.write_text("{}")
+    assert _validate_profile_path(profile_dir, "Preferences") == str(
+        profile_dir.resolve()
+    )
+
+    signature.unlink()
+    assert _validate_profile_path(profile_dir, "Preferences") is None
 
 
 # =============================================================================

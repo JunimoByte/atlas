@@ -94,6 +94,72 @@ def test_load_json_frozen(
     assert result["key"] == "value"
 
 
+def test_load_json_uses_installed_share_config_directory(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Verify runtime configs load from the wheel's install data location."""
+    config_dir = tmp_path / "share" / "atlas" / "configs"
+    config_dir.mkdir(parents=True)
+    (config_dir / "runtime.json").write_text(
+        json.dumps({"packaged": True}), encoding="utf-8"
+    )
+
+    monkeypatch.setattr(sys, "prefix", str(tmp_path))
+    monkeypatch.setattr(
+        read.os.path,
+        "isdir",
+        lambda path: Path(path) == config_dir,
+    )
+
+    assert read.load_json("runtime.json") == {"packaged": True}
+
+
+def test_load_json_uses_user_install_share_config_directory(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Verify configs load after a standard per-user pip installation."""
+    config_dir = tmp_path / "share" / "atlas" / "configs"
+    config_dir.mkdir(parents=True)
+    (config_dir / "runtime.json").write_text(
+        json.dumps({"user_install": True}), encoding="utf-8"
+    )
+
+    monkeypatch.setattr(sys, "prefix", str(tmp_path / "venv"))
+    monkeypatch.setattr(read.site, "getuserbase", lambda: str(tmp_path))
+    monkeypatch.setattr(
+        read.os.path,
+        "isdir",
+        lambda path: Path(path) == config_dir,
+    )
+
+    assert read.load_json("runtime.json") == {"user_install": True}
+
+
+def test_load_json_uses_data_directory_relative_to_installed_package(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Verify data files work outside the interpreter prefix."""
+    install_root = tmp_path / "target"
+    config_dir = install_root / "share" / "atlas" / "configs"
+    config_dir.mkdir(parents=True)
+    (config_dir / "runtime.json").write_text(
+        json.dumps({"prefix_install": True}), encoding="utf-8"
+    )
+
+    module_file = install_root / "atlas" / "lib" / "read.py"
+    module_file.parent.mkdir(parents=True)
+    module_file.touch()
+    monkeypatch.setattr(read, "__file__", str(module_file))
+    monkeypatch.setattr(sys, "prefix", str(tmp_path / "interpreter"))
+    monkeypatch.setattr(
+        read.site,
+        "getuserbase",
+        lambda: str(tmp_path / "user"),
+    )
+
+    assert read.load_json("runtime.json") == {"prefix_install": True}
+
+
 # =============================================================================
 # TEST EXECUTION
 # =============================================================================

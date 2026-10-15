@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Atlas dev environment setup — Linux / macOS / BSD
+# Atlas dev environment setup — Linux / macOS / BSD / Solaris
 #
 #  Usage:  source scripts/setup_dev.sh   (from the project root)
 #
 #  - Creates/reuses a venv in the project root
 #  - Installs dev tools (pytest, black, flake8, ruff where available)
-#  - Installs Qt binding (pip on Linux/macOS; system pkg on BSD)
+#  - Installs Qt binding (pip on Linux/macOS; native package on BSD/Solaris)
 #  - Installs PyInstaller
 # =============================================================================
 
@@ -61,6 +61,14 @@ VENV_PATH="$PROJECT_ROOT/venv"
 is_bsd() {
     [[ "$OSTYPE" == freebsd*   || "$OSTYPE" == openbsd* || \
        "$OSTYPE" == netbsd*    || "$OSTYPE" == dragonfly* ]]
+}
+
+is_solaris() {
+    [[ "$OSTYPE" == solaris* || "$OSTYPE" == sunos* ]] && return 0
+
+    local system_name
+    system_name=$(uname -s 2>/dev/null || true)
+    [[ "$system_name" == "SunOS" || "$system_name" == "Solaris" ]]
 }
 
 is_macos() {
@@ -224,6 +232,13 @@ setup_venv() {
         fi
         echo "Using $py_bin (matches pkg PyQt version)."
         "$py_bin" -m venv --system-site-packages "$VENV_PATH"
+    elif is_solaris; then
+        # Solaris and Illumos distribute PyQt through native packages too.
+        # Expose them to the venv instead of trying to compile them with pip.
+        python3 -m venv --system-site-packages "$VENV_PATH" || {
+            echo "ERROR: Failed to create a Python virtual environment."
+            return 1 2>/dev/null || exit 1
+        }
     else
         python3 -m venv "$VENV_PATH" || {
             echo "ERROR: Failed to create venv. Install python3-venv and retry."
@@ -266,29 +281,48 @@ install_dev_tools() {
 # -----------------------------------------------------------------------------
 # STEP 5 — Qt binding
 # Linux/macOS: install via pip (PyQt6 first, PyQt5 fallback).
-# BSD:         PyQt cannot be compiled from source by pip — it must come from
-#              the system package manager (pkg). Verify it is visible, and
-#              print actionable instructions if it is not.
+# BSD/Solaris: PyQt comes from the native package manager. Verify it is visible
+#              rather than asking pip to compile an unsupported source build.
 # -----------------------------------------------------------------------------
 install_qt_binding() {
     echo "Installing Qt binding..."
 
     if is_bsd; then
         _install_qt_bsd
+    elif is_solaris; then
+        _install_qt_solaris
     else
         _install_qt_pip
     fi
 }
 
+_has_qt_binding() {
+    python -c "import PyQt6.QtCore" 2>/dev/null || \
+        python -c "import PyQt5.QtCore" 2>/dev/null
+}
+
 _install_qt_pip() {
     local qt_pkgs=("PyQt6>=6.0")
 
-    # macOS 12 (Monterey) and older are not supported by Qt 6.8+.
-    # Cap PyQt6 < 6.8 to install the latest compatible Qt 6.7 release.
-    if is_macos; then
+    # The editable install normally supplies Qt from pyproject.toml. Do not
+    # replace its platform-specific compatibility cap with a newer release.
+    if _has_qt_binding; then
+        echo "Qt binding already installed."
+        return 0
+    fi
+
+    # Keep Qt 6.7 for the Ubuntu 20.04 compatibility baseline used for Linux
+    # releases.
+    if [[ "$OSTYPE" == linux* ]]; then
+        qt_pkgs=("PyQt6>=6.0,<6.8" "PyQt6-Qt6>=6.0,<6.8")
+    elif is_macos; then
         local mac_ver
         mac_ver=$(_macos_major_version)
-        if [[ -n "$mac_ver" && "$mac_ver" -lt 13 ]]; then
+        if [[ -n "$mac_ver" && "$mac_ver" -lt 11 ]]; then
+            # PyQt 6.7.1 drops macOS 10.14 and 10.15.
+            qt_pkgs=("PyQt6>=6.0,<6.7.1" "PyQt6-Qt6>=6.0,<6.7.1")
+        elif [[ -n "$mac_ver" && "$mac_ver" -lt 13 ]]; then
+            # Qt 6.8+ drops support for macOS 12 and older.
             qt_pkgs=("PyQt6>=6.0,<6.8" "PyQt6-Qt6>=6.0,<6.8")
         fi
     fi
@@ -304,8 +338,7 @@ _install_qt_pip() {
 
 _install_qt_bsd() {
     # PyQt is already importable (system-site-packages picked it up).
-    if python -c "import PyQt6.QtCore" 2>/dev/null || \
-       python -c "import PyQt5.QtCore" 2>/dev/null; then
+    if _has_qt_binding; then
         echo "PyQt detected from system packages."
         return 0
     fi
@@ -346,6 +379,26 @@ _install_qt_bsd() {
         echo "Try: pkg search qt6-pyqt"
         echo "Then install it and re-run: source \"$PROJECT_ROOT/scripts/setup_dev.sh\""
     fi
+
+    return 1 2>/dev/null || exit 1
+}
+
+_install_qt_solaris() {
+    if _has_qt_binding; then
+        echo "PyQt detected from system packages."
+        return 0
+    fi
+
+    local py_dot
+    py_dot=$(python -c 'import sys; v=sys.version_info; print(f"{v.major}.{v.minor}")')
+
+    echo "ERROR: PyQt is not visible in this environment (Python $py_dot)."
+    echo "Solaris and Illumos use native PyQt packages; pip does not provide"
+    echo "portable wheels for this setup. Install the PyQt package matching"
+    echo "your Python version with the system package manager, then re-run."
+    echo "If this venv existed before PyQt was installed, recreate it with:"
+    echo "    rm -rf \"$VENV_PATH\""
+    echo "    source \"$PROJECT_ROOT/scripts/setup_dev.sh\""
 
     return 1 2>/dev/null || exit 1
 }
@@ -393,6 +446,6 @@ setup_venv        || { return 1 2>/dev/null || exit 1; }
 activate_venv
 upgrade_pip
 install_dev_tools || { return 1 2>/dev/null || exit 1; }
-install_qt_binding
+install_qt_binding || { return 1 2>/dev/null || exit 1; }
 install_pyinstaller
 print_summary

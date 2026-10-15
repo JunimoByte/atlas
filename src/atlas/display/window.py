@@ -399,8 +399,18 @@ class Window(QtWidgets.QDialog):
         """Handle Escape key or native dialog reject gracefully."""
         if self.controller.state == ControllerState.RUNNING:
             self._handle_cancel_button()
-        else:
-            super().reject()
+            return
+
+        if self.controller.state == ControllerState.CANCELLING:
+            # QDialog.reject() closes a dialog directly rather than sending an
+            # ignorable close event.  Keep Escape from destroying the dialog
+            # while cleanup is waiting for a blocking worker thread.
+            self.interface.time_elapsed.setText(
+                "Waiting for the backup to stop before Atlas can close..."
+            )
+            return
+
+        super().reject()
 
     def closeEvent(self, event: Any) -> None:  # noqa: N802
         """Handle cleanup on close."""
@@ -426,7 +436,16 @@ class Window(QtWidgets.QDialog):
 
         if getattr(self, "_progress_anim", None) is not None:
             self._progress_anim.stop()
-        self.controller.cleanup()
+        if not self.controller.cleanup():
+            # A QThread may still be inside a blocking filesystem call even
+            # after cancellation was requested. Keeping the dialog alive is
+            # safer than destroying Qt objects while that thread is running.
+            self.interface.time_elapsed.setText(
+                "Waiting for the backup to stop before Atlas can close..."
+            )
+            LOGGER.warning("Window close deferred until worker stops")
+            event.ignore()
+            return
         LOGGER.debug("Event accepted")
         event.accept()
 

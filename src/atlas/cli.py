@@ -417,6 +417,14 @@ def _estimate_matches_size(
 
     try:
         total_bytes = pipeline.estimate_size(matches)
+        if total_bytes < 0:
+            _report_error(
+                "\nSize estimation could not complete reliably.",
+                status="error",
+                is_json=is_json,
+                quiet=quiet,
+            )
+            return None
         return total_bytes, size.format_size(total_bytes)
     except KeyboardInterrupt:
         _report_error(
