@@ -91,6 +91,7 @@ def _get_open_folder_warning_dispatcher(
         LOGGER.debug("Could not initialize folder warning dispatcher: %s", exc)
         return None
 
+
 # =============================================================================
 # DESKTOP ENVIRONMENT DETECTION
 # =============================================================================
