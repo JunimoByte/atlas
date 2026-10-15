@@ -61,6 +61,13 @@ def create_files(base: Path, names: List[str]) -> None:
         file_path.write_text("content")
 
 
+def _windows_disk_full_error() -> OSError:
+    """Create a Windows disk-full error that works on every test host."""
+    error = OSError(0, "The disk is full")
+    error.winerror = 39
+    return error
+
+
 # =============================================================================
 # TESTS — Relative path
 # =============================================================================
@@ -490,7 +497,7 @@ def test_compress_rejects_empty_archive_when_files_fail(
             ),
         ),
         pytest.param(
-            OSError(0, "The disk is full", None, 39),
+            _windows_disk_full_error(),
             id="windows-handle-disk-full",
         ),
     ],

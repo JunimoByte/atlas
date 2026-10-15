@@ -47,6 +47,13 @@ def empty_pipeline() -> Pipeline:
     return p
 
 
+def _windows_disk_full_error() -> OSError:
+    """Create a Windows disk-full error that works on every test host."""
+    error = OSError(0, "The disk is full")
+    error.winerror = 39
+    return error
+
+
 # =============================================================================
 # TESTS — Cancellation
 # =============================================================================
@@ -481,7 +488,7 @@ def test_run_returns_insufficient_disk_space_when_check_fails(
             ),
         ),
         pytest.param(
-            OSError(0, "The disk is full", None, 39),
+            _windows_disk_full_error(),
             id="windows-handle-disk-full",
         ),
     ],

@@ -93,7 +93,7 @@ def _path_exists(path: Path) -> bool:
     empty browser installation.
     """
     try:
-        path.stat()
+        os.stat(path)
         return True
     except (FileNotFoundError, NotADirectoryError, PermissionError) as error:
         LOGGER.debug("Profile path is unavailable: %s (%s)", path, error)
@@ -107,7 +107,7 @@ def _path_exists(path: Path) -> bool:
 def _is_directory(path: Path) -> bool:
     """Check whether ``path`` is a directory while preserving I/O errors."""
     try:
-        return stat.S_ISDIR(path.stat().st_mode)
+        return stat.S_ISDIR(os.stat(path).st_mode)
     except (FileNotFoundError, NotADirectoryError, PermissionError) as error:
         LOGGER.debug("Profile path is unavailable: %s (%s)", path, error)
         return False

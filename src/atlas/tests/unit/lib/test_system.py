@@ -63,7 +63,7 @@ def test_is_junction_windows_detection() -> None:
     mock_stat.st_file_attributes = 1024
 
     with patch("os.name", "nt"):
-        with patch("os.path.isjunction", return_value=True):
+        with patch("os.path.isjunction", return_value=True, create=True):
             assert system.is_junction("C:\\dummy\\junction") is True
 
     with patch("os.name", "nt"), patch.object(
