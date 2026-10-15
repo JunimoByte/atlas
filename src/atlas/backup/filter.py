@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Callable, Generator, List, Optional, Tuple
 
 from atlas.lib.read import load_json
+from atlas.lib.system import is_junction
 
 # =============================================================================
 # LOGGING
@@ -96,6 +97,11 @@ def scan_files(  # noqa: C901
 
                         try:
                             if entry.is_dir(follow_symlinks=False):
+                                if is_junction(entry):
+                                    LOGGER.debug(
+                                        "Skipping junction: %s", entry.path
+                                    )
+                                    continue
                                 if entry.name.lower() not in SKIP_FOLDERS:
                                     stack.append(entry.path)
                             elif entry.is_file(follow_symlinks=False):

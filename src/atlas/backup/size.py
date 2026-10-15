@@ -18,6 +18,7 @@ from typing import Tuple, Union
 
 from atlas.backup.archive import get_zip_output_dir
 from atlas.lib.read import load_json
+from atlas.lib.system import is_junction
 
 # =============================================================================
 # LOGGING
@@ -153,6 +154,12 @@ def get_directory_size(  # noqa: C901
                 for entry in entries:
                     try:
                         if entry.is_dir(follow_symlinks=False):
+                            if is_junction(entry):
+                                LOGGER.debug(
+                                    "Skipping junction in size scan: %s",
+                                    entry.path,
+                                )
+                                continue
                             if entry.name.lower() not in SKIP_FOLDERS:
                                 stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):

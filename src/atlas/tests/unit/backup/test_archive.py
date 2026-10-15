@@ -8,6 +8,7 @@ normalization.
 # IMPORTS
 # =============================================================================
 
+import os
 import sys
 import zipfile
 from pathlib import Path
@@ -517,6 +518,60 @@ def test_write_file_to_zip_midstream_error_raises(tmp_path: Path) -> None:
         with pytest.raises(OSError) as exc_info:
             archive._write_file_to_zip(zf, test_file, zi)
         assert "Mid-stream write error" in str(exc_info.value)
+
+
+def test_write_file_to_zip_output_write_error_raises(tmp_path: Path) -> None:
+    """Verify that destination write error raises instead of skipping."""
+    test_file = tmp_path / "valid.txt"
+    test_file.write_bytes(b"content")
+
+    zip_path = tmp_path / "test.zip"
+    zi = archive.create_zip_info(test_file)
+    zi.filename = "valid.txt"
+
+    real_open = zipfile.ZipFile.open
+
+    class FailingWriteZipFile(zipfile.ZipFile):
+        def open(self, *args, **kwargs):
+            handle = real_open(self, *args, **kwargs)
+
+            def failing_write(data):
+                raise OSError(5, "I/O error on destination drive")
+
+            handle.write = failing_write
+            return handle
+
+    with FailingWriteZipFile(zip_path, "w") as zf:
+        with pytest.raises(OSError) as exc_info:
+            archive._write_file_to_zip(zf, test_file, zi)
+        assert "I/O error on destination drive" in str(exc_info.value)
+
+
+def test_get_temp_zip_path_unique(tmp_path: Path) -> None:
+    """Verify that temporary ZIP paths are unique and include PID."""
+    target = tmp_path / "archive.zip"
+    p1 = archive._get_temp_zip_path(target)
+    p2 = archive._get_temp_zip_path(target)
+    assert p1 != p2
+    assert str(os.getpid()) in p1.name
+    assert p1.parent == target.parent
+
+
+def test_write_file_to_zip_skips_symlink(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Verify that symbolic links are skipped by _write_file_to_zip."""
+    real_file = tmp_path / "target.txt"
+    real_file.write_text("secret")
+
+    zip_path = tmp_path / "out.zip"
+    zi = archive.create_zip_info(real_file)
+
+    monkeypatch.setattr(Path, "is_symlink", lambda self: True)
+
+    with zipfile.ZipFile(zip_path, "w") as zf:
+        written = archive._write_file_to_zip(zf, real_file, zi)
+        assert written is False
 
 
 # =============================================================================

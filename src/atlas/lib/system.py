@@ -3,6 +3,7 @@
 Centralized system identification and OS string normalization.
 """
 
+import os
 import platform
 
 
@@ -43,3 +44,34 @@ def normalize_os_key(os_name: str) -> str:
 def get_os_key() -> str:
     """Return the normalized, capitalized OS name for the current system."""
     return normalize_os_key(platform.system())
+
+
+def is_junction(path_or_entry: object) -> bool:
+    """Return True if path or DirEntry is a Windows directory junction.
+
+    Args:
+        path_or_entry: A path string, Path object, or os.DirEntry.
+
+    Returns:
+        bool: True if target is an NTFS directory junction or reparse point.
+    """
+    if os.name != "nt":
+        return False
+
+    is_junc = getattr(os.path, "isjunction", None)
+    if is_junc is not None:
+        try:
+            return bool(is_junc(path_or_entry))
+        except (OSError, ValueError):
+            return False
+
+    try:
+        if hasattr(path_or_entry, "stat"):
+            st = path_or_entry.stat(follow_symlinks=False)
+        else:
+            st = os.lstat(str(path_or_entry))
+        tag = getattr(st, "st_reparse_tag", 0)
+        attrs = getattr(st, "st_file_attributes", 0)
+        return bool(tag == 0xA0000003 or (attrs & 0x400))
+    except (OSError, ValueError):
+        return False

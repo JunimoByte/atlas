@@ -12,15 +12,25 @@ import errno
 import itertools
 import logging
 import os
+import uuid
 import zipfile
 from datetime import datetime
 from pathlib import Path
-from typing import Callable, Dict, Iterable, Optional, Tuple, Union
+from typing import (
+    BinaryIO,
+    Callable,
+    Dict,
+    Iterable,
+    Optional,
+    Tuple,
+    Union,
+)
 
 from atlas.backup.attribute import create_zip_info
 from atlas.backup.disk import relative_zip_path, safe_unlink
 from atlas.backup.filter import scan_files
 from atlas.lib.directories import get_downloads_dir
+from atlas.lib.system import is_junction
 
 # =============================================================================
 # LOGGING
@@ -163,6 +173,69 @@ def _resolve_output_zip_path(zip_name: str) -> Path:
     return zip_path
 
 
+def _is_disk_full(error: OSError) -> bool:
+    """Return True if the error indicates disk full."""
+    return (
+        error.errno == errno.ENOSPC
+        or getattr(error, "winerror", None) == WINERROR_DISK_FULL
+    )
+
+
+def _stream_file_to_zip_entry(
+    src_file: BinaryIO,
+    dest_file: BinaryIO,
+    file_path: Path,
+    cancel_callback: Optional[Callable[[], bool]] = None,
+    chunk_callback: Optional[Callable[[int], None]] = None,
+) -> bool:
+    """Stream chunks from source file to ZIP entry."""
+    bytes_written = 0
+    read = src_file.read
+    while True:
+        if cancel_callback and cancel_callback():
+            return False
+        try:
+            chunk = read(CHUNK_SIZE)
+        except OSError as error:
+            if _is_disk_full(error):
+                LOGGER.error("Disk full during backup: %s", error)
+                raise
+            if bytes_written > 0:
+                LOGGER.error(
+                    "I/O error mid-stream reading %s: %s",
+                    file_path,
+                    error,
+                )
+                raise
+            LOGGER.warning(
+                "Skipped reading (file in use): %s - %s",
+                file_path,
+                error,
+            )
+            return False
+
+        if not chunk:
+            break
+
+        if cancel_callback and cancel_callback():
+            return False
+
+        try:
+            dest_file.write(chunk)
+        except OSError as error:
+            LOGGER.error(
+                "Target storage write failure for %s: %s",
+                file_path,
+                error,
+            )
+            raise
+
+        bytes_written += len(chunk)
+        if chunk_callback:
+            chunk_callback(len(chunk))
+    return True
+
+
 def _write_file_to_zip(
     zip_file: zipfile.ZipFile,
     file_path: Path,
@@ -188,46 +261,35 @@ def _write_file_to_zip(
             it as a fatal archive failure.
 
     """
-    bytes_written = 0
+    if file_path.is_symlink() or is_junction(file_path):
+        LOGGER.warning("Skipping symlink/junction: %s", file_path)
+        return False
+
     try:
-        with file_path.open("rb") as src_file:
-            with zip_file.open(zip_info, "w") as dest_file:
-                read = src_file.read
-                while True:
-                    chunk = read(CHUNK_SIZE)
-                    if not chunk:
-                        break
-                    if cancel_callback and cancel_callback():
-                        return False
-                    dest_file.write(chunk)
-                    bytes_written += len(chunk)
-                    if chunk_callback:
-                        chunk_callback(len(chunk))
-        return True
+        src_file = file_path.open("rb")
     except OSError as error:
-        # If disk is full, we must abort the backup completely.
-        if (
-            error.errno == errno.ENOSPC
-            or getattr(error, "winerror", None) == WINERROR_DISK_FULL
-        ):
-            LOGGER.error("Disk full during backup: %s", error)
-            raise
-
-        if bytes_written > 0:
-            LOGGER.error(
-                "I/O error mid-stream after writing %d bytes to %s: %s",
-                bytes_written,
-                file_path,
-                error,
-            )
-            raise
-
         LOGGER.warning(
             "Skipped (I/O error / file in use): {} - {}".format(
                 file_path, error
             )
         )
         return False
+
+    try:
+        with src_file:
+            with zip_file.open(zip_info, "w") as dest_file:
+                return _stream_file_to_zip_entry(
+                    src_file,
+                    dest_file,
+                    file_path,
+                    cancel_callback,
+                    chunk_callback,
+                )
+    except OSError as error:
+        if _is_disk_full(error):
+            LOGGER.error("Disk full during backup: %s", error)
+            raise
+        raise
     except Exception:
         raise
 
@@ -278,7 +340,13 @@ def _archive_root_names(sources: Iterable[Path]) -> Dict[Path, str]:
     return archive_root_names
 
 
-def write_zip(
+def _get_temp_zip_path(zip_path: Path) -> Path:
+    """Return a unique temporary ZIP path in the same directory."""
+    token = f"{os.getpid()}_{uuid.uuid4().hex[:8]}"
+    return zip_path.with_name(f"{zip_path.stem}.{token}.zip.tmp")
+
+
+def write_zip(  # noqa: C901
     files: Iterable[Tuple[Path, Path]],
     zip_path: Path,
     cancel_callback: Optional[Callable[[], bool]] = None,
@@ -305,7 +373,7 @@ def write_zip(
         RuntimeError: If a file cannot be written safely to the archive.
 
     """
-    temp_zip_path = zip_path.with_suffix(".zip.tmp")
+    temp_zip_path = _get_temp_zip_path(zip_path)
     archive_created = False
 
     files_written = 0
@@ -321,6 +389,10 @@ def write_zip(
             for base_path, file_path in files:
                 if cancel_callback and cancel_callback():
                     return
+
+                if file_path.is_symlink() or is_junction(file_path):
+                    LOGGER.warning("Skipping symlink/junction: %s", file_path)
+                    continue
 
                 try:
                     rel_path = relative_zip_path(file_path, base_path)
@@ -475,21 +547,14 @@ def compress(  # noqa: C901
         # Re-raise so the pipeline can gracefully skip this archive
         raise
     except OSError as error:
-        if (
-            error.errno == errno.ENOSPC
-            or getattr(error, "winerror", None) == WINERROR_DISK_FULL
-        ):
-            temp_zip_path = zip_path.with_suffix(".zip.tmp")
-            safe_unlink(temp_zip_path)
+        safe_unlink(zip_path)
+        if _is_disk_full(error):
             raise
         LOGGER.error("Failed to create zip archive: {}".format(error))
-        temp_zip_path = zip_path.with_suffix(".zip.tmp")
-        safe_unlink(temp_zip_path)
         return None
     except Exception as error:
+        safe_unlink(zip_path)
         LOGGER.error("Failed to create zip archive: {}".format(error))
-        temp_zip_path = zip_path.with_suffix(".zip.tmp")
-        safe_unlink(temp_zip_path)
         return None
 
 

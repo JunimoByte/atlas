@@ -319,7 +319,7 @@ class Pipeline:
         if self.is_cancelled():
             return PipelineResult.CANCELLED
 
-        if not self.perform_backup(matches):
+        if not self.perform_backup(matches) or self.is_cancelled():
             if self.is_cancelled():
                 return PipelineResult.CANCELLED
             LOGGER.error("Pipeline finished with backup errors.")
@@ -515,12 +515,16 @@ class Pipeline:
                 )
                 gc.collect()
 
+                if self.is_cancelled():
+                    return False
+
                 if result is not None:
                     self.created_archives.append(result)
                     LOGGER.info("Archive created: %s", zip_name)
-                elif not self._cancelled:
+                else:
                     backup_succeeded = False
-                    LOGGER.error("Failed to create archive: %s", zip_name)
+                    if not self._cancelled:
+                        LOGGER.error("Failed to create archive: %s", zip_name)
 
             except FileNotFoundError as error:
                 backup_succeeded = False
@@ -539,5 +543,8 @@ class Pipeline:
                 prog = tracker.on_browser_finished(completed, total)
                 if prog is not None:
                     self._emit(self.progress_callback, prog[0], prog[1])
+
+        if self.is_cancelled():
+            return False
 
         return backup_succeeded

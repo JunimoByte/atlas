@@ -494,6 +494,28 @@ def test_progress_tracker_on_browser_finished_no_total_bytes() -> None:
     assert tracker.on_browser_finished(1, 3) == (1, 3)
 
 
+def test_cancel_during_final_archive_returns_cancelled() -> None:
+    """Verify cancellation during final archive returns CANCELLED."""
+    p = Pipeline()
+
+    def fake_compress(*args: object, **kwargs: object) -> None:
+        p.cancel()
+        return None
+
+    with patch(
+        "atlas.backup.pipeline.archive.compress", side_effect=fake_compress
+    ), patch.object(
+        p, "scan_profiles", return_value={"Firefox": ["/dummy/path"]}
+    ), patch.object(
+        p, "estimate_size", return_value=100
+    ), patch.object(
+        p, "_verify_disk_space", return_value=True
+    ):
+        result = p.run()
+        assert result == PipelineResult.CANCELLED
+        assert p.created_archives == []
+
+
 # =============================================================================
 # TEST EXECUTION
 # =============================================================================
