@@ -15,10 +15,9 @@ dependencies = [
     # PyQt6 requires Python 3.9+; retain PyQt5 for supported 3.8 hosts.
     "PyQt5>=5.15; python_version < '3.9' and (platform_system == 'Windows' or platform_system == 'Darwin' or platform_system == 'Linux')",
     "PyQt6>=6.0; python_version >= '3.9' and platform_system == 'Windows'",
-    # PyQt 6.7.1 drops macOS 10.14/10.15; Qt 6.8 drops macOS 12.
-    "PyQt6>=6.0,<6.7.1; python_version >= '3.9' and platform_system == 'Darwin' and platform_release < '20'",
-    "PyQt6>=6.0,<6.8; python_version >= '3.9' and platform_system == 'Darwin' and platform_release >= '20' and platform_release < '22'",
-    "PyQt6>=6.0; python_version >= '3.9' and platform_system == 'Darwin' and platform_release >= '22'",
+    # Keep a single macOS-compatible ceiling. PEP 508 evaluates every marker
+    # term, so comparing platform_release breaks on non-PEP-440 Linux kernels.
+    "PyQt6>=6.0,<6.7.1; python_version >= '3.9' and platform_system == 'Darwin'",
     # Keep Qt 6.7 for the project's broad glibc 2.31 compatibility baseline.
     "PyQt6>=6.0,<6.8; python_version >= '3.9' and platform_system == 'Linux'",
     # BSD and Solaris obtain PyQt from their native package managers. Omitting

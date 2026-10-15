@@ -82,6 +82,10 @@ On BSD and Solaris, install the matching native PyQt package before creating a
 virtual environment with `--system-site-packages`. PyPI does not provide
 portable PyQt wheels for those systems.
 
+Maintainers should use the [Runtime Contracts](runtime-contracts.md) for
+configuration lookup, Qt package policy, filesystem failures, and thread
+ownership rules.
+
 ```bash
 pip install .
 atlas

@@ -129,8 +129,9 @@ The graphical UI runner. Handles the startup sequence for the traditional UI:
 5. **Event Loop**: Starts the PyQt event loop via `app.exec()`.
 
 ### `src/atlas/cli.py`
-The headless runner. Operates without any PyQt dependencies, ensuring maximum
-compatibility on servers, safe mode boots, and automated scripts. Supports:
+The headless runner. It does not create a QApplication, so it runs without a
+graphical display on servers, safe mode boots, and automated scripts. Package
+installation still follows the platform Qt policy. Supports:
 - Interactive progress displays via terminal carriage returns.
 - Browser discovery listing (`--list`) without triggering backup I/O.
 - Browser filtering (`--browser`) for targeted profile backups.
@@ -177,12 +178,14 @@ lifecycle.
 - **Cancel**: `cancel_backup()` transitions to `CANCELLING`, stops the timer,
   and explicitly requests worker shutdown.
 - **Cleanup**: `cleanup()` is called on window close to stop any running thread
-  and timer.
+  and timer. It returns `False` when the cooperative shutdown wait expires.
+  The window then ignores the close event and remains alive.
 - **Worker Deployment**: `_deploy_worker()` creates a `Backup.Worker`, moves it
   to a `QThread`, connects its signals, and starts the thread.
-- **Worker Termination**: `_request_worker_shutdown()` handles graceful
-  cancellation, waits for the thread to exit, and terminates hung threads to
-  prevent zombie processes.
+- **Worker Shutdown**: `_request_worker_shutdown()` requests cooperative
+  cancellation and waits for the thread to exit when cleanup requires it. It
+  never terminates a running thread; Qt objects remain alive until that thread
+  has stopped.
 - **State Guarding**: `_handle_worker_completion()` checks that the FSM is in
   the `RUNNING` state before transitioning to `SUCCESS` to prevent stale `done`
   signals from reverting `EMPTY` or `BLOCKED` states.
@@ -293,10 +296,11 @@ Manages browser configuration loading and validation.
 #### `lib/read.py`
 Safely loads JSON configuration files.
 
-- **`load_json(filename, config_dir)`** — Resolves the correct path for both
-  dev and PyInstaller (frozen) builds. Navigates from `src/atlas/lib/` up
-  three levels to the project root, then into `configs/`. Returns an empty
-  dict on failure.
+- **`load_json(filename, config_dir)`** — Resolves the correct path for source,
+  installed wheel (`--target`, `--prefix`, and `--user`), and PyInstaller
+  (frozen) builds. It prefers an installed `share/atlas` data directory
+  relative to the package, then falls back to interpreter and container
+  locations. Returns an empty dict on failure.
 
 #### `lib/themes.py`
 Cross-platform theming, Windows DWM chrome integration, and resource loading.
@@ -335,6 +339,9 @@ User-facing operating system integration and desktop environment detection.
   on Windows, `open` on macOS, and threaded `_run_linux_open()` on Linux/POSIX.
 - **`_run_linux_open(folder_path)`** — Executes candidate desktop openers
   under a sanitized desktop environment until one exits cleanly.
+- **`_OpenFolderWarningDispatcher`** — Queues folder-open failures from the
+  daemon opener to a QObject owned by the QApplication thread before showing a
+  warning dialog.
 - **`_get_linux_file_manager_candidates(folder_path)`** — Returns an ordered
   candidate list prioritized for KDE (`dolphin`, `kde-open6`, etc.) or generic
   desktops (`xdg-open`, `nautilus`, `thunar`, etc.).
@@ -414,18 +421,18 @@ directly internally.
   optional callbacks for UI reporting. Loads browser data via
   `browsers.grab()`.
 - **`run()`** — Executes the full backup flow: `scan_profiles()` →
-  `estimate_size()` → `check_disk_space()` → `perform_backup()`. Emits
-  `no_browsers_found_callback` if scan returns nothing; emits
-  `disk_space_error_callback` if space is insufficient.
+  `estimate_size()` → `check_disk_space()` → `perform_backup()`. It fails
+  safely when profile discovery or size estimation has an unexpected I/O
+  error, and emits `disk_space_error_callback` when storage is insufficient.
 - **`scan_profiles()`** — Iterates over all browsers, calls
   `Profile.find_profile(browser, os_name, browsers_data)` for each. Rate-limits
   status callbacks using `SIGNAL_BATCH_INTERVAL` (0.5s). Returns `Dict[str,
   List[str]]`.
 - **`estimate_size(browser_matches)`** — Extracts all profile paths and caches
-  their sizes via `Size.get_directory_size()` to avoid redundant I/O, while
-  correctly summing duplicate paths shared across multiple browsers to match
-  the final uncompressed output space. Emits formatted string via
-  `estimated_callback`.
+  their sizes within one estimation run to avoid redundant I/O, while correctly
+  summing duplicate paths shared across multiple browsers to match the final
+  uncompressed output space. A cancelled, timed-out, or incomplete scan blocks
+  disk-space approval. Emits formatted string via `estimated_callback`.
 - **`perform_backup(browser_matches)`** — Creates a ZIP per browser via
   `archive.compress()`. Manually triggers `gc.collect()` after each archive to
   free memory. Emits `progress_callback` after each.
@@ -508,17 +515,17 @@ Browser profile detection.
 - **`_expand_wildcard(base, rel_path)`** — Recursively resolves wildcard
   segments (`*`, `?`) in paths using `fnmatch`. Handles both literal and glob
   segments.
-- **`_validate_profile_path(path, signature)`** — Checks that the path exists
-  and contains the required signature file(s). Results are cached in
-  `_PATH_CACHE` keyed by `(lower_path, signature)`.
+- **`_validate_profile_path(path, signature)`** — Checks that the path is a
+  readable directory and contains the required signature file(s). It does not
+  cache filesystem validation, so live browser-profile changes are visible.
 
 #### `backup/size.py`
 Size calculation and disk space utilities.
 
 - **`get_directory_size(path_str, cancel_callback)`** — Recursively sums file
-  sizes, skipping blacklisted folders and symlinks. Supports cooperative
-  cancellation via `InterruptedError`. Calls `gc.collect()` at the end to free
-  stack memory. Enforces a `MAX_SCAN_TIME` (300s) timeout.
+  sizes, skipping blacklisted folders and symlinks. It checks cooperative
+  cancellation before and during directory traversal, enforces a
+  `MAX_SCAN_TIME` (300s) timeout, and raises for incomplete filesystem scans.
 - **`format_size(bytes_size)`** — Converts bytes to a human-readable string (B,
   KB, MB, GB, TB, PB). Strips trailing zeros where appropriate.
 - **`check_disk_space(estimated_size_bytes, output_path)`** — Checks if the

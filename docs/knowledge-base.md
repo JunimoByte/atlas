@@ -115,8 +115,13 @@ disk-space errors, no-profile results, and worker failures.
 tracks it with `IDLE`, `RUNNING`, `SUCCESS`, `EMPTY`, `BLOCKED`,
 `CANCELLING`, and `FAILED` states. It deploys `backup.worker.Worker` in a
 `QThread`, forwards its events through `Signals`, and updates elapsed time
-every 300 milliseconds. Cancellation requests cooperative pipeline shutdown,
-then waits for thread completion and cleans up the worker.
+every 300 milliseconds. Cancellation is non-blocking. Window cleanup waits
+for the worker to stop; if that wait times out, the close event is ignored so
+Qt objects are never destroyed while the worker is running.
+
+The Linux/POSIX folder opener runs outside the UI thread. When it cannot open
+a folder, it sends a queued signal to a QObject owned by the QApplication
+thread. Background helpers must never create dialogs or mutate widgets.
 
 `backup.worker.Worker` is only a Qt adapter. The backup workflow itself is
 implemented in the Qt-free `backup.pipeline.Pipeline`, which can be used from
@@ -138,9 +143,16 @@ to `SOLARIS`.
 
 For each configured browser, `Pipeline.scan_profiles` resolves candidate
 locations for the current operating system and verifies profile signatures.
-It reports scan status in batches. Found profile directories are deduplicated
-before size estimation. The pipeline then checks free space at the output
-location and creates one archive per browser, reporting archive progress.
+The path-type configuration is loaded once, but wildcard expansion and profile
+validation are evaluated against the live filesystem on every scan. It reports
+scan status in batches. Found profile directories are deduplicated before size
+estimation. The pipeline then checks free space at the output location and
+creates one archive per browser, reporting archive progress.
+
+Size estimation is all-or-nothing for disk-space decisions. Cancellation,
+timeout, or unexpected filesystem I/O failures make the estimate unreliable
+and block the backup. Storage exhaustion during archive creation is reported
+as insufficient space rather than as a successful or partially complete run.
 
 Archive creation streams files into a temporary ZIP, validates it, and uses
 an atomic replace to publish the finished archive. Filtering excludes unsafe
@@ -172,6 +184,12 @@ paths for both source and PyInstaller builds. Windows receives registry-based
 light/dark styling, DWM title-bar styling where available, and live theme
 updates on supported Qt versions. Other platforms use Qt-provided theme
 information with safe fallbacks.
+
+`lib.read.load_json` resolves required configuration from the source checkout,
+installed wheel data, or a frozen bundle. `pyproject.toml` and `MANIFEST.in`
+must both include the required JSON files. See
+[Runtime Contracts](runtime-contracts.md) for the lookup order and platform
+Qt installation policy.
 
 `main.spec` creates the Windows-style portable executable. `appimage.spec`
 creates a Linux onedir payload in `dist/Atlas.AppDir/usr/bin`, keeping the
